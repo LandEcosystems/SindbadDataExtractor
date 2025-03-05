@@ -13,7 +13,7 @@
     "temporal_resolution": "daily hourly",
     "FLUXNET_version": "LaThuile FLUXNET2015",
     "exp_name": "CLIFF input",
-    "fluxcom_cube_path": "/Net/Groups/BGI/data/FLUXCOM/v0.04/site_cube",
+    "fluxcom_cube_path": "/Net/Groups/BGI/data/FLUXCOM/v0.06/site_cube",
     "resample_output": "",
     "allow_extraction_errors": false,
     "sel_gapfills": "none",

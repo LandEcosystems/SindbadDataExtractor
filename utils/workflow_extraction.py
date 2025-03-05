@@ -203,7 +203,7 @@ def plot_dianostic_figures(ds, site_info, exp_settings, site, resampled=None):
                     str(int(exp_settings['end_date'].split('-')[0])) + '.' +
                     data_freq + '.png',
                     bbox_inches='tight',
-                    box_extra_artists=[x_l, y_l, t_l],
+                    # box_extra_artists=[x_l, y_l, t_l],
                     dpi=300)
                 plt.close()
             else:

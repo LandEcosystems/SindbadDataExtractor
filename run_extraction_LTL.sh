@@ -1,7 +1,7 @@
 #!/bin/bash
-output_path='/Net/Groups/BGI/scratch/skoirala/v202312_wroasted/fluxNet_0.04_CLIFF/'
-pythonpath='/Net/Groups/BGI/scratch/skoirala/con3/envs/sinproc004/bin/python'
-configuration_file='/Net/Groups/BGI/scratch/skoirala/toolDev/sindbad-preproc/configuration/sindbad/sindbad_extraction_main.json'
+output_path='/Net/Groups/BGI/scratch/skoirala/fluxNet_0.06/'
+pythonpath='/Net/Groups/BGI/scratch/skoirala/sksrc/miniforge3/envs/sinproc006/bin/python'
+configuration_file='/Net/Groups/BGI/scratch/skoirala/SindbadSiteExtractor/configuration/sindbad/sindbad_extraction_main.json'
 # fn_version='FLUXNET2015'
 fn_version='LaThuile'
 time_scale='daily'

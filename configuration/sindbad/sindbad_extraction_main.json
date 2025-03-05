@@ -1,7 +1,7 @@
 {
     "output_dir_path": "",
     "diagnostic_plots": true,
-    "njobs_parallel": 150,
+    "njobs_parallel": 200,
     "sites_toRun1": [
         "BE-Bra"
     ],
@@ -13,8 +13,8 @@
     "temporal_resolution": "",
     "FLUXNET_version": "",
     "exp_name": "SINDBAD",
-    "fluxcom_cube_path": "/Net/Groups/BGI/data/FLUXCOM/v0.04/site_cube",
-    "config_dir_path": "/Net/Groups/BGI/scratch/skoirala/toolDev/sindbad-preproc/configuration/sindbad/",
+    "fluxcom_cube_path": "/Net/Groups/BGI/data/FLUXCOM/v0.06/site_cube",
+    "config_dir_path": "/Net/Groups/BGI/scratch/skoirala/SindbadSiteExtractor/configuration/sindbad/",
     "resample_output": [],
     "nsel_gapfills": "cruncep crujra",
     "sel_gapfillsn": "none",

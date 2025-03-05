@@ -7,7 +7,7 @@ A repository for the preprocessor of data to be used in SINDBAD MDI framework, a
 
 The tool put together data from 3 main sources
 - FLUXCOM data extractor that provides 
-    - the fluxnet datasetsLaThuile2007 and FLUXNET2015 releases
+    - the fluxnet datasets LaThuile2007 and FLUXNET2015 releases
     - remote sensing cutouts from fluxnet sites
 
 - Site level extractions of biomass and forest ages from Simon. These include the FLUXNET BADM as well as the GlobBiomass satellite retrievals.

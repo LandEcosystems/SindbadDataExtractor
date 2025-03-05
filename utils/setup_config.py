@@ -64,7 +64,7 @@ def get_cliff_dirname(fnversion, temp_reso):
     elif fnversion == 'LaThuile':
         opath = 'LTL07'
     else:
-        opath = ''
+        opath = fnversion
 
     if temp_reso == 'daily':
         otime = 'DD'
