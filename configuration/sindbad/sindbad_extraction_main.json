@@ -1,7 +1,7 @@
 {
     "output_dir_path": "",
     "diagnostic_plots": true,
-    "njobs_parallel": 200,
+    "njobs_parallel": 50,
     "sites_toRun1": [
         "BE-Bra"
     ],
@@ -9,17 +9,17 @@
         "all"
     ],
     "start_date": "1979-01-01",
-    "end_date": "2017-12-31",
+    "end_date": "2025-12-31",
     "temporal_resolution": "",
     "FLUXNET_version": "",
     "exp_name": "SINDBAD",
-    "fluxcom_cube_path": "/Net/Groups/BGI/data/FLUXCOM/v0.06/site_cube",
+    "fluxcom_cube_path": "/Net/Groups/BGI/work_4/scratch/fluxcom/sitecube_proc/v0.07/site_cube",
     "config_dir_path": "/Net/Groups/BGI/scratch/skoirala/SindbadSiteExtractor/configuration/sindbad/",
     "resample_output": [],
     "nsel_gapfills": "cruncep crujra",
-    "sel_gapfillsn": "none",
+    "sel_gapfills": "none",
     "sel_gapfillsb": "erai crujra",
-    "sel_gapfills": "erai",
+    "sel_gapfillse": "erai",
     "allow_extraction_errors": true,
     "gap_fill": {
         "erai": {
@@ -38,7 +38,7 @@
             "qc_thres": 0.85
         }
     },
-    "sel_datasets": "all except cliff_crun cliff_cruj",
+    "sel_datasets": "all except cliff_crun cliff_cruj cliff_erai modis_MxD11A1",
     "sel_datasetst": "agb agb_merged",
     "dataset": {
         "bgi_FLUXCOM_obs": "fluxcom_obs.json",
@@ -49,6 +49,7 @@
         "nelson_tea": "nelson_TEA.json",
         "modis_MCD43A_mergedNDVI": "modis_MCD43A_mergedNDVI.json",
         "modis_MCD43A": "modis_MCD43A.json",
+        "modis_MxDx1x1": "modis_MxDx1x1.json",
         "modis_MxD11A1": "modis_MxD11A1.json",
         "soilgrids": "soilgrids.json",
         "vf_insitu": "vegFrac_insitu.json",

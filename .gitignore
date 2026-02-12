@@ -21,6 +21,7 @@
 /utils/__pycache__
 /sinproc_installer/__pycache__
 /sinproc_installer/fluxcom*
+/sinproc_installer/fluxcom
 
 # Folder to ignore
 # ./data

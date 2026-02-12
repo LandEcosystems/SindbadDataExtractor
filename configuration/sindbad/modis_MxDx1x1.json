@@ -1,0 +1,49 @@
+{
+    "extractor": "modis_MxDx1x1",
+    "var_suffix": "MxDx1x1",
+    "base_info": {
+        "partitioning": "",
+        "variableUnit": "deg C",
+        "bounds": [
+            -80,
+            80
+        ],
+        "sourceVariableName": "LST",
+        "sourceVariableUnit": "K",
+        "source2sindbadUnit": 1,
+        "isCategorical": false,
+        "nameShort": "",
+        "nameLong": "",
+        "satellite": "",    
+        "spaceTimeType": "normal",
+        "sourceDataProductName": "MxDx1x1",
+        "QC": "",
+        "RANDUNC": "",
+        "weightVar": "",
+        "DaySum": false,
+        "DayMin": false,
+        "DayMax": false,
+        "wDayMean": false,
+        "DayTime": true,
+        "isEnergy": false,
+        "isWater": false,
+        "isCarbon": false,
+        "skipUnitcheck": true,
+        "publication": "https://lpdaac.usgs.gov/products/MxDx1x1*/; Walter et al., (in prep) ask swalther[at]bgc-jena.mpg.de",
+        "data_path": "",
+        "description": "Derived from MxDx1x1 based on AQUA and TERRA"
+    },
+    "sel_variables": "all",
+    "variables": {
+        "LST_AQUA": {
+            "satellite": "AQUA",
+            "nameShort": "LST_AQUA",
+            "nameLong": "land surface temperature from AQUA"
+        },
+        "LST_TERRA": {
+            "satellite": "TERRA",
+            "nameShort": "LST_TERRA",
+            "nameLong": "land surface temperature from TERRA"
+        }
+    }
+}
