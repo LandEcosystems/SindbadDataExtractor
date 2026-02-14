@@ -16,20 +16,16 @@ import utils.shared_utils as shut
 import utils.setup_config as set_conf
 sys.path.append(os.getcwd())
 
-def get_site_list(cubepath, version):
+def get_site_list(cubepath, version, use_site_list_from_file=False):
     import numpy as np
     site_list_path = os.path.join(exp_config['output_dir_path']['info_config'], f"site_list_{version}.csv")
     print(site_list_path)
-    if os.path.exists(site_list_path):
+    if os.path.exists(site_list_path) and use_site_list_from_file:
         site_list = [site.strip() for site in open(site_list_path).readlines()]
     else:
-        from fluxcom.providers import eddy_covariance as ec
-        from fluxcom.core.variables import Variable
-        Climate_FLUXNET_prov    = ec.eddy_covariance.EddyProvider(cubepath = cubepath,version  = version)
-        Climate_FLUXNET_data = Climate_FLUXNET_prov.get_data(Variable('P'))
-        site_list_d = Climate_FLUXNET_data.site.values
-        site_list = sorted(site_list_d)
-        print(site_list_path)
+        import fluxcom.providers as prov
+        ep = prov.EddyProvider(version=version, cubepath=cubepath)
+        site_list = sorted(ep.sites)
         np.savetxt(site_list_path, site_list, delimiter=",", fmt="%s")
     return site_list
 
@@ -90,14 +86,29 @@ if __name__ == '__main__':
             exp_config = set_conf.get_exp_configuration(exp_config_path, fn_version=fn_version, temporal_resolution=tm_scale, output_dir_path=output_dir_path)
 
             # #%% Check sites to process
-            if f'sites_{fn_version}' not in locals():
-                if exp_config["sites_toRun"] == ['all']:
-                    sites = get_site_list(exp_config["fluxcom_cube_path"], exp_config["FLUXNET_version"])
-                    # eval(f'sites_{fn_version} = sites')
-                else:
-                    sites = exp_config["sites_toRun"]
+            sites_in_version = get_site_list(exp_config["fluxcom_cube_path"], exp_config["FLUXNET_version"])
+            if exp_config["sites_toRun"] != ['all']:
+                list_sites= exp_config["sites_toRun"]
+                sites = [site for site in sites_in_version if site in list_sites]
             else:
-                sites = eval(f'sites_{fn_version}')
+                sites = sites_in_version
+                list_sites = sites_in_version
+            # if f'sites_{fn_version}' not in locals():
+            #     sites_in_version = get_site_list(exp_config["fluxcom_cube_path"], exp_config["FLUXNET_version"])
+            #     if exp_config["sites_toRun"] != ['all']:
+            #         list_sites= exp_config["sites_toRun"]
+            #         sites = [site for site in sites_in_version if site in list_sites]
+            #     else:
+            #         sites = sites_in_version
+            #         list_sites = sites_in_version
+            # else:
+            #     sites = eval(f'sites_{fn_version}')
+            
+            if len(sites) == 0:
+                print(f'No sites out of {list_sites} to process for {fn_version} and temporal resolution {tm_scale} which has {sites_in_version}. Skipping to the next configuration.')
+                continue
+            if len(sites) < len(list_sites):
+                print(f'Only {len(sites)} out of {len(list_sites)} sites to process for {fn_version} and temporal resolution {tm_scale} which has {sites_in_version}. Skipping the sites not in the list: {[site for site in list_sites if site not in sites]}.')
 
             print(f'{exp_config["FLUXNET_version"]}: {sites}')
 

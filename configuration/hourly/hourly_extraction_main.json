@@ -1,9 +1,9 @@
 {
     "output_dir_path": "",
     "diagnostic_plots": true,
-    "njobs_parallel": 50,
-    "sites_toRun1": [
-        "DE-Hai"
+    "njobs_parallel": 1,
+    "1sites_toRun": [
+        "US-Mo1"
     ],
     "sites_toRun": [
         "all"
@@ -13,7 +13,7 @@
     "temporal_resolution": "",
     "FLUXNET_version": "",
     "exp_name": "SINDBAD",
-    "fluxcom_cube_path": "/Net/Groups/BGI/data/FLUXCOM/v0.06/site_cube",
+    "fluxcom_cube_path": "/Net/Groups/BGI/work_4/scratch/fluxcom/sitecube_proc/v0.07/site_cube",
     "config_dir_path": "/Net/Groups/BGI/scratch/skoirala/SindbadSiteExtractor/configuration/hourly/",
     "resample_output": [""],
     "nsel_gapfills": "cruncep crujra",
@@ -38,7 +38,8 @@
     },
     "sel_datasetsa": "bgi_FLUXCOM_obs bgi_FLUXCOM_clim swinpot",
     "sel_datasets_a": "bgi_FLUXCOM_obs bgi_FLUXCOM_clim swinpot bgi_FLUXCOM_clim_era5 nelson_tea",
-    "sel_datasets": "all except cliff_crun cliff_cruj cliff_erai",
+    "sel_datasets": "all except cliff_crun cliff_cruj cliff_erai swinpot",
+    "sel_datasetas": "atmCO2",
 
     "dataset": {
         "bgi_FLUXCOM_obs": "fluxcom_obs.json",

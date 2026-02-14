@@ -32,7 +32,7 @@
         "data_path": "",
         "description": "Derived from TEA partitioning method"
     },
-    "sel_variables": "all",
+    "sel_variables": "all except T_DT",
     "variables": {
         "T_NT": {
             "partitioning": "NT",

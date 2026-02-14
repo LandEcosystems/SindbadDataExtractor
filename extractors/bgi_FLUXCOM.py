@@ -27,6 +27,7 @@ def extract(dataset, site_info, config):
 
     src_vars = [_var.name for _var in src_prov_o.variables]
     src_data = []
+    # print("Available source variables:", src_vars, "bxtr.flx_cubepath:", bxtr.flx_cubepath, "version:", bxtr.version, "site:", bxtr.site)
     for tar_name in bxtr.vars_list:
         src_name = bxtr.vars[tar_name]['sourceVariableName']
         src_prov=copy.deepcopy(src_prov_o) #without this copy, the provider get_data will not find variables which is in the original provider: 2022/08/06
@@ -37,14 +38,16 @@ def extract(dataset, site_info, config):
 
             if len(transform) > 0:
                 src_prov.add_transform(transform)
+            # print(f"extracting Data for variable {src_name}")
             if src_name in ('P', 'PPFD_IN'):
                 data = src_prov.get_data(Variable(src_name))
             else:
+                # print(f"Trying Data for variable {src_name}, renaming to {tar_name} and converting units if needed: {bxtr.vars[tar_name]['sourceVariableUnit']}, {bxtr.vars[tar_name]['partitioning']}")
                 data = src_prov.get_data(
                     Variable(src_name,
                              units=bxtr.vars[tar_name]['sourceVariableUnit'],
                              partitioning=bxtr.vars[tar_name]['partitioning']))
-
+            # print(f"Data for variable {src_name} extracted, now renaming to {tar_name} and converting units if needed., shape: {data.shape}, {data}")
             data = data.rename(tar_name)
 
             data = bxtr.convert_units(data, tar_name)

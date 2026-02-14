@@ -20,8 +20,7 @@ def extract(dataset, site_info, config):
         return None
 
     src_prov    = TEAProvider(cubepath   = bxtr.flx_cubepath,
-                                version    = bxtr.version, 
-                                site       =bxtr.site)
+                                version    = bxtr.version)
 
     src_vars = [_var.name for _var in src_prov.variables]
     src_data = []
@@ -35,9 +34,11 @@ def extract(dataset, site_info, config):
 
             src_prov.add_transform(transform)
 
+            # data = src_prov.get_data(Variable(src_name))
             data = src_prov.get_data(Variable(src_name, partitioning=bxtr.vars[tar_name]['partitioning']))
             logger.info(f'{bxtr.dataset}: Skipping unit tests in nelson_TEA, due to error while assigning mm. Follow latest FLUXCOM developments.')
             # data = src_prov.get_data(Variable(src_name, units=bxtr.vars[tar_name]['sourceVariableUnit'], partitioning=src_partitioning))
+            data = data.sel(site=bxtr.site)
             data = data.rename(tar_name)
             
             data = bxtr.convert_units(data, tar_name)

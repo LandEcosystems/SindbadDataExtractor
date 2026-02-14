@@ -27,6 +27,16 @@ def extract(dataset, site_info, config):
 
         data = xr.open_dataset(bxtr.vars[tar_name]['data_path'])
 
+        # Handle coordinate naming variations (lat/lon vs latitude/longitude)
+        # For point data or malformed coordinates, use integer indexing (isel) instead of labeled indexing (sel)
+        lat_coord = 'latitude' if 'latitude' in data.dims else ('lat' if 'lat' in data.dims else None)
+        lon_coord = 'longitude' if 'longitude' in data.dims else ('lon' if 'lon' in data.dims else None)
+        
+        # Only use positional indexing if dimensions exist (data with spatial grid)
+        if lat_coord and lon_coord:
+            # Use isel to avoid coordinate index issues
+            data = data.isel({lat_coord: 0, lon_coord: 0})
+        
         #%% interpolate missing data
         data = data.where(np.isfinite(data)).interpolate_na(
             dim='time', method='nearest').compute()

@@ -11,6 +11,7 @@ from fluxcom.core.variables import Variable
 from extractors.BasexTractor import BasexTractor
 import logging
 logger = logging.getLogger(__name__)
+import copy
 
 
 def extract(dataset, site_info, config):
@@ -21,8 +22,7 @@ def extract(dataset, site_info, config):
         return None
 
     src_prov = era5.ERA5Provider(cubepath=bxtr.flx_cubepath,
-                                               version=bxtr.version,
-                                               site=bxtr.site)
+                                               version=bxtr.version)
 
     src_vars = [_var.name for _var in src_prov.variables]
     src_data = []
@@ -32,10 +32,7 @@ def extract(dataset, site_info, config):
             bxtr.log_var_start(tar_name)
 
             transform = bxtr.get_transform(tar_name, src_prov=src_prov)
-            src_prov = era5.ERA5Provider(cubepath=bxtr.flx_cubepath,
-                                                    version=bxtr.version,
-                                                    site=bxtr.site)
-
+            src_prov = copy.deepcopy(src_prov)
             if len(transform) > 0:
                 src_prov.add_transform(transform)
             if src_name == 'P':
@@ -46,7 +43,7 @@ def extract(dataset, site_info, config):
                 #     Variable(src_name,
                 #              units=bxtr.vars[tar_name]['sourceVariableUnit'],
                 #              partitioning=bxtr.vars[tar_name]['partitioning']))
-
+            data = data.sel(site=bxtr.site)
             data = data.rename(tar_name)
 
             data = bxtr.convert_units(data, tar_name)

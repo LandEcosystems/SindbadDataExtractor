@@ -7,7 +7,8 @@ fn_version='LaThuile'
 time_scale='hourly'
 
 ## declare an array variable
-declare -a fn_versions=("LaThuile" "WarmWinter2020" "AmerifluxFLUXNET" "ICOSFLUXNET" "ICOSDrought2018" "FLUXNET2015" "CCBY" "CCBY_v0.04" "CCBY_v0.05")
+declare -a fn_versions=("CCBY")
+# declare -a fn_versions=("AmeriFlux" "FLUXNET2015" "ICOS" "ICOSDrought2018" "OzFLUX" "WarmWinter2020" "CCBY")
 
 ## now loop through the above array
 for fn_version in "${fn_versions[@]}"
