@@ -7,7 +7,8 @@ fnvars = ['SW_IN','TA','P','VPD','NETRAD','LW_IN','TA_DayTime','VPD_DayTime','TA
 
 fnsites= np.sort(['AU-Tum', "BR-Sa1","BR-Sa3", "US-Wkg", 'CA-TP1','CN-Cha', 'DE-Hai' ,'ES-LJu','IT-MBo', "IT-BCi", "ZA-Kru", "FI-Hyy", 'RU-Fyo', 'US-Ton', 'US-Ha1'])
 fnvars = ['SW_IN','TA','P','VPD','NETRAD','LW_IN','WS','RH','PA']
-
+run_name = "fluxnetBGI2021"
+out_dir_name = f"{run_name}_siteCube-v0.03_iter-1"
 data_sets={
     "CRUNCEP": {
         "path":"/Net/Groups/BGI/data/DataStructureMDI/DATA/grid/Global/0d50_daily/CRUNCEP/v8/Data/variable",
@@ -41,29 +42,29 @@ data_sets={
         "filepatt": "variable.*.01.year.nc",
         "t_res": "hourly"
         },
-    "fluxnetBGI2021.LTL07.DD":{
-        "path": "/Net/Groups/BGI/work_3/cliff/input/fluxnetBGI20211_siteCube-v0.03_iter-1/fluxnetBGI2021.LTL07.DD/data/daily",
+    "fluxnetBGI2021.LaThuile.DD":{
+        "path": f"/Net/Groups/BGI/work_3/cliff/input/{out_dir_name}/{run_name}.LaThuile.DD/data/daily",
         "sites": fnsites, 
         "variables": fnvars,
         "filepatt": "*.nc",
         "t_res": "daily"
     },
-    "fluxnetBGI2021.LTL07.HR":{
-        "path": "/Net/Groups/BGI/work_3/cliff/input/fluxnetBGI20211_siteCube-v0.03_iter-1/fluxnetBGI2021.LTL07.HR/data/hourly",
+    "fluxnetBGI2021.LaThuile.HR":{
+        "path": f"/Net/Groups/BGI/work_3/cliff/input/{out_dir_name}/{run_name}.LaThuile.HR/data/hourly",
         "sites": fnsites, 
         "variables": fnvars,
         "filepatt": "*.nc",
         "t_res": "hourly"
     },
-    "fluxnetBGI2021.BRK15.DD":{
-        "path": "/Net/Groups/BGI/work_3/cliff/input/fluxnetBGI20211_siteCube-v0.03_iter-1/fluxnetBGI2021.BRK15.DD/data/daily",
+    "fluxnetBGI2021.FLUXNET2015.DD":{
+        "path": f"/Net/Groups/BGI/work_3/cliff/input/{out_dir_name}/{run_name}.FLUXNET2015.DD/data/daily",
         "sites": fnsites, 
         "variables": fnvars,
         "filepatt": "*.nc",
         "t_res": "daily"
     },
-    "fluxnetBGI2021.BRK15.HR":{
-        "path": "/Net/Groups/BGI/work_3/cliff/input/fluxnetBGI20211_siteCube-v0.03_iter-1/fluxnetBGI2021.BRK15.HR/data/hourly",
+    "fluxnetBGI2021.FLUXNET2015.HR":{
+        "path": f"/Net/Groups/BGI/work_3/cliff/input/{out_dir_name}/{run_name}.FLUXNET2015.HR/data/hourly",
         "sites": fnsites, 
         "variables": fnvars,
         "filepatt": "*.nc",
@@ -74,7 +75,7 @@ data_sets={
 
 out_dict = {}
 sel_data = ["ERAinterim", "CRUNCEP"]
-sel_data = ["fluxnetBGI2021.BRK15.DD", "fluxnetBGI2021.BRK15.HR", "fluxnetBGI2021.LTL07.DD", "fluxnetBGI2021.LTL07.HR"]
+sel_data = [f"{run_name}.{data}" for data in ["FLUXNET2015.DD", "FLUXNET2015.HR", "LaThuile.DD", "LaThuile.HR"]]
 # sel_data = list(data_sets.keys())
 # sel_data = ["ERA5"]
 year_ref = '2000'

@@ -12,8 +12,7 @@
     "end_date": "2025-12-31",
     "temporal_resolution": "",
     "FLUXNET_version": "",
-    "exp_name": "SINDBAD",
-    "fluxcom_cube_path": "/Net/Groups/BGI/work_4/scratch/fluxcom/sitecube_proc/v0.07/site_cube",
+    "config_dir_path": "/Net/Groups/BGI/scratch/skoirala/SindbadSiteExtractor/configuration/sindbad/",
     "resample_output": [],
     "nsel_gapfills": "cruncep crujra",
     "sel_gapfills": "none",
@@ -37,7 +36,7 @@
             "qc_thres": 0.85
         }
     },
-    "sel_datasets": "all except cliff_crun cliff_cruj cliff_erai modis_MxD11A1",
+    "sel_datasets": "all except cliff_crun cliff_cruj cliff_erai modis_MxD11A1 modis_MxDx1x1",
     "sel_datasetsa": "bgi_FLUXCOM_obs",
     "sel_datasetst": "agb agb_merged",
     "dataset": {

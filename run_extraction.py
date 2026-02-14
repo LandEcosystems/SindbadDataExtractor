@@ -57,6 +57,14 @@ if __name__ == '__main__':
             output_dir_path =sys.argv[4]
         else:
             output_dir_path=""
+        if len(sys.argv) > 5:
+            fluxcom_cube_path =sys.argv[5]
+        else:
+            fluxcom_cube_path="/Net/Groups/BGI/work_4/scratch/fluxcom/sitecube_proc/v0.07/site_cube"
+        if len(sys.argv) > 6:
+            run_name =sys.argv[6]
+        else:
+            run_name = "fluxnetBGI"
     else:
         sys.exit(f'run_extraction cannot extract data without the path of the main extraction config as the only argument. Provide absolute path to the configuration file.')
     # get basic config to check the sources and loop
@@ -83,7 +91,8 @@ if __name__ == '__main__':
     # loop through sites and get full configurations
     for tm_scale in tm_scales:
         for fn_version in fn_versions:
-            exp_config = set_conf.get_exp_configuration(exp_config_path, fn_version=fn_version, temporal_resolution=tm_scale, output_dir_path=output_dir_path)
+            exp_config = set_conf.get_exp_configuration(exp_config_path, fn_version=fn_version, temporal_resolution=tm_scale, output_dir_path=output_dir_path, run_name=run_name)
+            exp_config["fluxcom_cube_path"] = fluxcom_cube_path
 
             # #%% Check sites to process
             sites_in_version = get_site_list(exp_config["fluxcom_cube_path"], exp_config["FLUXNET_version"])
@@ -123,6 +132,7 @@ if __name__ == '__main__':
             else:
                 site_info_dict ={}
                 for site in sites:
+                    print (f'Processing site: {site} for version: {fn_version} and temporal resolution: {tm_scale}')
                     site_info_dict[site] = compile_site_data(site, **exp_settings)
             print('The extraction is complete. Back to run_extract.py.')
 

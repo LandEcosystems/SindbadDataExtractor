@@ -56,7 +56,7 @@
             "sourceVariableUnit": "mm h-1",
             "nameShort": "P",
             "nameLong": "precipitation",
-            "QC":  "QC",
+            "QC":  "TA_QC",
             "isWater": true,
             "skipUnitcheck": true
         },
@@ -85,7 +85,7 @@
             "source2sindbadUnit": 1000,
             "nameShort": "atmospheric pressure",
             "nameLong": "atmospheric pressure",
-            "QC":  "QC",
+            "QC":  "TA_QC",
             "DayTime": true
         },
         "LW_IN": {
@@ -116,6 +116,21 @@
             "isEnergy": true,
             "skipUnitcheck": true
         },
+        "SW_IN_POT": {
+            "variableUnit": "MJ m-2",
+            "bounds": [
+                0,
+                100
+            ],
+            "sourceVariableName": "SW_IN_POT",
+            "sourceVariableUnit": "W m-2",
+            "nameShort": "SW_IN_POT",
+            "nameLong": "shortwave radiation - incoming - potential",
+            "QC":  "QC",
+            "isEnergy": true,
+            "skipUnitcheck": true,
+            "DayTime": true
+        },
         "NETRAD": {
             "variableUnit": "MJ m-2",
             "bounds": [
@@ -126,7 +141,7 @@
             "sourceVariableUnit": "W m-2",
             "nameShort": "NETRAD",
             "nameLong": "net radiation",
-            "QC":  "QC",
+            "QC":  "TA_QC",
             "isEnergy": true,
             "skipUnitcheck": true
         },
@@ -140,7 +155,7 @@
             "sourceVariableUnit": "m s-1",
             "nameShort": "Wind_speed",
             "nameLong": "wind speed",
-            "QC":  "QC"
+            "QC":  "TA_QC"
         },
         "RH": {
             "variableUnit": "%",

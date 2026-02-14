@@ -60,17 +60,18 @@ def get_cliff_dirname(fnversion, temp_reso):
     Get the folder structure of cliff input and output based on a simple convention
     """
     if fnversion == 'FLUXNET2015':
-        opath = 'BRK15'
+        opath = 'FLUXNET2015'
     elif fnversion == 'LaThuile':
-        opath = 'LTL07'
+        opath = 'LaThuile'
     else:
         opath = fnversion
+    opath = fnversion
 
     if temp_reso == 'daily':
         otime = 'DD'
     else:
         otime = 'HR'
-    return f'fluxnetBGI2021.{opath}.{otime}'
+    return f'{opath}.{otime}'
 
 
 def setup_out_dir(exp_config):
@@ -78,8 +79,8 @@ def setup_out_dir(exp_config):
     setup and create the output fields and directories
     """
     out_main_dir = exp_config['output_dir_path']
-    out_sub_path = get_cliff_dirname(exp_config["FLUXNET_version"],
-                                     exp_config["temporal_resolution"])
+    run_name = exp_config['run_name']
+    out_sub_path = f"{run_name}.{get_cliff_dirname(exp_config['FLUXNET_version'], exp_config['temporal_resolution'])}"
 
     exp_config['output_dir_path'] = {}
     exp_config['output_dir_path']['main'] = os.path.join(out_main_dir, out_sub_path)
@@ -94,7 +95,7 @@ def setup_out_dir(exp_config):
             exp_config['output_dir_path']['main'], 'figs_diagno')
         os.makedirs(exp_config['output_dir_path']['figs'], exist_ok=True)
     # configuration output
-    exp_config['output_dir_path']['expName'] = f'fluxnetBGI2021.{opath}.{otime}'
+    exp_config['output_dir_path']['expName'] = f'{run_name}.{opath}.{otime}'
     exp_config['output_dir_path']['info_config'] = os.path.join(
         exp_config['output_dir_path']['main'], 'config_info')
     exp_config['output_dir_path']['site_info'] = os.path.join(
@@ -364,7 +365,8 @@ def get_inp_config(exp_config_path):
 def get_exp_configuration(exp_config_path,
                           fn_version=None,
                           temporal_resolution=None,
-                          output_dir_path=None):
+                          output_dir_path=None,
+                          run_name="fluxnetBGI"):
     # get input configuration
     print(fn_version, temporal_resolution, output_dir_path)
     exp_config_r = get_inp_config(exp_config_path)
@@ -376,7 +378,7 @@ def get_exp_configuration(exp_config_path,
         exp_config_r["temporal_resolution"] = temporal_resolution
     if output_dir_path is not None:
         exp_config_r["output_dir_path"] = output_dir_path
-
+    exp_config_r["run_name"] = run_name
     print(exp_config_r["FLUXNET_version"], exp_config_r["temporal_resolution"], exp_config_r["output_dir_path"])
     exp_config = copy.deepcopy(exp_config_r)
 

@@ -1,7 +1,7 @@
 {
   "datasets": {
-    "fluxnetBGI2021.BRK15.DD": {
-      "path": "/Net/Groups/BGI/work_3/cliff/input/fluxnetBGI20211_siteCube-v0.03_iter-1/fluxnetBGI2021.BRK15.DD",
+    "fluxnetBGI2021.FLUXNET2015.DD": {
+      "path": "/Net/Groups/BGI/work_3/cliff/input/fluxnetBGI2021_siteCube-v0.03_iter-1/fluxnetBGI2021.FLUXNET2015.DD",
       "variables": {
         "LW_IN": {
           "file_path": "AU-Tum,BR-Sa1,BR-Sa3,CA-TP1,CN-Cha,DE-Hai,ES-LJu,FI-Hyy,IT-BCi,IT-MBo,RU-Fyo,US-Ha1,US-Ton,US-Wkg,ZA-Kru",
@@ -131,8 +131,8 @@
         }
       }
     },
-    "fluxnetBGI2021.BRK15.HR": {
-      "path": "/Net/Groups/BGI/work_3/cliff/input/fluxnetBGI20211_siteCube-v0.03_iter-1/fluxnetBGI2021.BRK15.HR",
+    "fluxnetBGI2021.FLUXNET2015.HR": {
+      "path": "/Net/Groups/BGI/work_3/cliff/input/fluxnetBGI2021_siteCube-v0.03_iter-1/fluxnetBGI2021.FLUXNET2015.HR",
       "variables": {
         "LW_IN": {
           "file_path": "AU-Tum,BR-Sa1,BR-Sa3,CA-TP1,CN-Cha,DE-Hai,ES-LJu,FI-Hyy,IT-BCi,IT-MBo,RU-Fyo,US-Ha1,US-Ton,US-Wkg,ZA-Kru",
@@ -262,8 +262,8 @@
         }
       }
     },
-    "fluxnetBGI2021.LTL07.DD": {
-      "path": "/Net/Groups/BGI/work_3/cliff/input/fluxnetBGI20211_siteCube-v0.03_iter-1/fluxnetBGI2021.LTL07.DD",
+    "fluxnetBGI2021.LaThuile.DD": {
+      "path": "/Net/Groups/BGI/work_3/cliff/input/fluxnetBGI2021_siteCube-v0.03_iter-1/fluxnetBGI2021.LaThuile.DD",
       "variables": {
         "LW_IN": {
           "file_path": "AU-Tum,BR-Sa1,BR-Sa3,CA-TP1,CN-Cha,DE-Hai,ES-LJu,FI-Hyy,IT-BCi,IT-MBo,RU-Fyo,US-Ha1,US-Ton,US-Wkg,ZA-Kru",
@@ -393,8 +393,8 @@
         }
       }
     },
-    "fluxnetBGI2021.LTL07.HR": {
-      "path": "/Net/Groups/BGI/work_3/cliff/input/fluxnetBGI20211_siteCube-v0.03_iter-1/fluxnetBGI2021.LTL07.HR",
+    "fluxnetBGI2021.LaThuile.HR": {
+      "path": "/Net/Groups/BGI/work_3/cliff/input/fluxnetBGI2021_siteCube-v0.03_iter-1/fluxnetBGI2021.LaThuile.HR",
       "variables": {
         "LW_IN": {
           "file_path": "AU-Tum,BR-Sa1,BR-Sa3,CA-TP1,CN-Cha,DE-Hai,ES-LJu,FI-Hyy,IT-BCi,IT-MBo,RU-Fyo,US-Ha1,US-Ton,US-Wkg,ZA-Kru",

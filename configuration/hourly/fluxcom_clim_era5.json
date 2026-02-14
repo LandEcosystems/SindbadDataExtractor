@@ -29,7 +29,7 @@
         "data_path": "",
         "description": "ERA5 data for FLUXNET Tower Locations"
         },
-    "sel_variables": "all except RH",
+    "sel_variables": "all except RH LW_IN",
     "variables": {
         "TA": {
             "variableUnit": "deg C",

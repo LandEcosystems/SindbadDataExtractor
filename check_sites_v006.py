@@ -5,9 +5,9 @@ def get_cliff_dirname(fnversion, temp_reso):
     Get the folder structure of cliff input and output based on a simple convention
     """
     if fnversion == 'FLUXNET2015':
-        opath = 'BRK15'
+        opath = 'FLUXNET2015'
     elif fnversion == 'LaThuile':
-        opath = 'LTL07'
+        opath = 'LaThuile'
     else:
         opath = fnversion
 
@@ -15,15 +15,17 @@ def get_cliff_dirname(fnversion, temp_reso):
         otime = 'DD'
     else:
         otime = 'HR'
-    return f'fluxnetBGI2021.{opath}.{otime}'
+    opath = fnversion
+    return f'{opath}.{otime}'
 
 
 output_path='/Net/Groups/BGI/scratch/skoirala/fluxNet_0.06/'
 ## declare an array variable
 fn_versions=("WarmWinter2020", "AmerifluxFLUXNET", "ICOSFLUXNET", "ICOSDrought2018", "FLUXNET2015", "CCBY", "CCBY_v0.05", "CCBY_v0.04")
+run_name = "fluxnetBGI2021"
 site_list=[]
 for fn_v in fn_versions:
-    dname = get_cliff_dirname(fn_v, 'hourly') 
+    dname = f"{run_name}.{get_cliff_dirname(fn_v, 'hourly')}"
     fname = f'site_list_{fn_v}.csv'
     site_file = os.path.join(output_path, dname, 'config_info', fname)
     print(site_file)

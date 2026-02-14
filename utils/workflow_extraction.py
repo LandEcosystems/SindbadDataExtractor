@@ -381,8 +381,9 @@ def harmonize_data_attrs(site_info, data, _config, resampled=None):
     #%% Add global attributes
     CurrentScript = os.path.basename(__file__)
     data = data.assign_attrs(
-        title=f'site dataset for {_config["exp_name"]}',
+        title=f'Eddy covariance site dataset',
         FLUXNET_version=_config["FLUXNET_version"],
+        FLUXCOM_cube_path=_config["fluxcom_cube_path"],
         temporal_resolution=data_freq,
         last_disturbance_on=_config['last_disturbance_on'],
         PFT=_config['sitePFT'],

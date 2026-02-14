@@ -1,20 +1,20 @@
 {
-    "output_dir_path": "/Net/Groups/BGI/work_3/cliff/input/fluxnetBGI2021_siteCube-v0.03_iter-5/",
+    "output_dir_path": "",
     "diagnostic_plots": true,
-    "njobs_parallel": 60,
+    "njobs_parallel": 25,
     "sites_toRun1": [
         "AT-Neu"
     ],
     "sites_toRun": [
         "all"
     ],
-    "start_date": "1989-01-01",
-    "end_date": "2020-12-31",
-    "temporal_resolution": "daily hourly",
-    "FLUXNET_version": "LaThuile FLUXNET2015",
-    "exp_name": "CLIFF input",
-    "fluxcom_cube_path": "/Net/Groups/BGI/data/FLUXCOM/v0.06/site_cube",
-    "resample_output": "",
+    "start_date": "1979-01-01",
+    "end_date": "2025-12-31",
+    "temporal_resolution": "",
+    "FLUXNET_version": "",
+    "config_dir_path": "/Net/Groups/BGI/scratch/skoirala/SindbadSiteExtractor/configuration/cliff/",
+
+    "resample_output": [""],
     "allow_extraction_errors": false,
     "sel_gapfills": "none",
     "gap_fill": {
@@ -28,6 +28,6 @@
         "all"
     ],
     "dataset": {
-        "bgi_FLUXCOM": "configuration/cliff/cliffin_fluxcom.json"
+        "bgi_FLUXCOM": "cliffin_fluxcom.json"
     }
 }
