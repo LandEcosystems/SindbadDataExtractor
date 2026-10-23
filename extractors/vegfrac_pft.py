@@ -26,7 +26,10 @@ def extract(dataset, site_info, config):
     for tar_name in bxtr.vars_list:
         
         PFT_df = pd.read_csv(bxtr.vars[tar_name]['data_path'])
-        PFT_dat = PFT_df.loc[PFT_df['Site_ID'] == bxtr.site]
+        # Some source files spell site IDs in other cases, and some PFT labels carry
+        # stray spaces.
+        PFT_dat = PFT_df.loc[PFT_df['Site_ID'].str.lower() == bxtr.site.lower()]
+        PFT_dat = PFT_dat.assign(PFT=PFT_dat['PFT'].str.strip())
                 
         bxtr.log_var_start(tar_name)
 

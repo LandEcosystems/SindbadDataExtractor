@@ -26,22 +26,22 @@ def extract(dataset, site_info, config):
 
         hilda_data_all = xr.open_dataset(bxtr.vars[tar_name]['data_path']).sel(time = slice(int(bxtr.start_date[0:4]),int(bxtr.end_date[0:4])))
         hilda_data = hilda_data_all.sel(latitude = bxtr.lat, longitude = bxtr.lon, method='nearest').LULC_states
-        hilda_data = np.round(hilda_data, -1)
-        
+
         bxtr.log_var_start(tar_name)
 
         data = xr.Dataset({tar_name: xr.DataArray(data = np.nan, dims = ['time'], coords = {'time': date_})})
 
         if len(hilda_data) > 0:
-            vegfrac = hilda_data.where(hilda_data == int(bxtr.vars[tar_name]['class']), 0)
-            vegfrac[vegfrac > 0] = 1
+            classes = np.atleast_1d(bxtr.vars[tar_name]['class'])
+            # Pixels without a HILDA+ state stay NaN rather than counting as absent.
+            vegfrac = hilda_data.isin(classes).astype(float).where(hilda_data.notnull())
             annual_vegfrac = []
-            
+
             for year_ in hilda_data.time:
 
                 date_y = np.arange(str(int(year_.values)) + '-01' + '-01', str(int(year_.values) +1) + '-01' + '-01'  ,dtype=date_.dtype)
 
-                annual_vegfrac.append(xr.Dataset({tar_name: xr.DataArray(data = int(vegfrac.sel(time= int(year_.values)).values), dims = ['time'], coords = {'time': date_y})}))
+                annual_vegfrac.append(xr.Dataset({tar_name: xr.DataArray(data = float(vegfrac.sel(time= int(year_.values)).values), dims = ['time'], coords = {'time': date_y})}))
 
             data = xr.merge(annual_vegfrac)
         else:

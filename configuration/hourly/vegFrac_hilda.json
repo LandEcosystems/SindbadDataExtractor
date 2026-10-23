@@ -36,31 +36,31 @@
                 "sourceVariableName": "grassFrac_hilda",
                 "nameShort": "grass_fraction",
                 "nameLong": "Fraction of grass (class 33: Pasture)",
-                "class": 30
+                "class": [33]
             },
             "shrubFrac": {
                 "sourceVariableName": "shrubFrac_hilda",
                 "nameShort": "shrub_fraction",
                 "nameLong": "Fraction of shrub (class 55: Grass/shrubland)",
-                "class": 60
+                "class": [55]
             },
             "treeFrac": {
                 "sourceVariableName": "treeFrac_hilda",
                 "nameShort": "tree_fraction",
                 "nameLong": "Fraction of tree (class 40: Unknown/Other, 41: Evergreen needle leaf, 42: Evergreen broad leaf, 43: Deciduous needle leaf, 44: Deciduous broad leaf 45: Mixed) - 0: no tree and 1: only tree)",
-                "class": 40
+                "class": [40, 41, 42, 43, 44, 45]
             },
             "cropFrac": {
                 "sourceVariableName": "cropFrac_hilda",
                 "nameShort": "crop__fraction",
                 "nameLong": "Fraction of crop (class 22: Cropland)",
-                "class": 20
+                "class": [22]
             },
             "otherFrac": {
                 "sourceVariableName": "otherFrac_hilda",
-                "nameShort": "savanna_fraction",
+                "nameShort": "other_fraction",
                 "nameLong": "Fraction of other classes (class 66: Other land)",
-                "class": 70
+                "class": [66]
             }
 
 }

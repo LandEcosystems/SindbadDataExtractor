@@ -1,6 +1,6 @@
 {
-    "extractor": "vegfrac_insitu",
-    "var_suffix": "insitu",
+    "extractor": "vegfrac_pft",
+    "var_suffix": "PFT",
     "base_info": {
         "partitioning": "",
         "variableUnit": "adimensional",
@@ -33,37 +33,37 @@
     "sel_variables": "all",
     "variables": {
             "grassFrac": {
-                "sourceVariableName": "grassFrac_insitu",
+                "sourceVariableName": "grassFrac_PFT",
                 "nameShort": "grass_fraction",
                 "nameLong": "Fraction of grass",
                 "PFT_types":["GRA"]
             },
             "shrubFrac": {
-                "sourceVariableName": "shrubFrac_insitu",
+                "sourceVariableName": "shrubFrac_PFT",
                 "nameShort": "shrub_fraction",
                 "nameLong": "Fraction of shrub",
-                "PFT_types":["OSH"]
+                "PFT_types":["OSH", "CSH"]
             },
             "treeFrac": {
-                "sourceVariableName": "treeFrac_insitu",
+                "sourceVariableName": "treeFrac_PFT",
                 "nameShort": "tree_fraction",
                 "nameLong": "Fraction of tree",
-                "PFT_types":["DBF","MF","ENF","EBF"]
+                "PFT_types":["DBF","MF","ENF","EBF","DNF"]
             },
             "cropFrac": {
-                "sourceVariableName": "cropFrac_insitu",
+                "sourceVariableName": "cropFrac_PFT",
                 "nameShort": "crop__fraction",
                 "nameLong": "Fraction of crop",
                 "PFT_types":["CRO"]
             },
             "savannaFrac": {
-                "sourceVariableName": "savannaFrac_insitu",
+                "sourceVariableName": "savannaFrac_PFT",
                 "nameShort": "savanna_fraction",
                 "nameLong": "Fraction of savanna",
                 "PFT_types":["SAV", "WSA"]
             },
             "wetlandFrac": {
-                "sourceVariableName": "wetlandFrac_insitu",
+                "sourceVariableName": "wetlandFrac_PFT",
                 "nameShort": "wetland_fraction",
                 "nameLong": "Fraction of wetland",
                 "PFT_types":["WET"]

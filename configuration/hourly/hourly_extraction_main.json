@@ -45,7 +45,7 @@
         "bgi_FLUXCOM_clim": "fluxcom_clim.json",
         "nelson_tea": "nelson_TEA.json",
         "soilgrids": "soilgrids.json",
-        "vf_insitu": "vegFrac_insitu.json",
+        "vf_pft": "vegFrac_PFT.json",
         "vf_hilda": "vegFrac_hilda.json",
         "tf_hansen": "treeFrac_hansen.json",
         "db_besnard2018": "disturbage_besnard2018.json",
