@@ -21,6 +21,7 @@ def extract(dataset, site_info, config):
         return None
 
     date_ = bxtr.get_date_vec()
+    years = date_.astype('M8[Y]').astype(int) + 1970
 
     src_data = []
 
@@ -29,35 +30,33 @@ def extract(dataset, site_info, config):
         bxtr.log_var_start(tar_name)
 
         src_df = pd.read_csv(bxtr.vars[tar_name]['data_path'])
-        sel_data = np.array(src_df.loc[src_df['Site_ID'] == bxtr.site].drop(
-            ['Site_ID'], axis=1),
-                            dtype=float)
+        # Some source files spell site IDs in other cases, e.g. Ca-Gro or IT-Sro.
+        src_site = src_df.loc[src_df['Site_ID'].str.lower() == bxtr.site.lower()]
+        src_site = src_site.drop(['Site_ID', 'lon', 'lat'], axis=1, errors='ignore')
+        sel_data = np.array(src_site, dtype=float)
 
         data = xr.Dataset({
             tar_name:
             xr.DataArray(data=np.nan, dims=['time'], coords={'time': date_})
         })
-        sel_data = sel_data[2:] # ignore the latitude and longitude co-ordinates
-        sel_data[sel_data <= 0.] = np.nan
         dval = data[tar_name].values
         if len(sel_data) > 0:
             if '_globBiomass' in tar_name:
+                sel_data[sel_data <= 0.] = np.nan
                 if '_std' in tar_name:
                     sel_data = np.nanstd(sel_data)
                 else:
                     sel_data = np.nanmean(sel_data)
-                for dI, _date in enumerate(date_):
-                    if _date.astype(object).year == 2011:
-                        dval[dI-1] = sel_data
-                        break
+                in_year = np.flatnonzero(years == 2010)
+                if len(in_year) > 0:
+                    dval[in_year[-1]] = sel_data
             else:
-                for _sel_data in sel_data:
-                    yr = _sel_data[0]
-                    yr_bio = _sel_data[1]
-                    for dI, _date in enumerate(date_):
-                        if _date.astype(object).year == yr + 1:
-                            dval[dI-1] = yr_bio
-                            break
+                # Each row is a year and its biomass, placed on the last time step
+                # of that year.
+                for yr, yr_bio in sel_data:
+                    in_year = np.flatnonzero(years == yr)
+                    if len(in_year) > 0 and yr_bio > 0:
+                        dval[in_year[-1]] = yr_bio
             data[tar_name].values = dval
         else:
             logger.warning(f"::MISSING:: variable {tar_name} has no data in source {bxtr.vars[tar_name]['data_path']} for {bxtr.site}. NaN values will be set.")
