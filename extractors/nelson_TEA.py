@@ -39,6 +39,15 @@ def extract(dataset, site_info, config):
             logger.info(f'{bxtr.dataset}: Skipping unit tests in nelson_TEA, due to error while assigning mm. Follow latest FLUXCOM developments.')
             # data = src_prov.get_data(Variable(src_name, units=bxtr.vars[tar_name]['sourceVariableUnit'], partitioning=src_partitioning))
             data = data.sel(site=bxtr.site)
+            if not data.get_index('time').is_unique:
+                # Known issue: for compiled versions (e.g. CCBY), TEAProvider's underlying
+                # site_cube concatenates one full copy of the shared date axis per
+                # contributing source version (BaseVersionGetter._get_from_sitecube is
+                # missing a per-version site subset before concatenating), so a given site's
+                # time axis is duplicated once per version even though it only has real
+                # (non-NaN) values under its own version. Collapse duplicate calendar dates
+                # by keeping the (single) non-NaN entry across the duplicates.
+                data = data.groupby('time').max(dim='time', skipna=True)
             data = data.rename(tar_name)
             
             data = bxtr.convert_units(data, tar_name)

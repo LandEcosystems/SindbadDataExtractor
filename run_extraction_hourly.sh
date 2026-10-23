@@ -1,7 +1,7 @@
 #!/bin/bash
 cube_version='v0.07'
 run_name='fluxnetBGI'
-output_path="/Net/Groups/BGI/scratch/skoirala/${run_name}_${cube_version}/"
+output_path="/Net/Groups/BGI/scratch/skoirala/22082026_${run_name}_${cube_version}/"
 pythonpath='/Net/Groups/BGI/scratch/skoirala/sksrc/miniforge3/envs/sinproc007/bin/python'
 configuration_file='/Net/Groups/BGI/scratch/skoirala/SindbadSiteExtractor/configuration/hourly/hourly_extraction_main.json'
 
@@ -13,7 +13,8 @@ time_scale='hourly'
 
 ## declare an array variable
 declare -a fn_versions=("LaThuile")
-declare -a fn_versions=("AmeriFlux" "FLUXNET2015" "ICOS" "ICOSDrought2018" "OzFLUX" "WarmWinter2020" "CCBY")
+declare -a fn_versions=("AmeriFlux" "FLUXNET2015" "OzFLUX" "CCBY")
+# declare -a fn_versions=("CCBY")
 
 ## now loop through the above array
 for fn_version in "${fn_versions[@]}"

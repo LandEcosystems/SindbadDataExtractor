@@ -2,7 +2,7 @@
     "output_dir_path": "",
     "diagnostic_plots": true,
     "njobs_parallel": 50,
-    "sites_toRun": [
+    "sites_toRun1": [
         "BE-Bra"
     ],
     "sites_toRun": [
@@ -36,7 +36,7 @@
     },
     "sel_datasetsa": "bgi_FLUXCOM_obs bgi_FLUXCOM_clim swinpot",
     "sel_datasets_a": "bgi_FLUXCOM_obs bgi_FLUXCOM_clim swinpot bgi_FLUXCOM_clim_era5 nelson_tea",
-    "sel_datasets": "all except cliff_crun cliff_cruj cliff_erai swinpot",
+    "sel_datasets": "all except cliff_crun cliff_cruj cliff_erai",
     "sel_datasets1": "bgi_FLUXCOM_clim_era5",
 
     "dataset": {

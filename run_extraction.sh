@@ -2,7 +2,8 @@
 cube_version='v0.07'
 run_name='fluxnetBGI'
 output_path="/Net/Groups/BGI/scratch/skoirala/${run_name}_${cube_version}/"
-pythonpath='/Net/Groups/BGI/scratch/skoirala/sksrc/miniforge3/envs/sinproc007/bin/python'
+output_path="/Net/Groups/BGI/scratch/skoirala/01092026_${run_name}_${cube_version}/"
+pythonpath='/Net/Groups/BGI/scratch/skoirala/sksrc/miniforge3/envs/sinproc008/bin/python'
 configuration_file='/Net/Groups/BGI/scratch/skoirala/SindbadSiteExtractor/configuration/sindbad/sindbad_extraction_main.json'
 
 fluxcom_cube_path_base='/Net/Groups/BGI/work_4/scratch/fluxcom/sitecube_proc/'
@@ -13,7 +14,9 @@ time_scale='daily'
 
 ## declare an array variable
 declare -a fn_versions=("LaThuile")
-declare -a fn_versions=("AmeriFlux" "FLUXNET2015" "ICOS" "ICOSDrought2018" "OzFLUX" "WarmWinter2020" "CCBY")
+# declare -a fn_versions=("AmeriFlux" "FLUXNET2015" "ICOS" "ICOSDrought2018" "OzFLUX" "WarmWinter2020" "CCBY")
+declare -a fn_versions=("AmeriFlux" "FLUXNET2015" "OzFLUX" "CCBY")
+declare -a fn_versions=("CCBY")
 
 ## now loop through the above array
 for fn_version in "${fn_versions[@]}"
