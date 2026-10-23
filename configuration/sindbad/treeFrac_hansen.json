@@ -35,7 +35,7 @@
     "sel_variables": "all",
     "variables": {
         "treeFrac": {
-            "sourceVariableName": "treecover2010_zstd5x5",
+            "sourceVariableName": "treecover2010_zmed5x5",
             "sourceVariableUnit": "%",
             "source2sindbadUnit": 0.01,
             "nameShort": "TREECOVER_hansen",
