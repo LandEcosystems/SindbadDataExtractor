@@ -1,0 +1,87 @@
+{
+    "extractor": "agb_esacci",
+    "var_suffix": "esacci",
+    "cache_path": "/Net/Groups/BGI/work_3/sindbad/data/site_footprint_1km/esacci_agb_v7_1km_sites.csv",
+    "fetch_missing": false,
+    "n_workers": 16,
+    "years": [
+        2005,
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2015,
+        2016,
+        2017
+    ],
+    "time_placement": "year_end",
+    "insitu_path": "/Net/Groups/BGI/work_3/biomass/BIOMASCAT/data/insitu/ancillary_data/insitu_AGB.csv",
+    "pft_path": "/Net/Groups/BGI/work_3/biomass/BIOMASCAT/data/insitu/ancillary_data/PFT.csv",
+    "pft_fixed": [
+        "GRA",
+        "CRO",
+        "WET"
+    ],
+    "agb_fixed": 100.0,
+    "base_info": {
+        "partitioning": "",
+        "variableUnit": "gC m-2",
+        "bounds": [
+            0,
+            30000
+        ],
+        "sourceVariableName": "",
+        "sourceVariableUnit": "gC m-2",
+        "source2sindbadUnit": 1,
+        "isCategorical": false,
+        "nameShort": "",
+        "nameLong": "",
+        "spaceTimeType": "normal",
+        "sourceDataProductName": "ESA CCI Biomass AGB v7.0",
+        "QC": "",
+        "RANDUNC": "",
+        "weightVar": "",
+        "DaySum": false,
+        "DayMin": false,
+        "DayMax": false,
+        "wDayMean": false,
+        "DayTime": false,
+        "isEnergy": false,
+        "isWater": false,
+        "isCarbon": false,
+        "skipUnitcheck": false,
+        "publication": "https://climate.esa.int/en/projects/biomass/",
+        "data_path": "https://dap.ceda.ac.uk/neodc/esacci/biomass/data/agb/maps/v7.0/geotiff/",
+        "component": "",
+        "merge_insitu": false,
+        "description": "Mean of all 100 m AGB pixels with centres within 1 km great-circle distance of the site, including zero pixels, converted from Mg ha-1 with a factor of 47 for a carbon fraction of 0.47. Map year Y is placed on the last time step of Y."
+    },
+    "sel_variables": "all",
+    "variables": {
+        "agb": {
+            "sourceVariableName": "AGB",
+            "nameShort": "agb_esacci",
+            "nameLong": "Above-ground biomass from ESA CCI Biomass v7.0, mean within 1 km",
+            "component": "cci"
+        },
+        "agb_merged": {
+            "sourceVariableName": "merged_agb_esacci_insitu",
+            "nameShort": "merged_AGB",
+            "nameLong": "Above-ground biomass, in situ where available else ESA CCI v7.0",
+            "component": "merged",
+            "sourceDataProductName": "FLUXNET BADM and ESA CCI Biomass AGB v7.0",
+            "description": "insitu_AGB.csv at sites with any in-situ value, otherwise the ESA CCI value. Sites are not mixed between sources."
+        },
+        "agb_merged_PFT": {
+            "sourceVariableName": "merged_AGB",
+            "nameShort": "merged_AGB_fixed_for_PFT",
+            "nameLong": "Above-ground biomass, in situ else ESA CCI v7.0, fixed to 100 gC m-2 for GRA, CRO and WET sites",
+            "component": "merged_PFT",
+            "sourceDataProductName": "FLUXNET BADM and ESA CCI Biomass AGB v7.0",
+            "description": "agb_merged with every value at sites whose PFT is in pft_fixed set to agb_fixed, keeping the time stamps"
+        }
+    }
+}
