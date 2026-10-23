@@ -1,0 +1,112 @@
+{
+    "extractor": "vegfrac_worldcover",
+    "var_suffix": "worldcover",
+    "cache_path": "/Net/Groups/BGI/work_3/sindbad/data/site_footprint_1km/worldcover_2021_v200_1km_sites.csv",
+    "fetch_missing": false,
+    "n_workers": 4,
+    "years": [
+        2021
+    ],
+    "time_placement": "constant",
+    "insitu_path": "/Net/Groups/BGI/work_3/sindbad/data/site_footprint_1km/FLUXNET_veg_frac.csv",
+    "pft_path": "/Net/Groups/BGI/work_3/biomass/BIOMASCAT/data/insitu/ancillary_data/PFT.csv",
+    "tree_pfts": [
+        "ENF",
+        "EBF",
+        "DBF",
+        "DNF",
+        "MF",
+        "SAV",
+        "WSA"
+    ],
+    "base_info": {
+        "partitioning": "",
+        "variableUnit": "adimensional",
+        "bounds": [
+            0,
+            1
+        ],
+        "sourceVariableName": "",
+        "sourceVariableUnit": "adimensional",
+        "source2sindbadUnit": 1,
+        "isCategorical": false,
+        "nameShort": "",
+        "nameLong": "",
+        "spaceTimeType": "normal",
+        "sourceDataProductName": "ESA WorldCover 2021 v200",
+        "QC": "",
+        "RANDUNC": "",
+        "weightVar": "",
+        "DaySum": false,
+        "DayMin": false,
+        "DayMax": false,
+        "wDayMean": false,
+        "DayTime": false,
+        "isEnergy": false,
+        "isWater": false,
+        "isCarbon": false,
+        "skipUnitcheck": false,
+        "publication": "DOI:10.5281/zenodo.7254221",
+        "data_path": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/esa-worldcover",
+        "component": "",
+        "merge_insitu": false,
+        "description": "Share of valid 10 m pixels with centres within 1 km great-circle distance of the site in the classes. Representative of 2021."
+    },
+    "sel_variables": "all",
+    "variables": {
+        "treeFrac": {
+            "sourceVariableName": "tree+mangrove",
+            "nameShort": "tree_fraction",
+            "nameLong": "tree cover fraction from ESA WorldCover 2021 v200, share of 10 m pixels within 1 km",
+            "component": "tree"
+        },
+        "shrubFrac": {
+            "sourceVariableName": "shrub",
+            "nameShort": "shrub_fraction",
+            "nameLong": "shrub cover fraction from ESA WorldCover 2021 v200, share of 10 m pixels within 1 km",
+            "component": "shrub"
+        },
+        "grassFrac": {
+            "sourceVariableName": "grass+wetland+moss",
+            "nameShort": "grass_fraction",
+            "nameLong": "grass cover fraction from ESA WorldCover 2021 v200, share of 10 m pixels within 1 km",
+            "component": "grass"
+        },
+        "cropFrac": {
+            "sourceVariableName": "crops",
+            "nameShort": "crop_fraction",
+            "nameLong": "crop cover fraction from ESA WorldCover 2021 v200, share of 10 m pixels within 1 km",
+            "component": "crop"
+        },
+        "bareFrac": {
+            "sourceVariableName": "bare",
+            "nameShort": "bare_fraction",
+            "nameLong": "bare cover fraction from ESA WorldCover 2021 v200, share of 10 m pixels within 1 km",
+            "component": "bare"
+        },
+        "vegFrac": {
+            "sourceVariableName": "tree+mangrove+shrub+grass+wetland+moss+crops",
+            "nameShort": "vegetation_fraction",
+            "nameLong": "vegetation cover fraction from ESA WorldCover 2021 v200, share of 10 m pixels within 1 km",
+            "component": "veg"
+        },
+        "treeFrac_insitu": {
+            "sourceVariableName": "tree",
+            "nameShort": "tree_fraction_insitu_merged",
+            "nameLong": "Tree fraction, in situ where available else ESA WorldCover 2021 v200",
+            "component": "tree",
+            "merge_insitu": true,
+            "sourceDataProductName": "FLUXNET_veg_frac.csv and ESA WorldCover 2021 v200",
+            "description": "FLUXNET_veg_frac.csv frac_overstory for forest and savanna PFTs and 0 for other PFTs in the csv, otherwise the product tree fraction, capped at the merged vegetation fraction"
+        },
+        "vegFrac_insitu": {
+            "sourceVariableName": "veg",
+            "nameShort": "vegetation_fraction_insitu_merged",
+            "nameLong": "Vegetation fraction, in situ where available else ESA WorldCover 2021 v200",
+            "component": "veg",
+            "merge_insitu": true,
+            "sourceDataProductName": "FLUXNET_veg_frac.csv and ESA WorldCover 2021 v200",
+            "description": "FLUXNET_veg_frac.csv as 1 - frac_soil, or overstory + understory without soil, averaged over rows of a site, otherwise the product vegetation fraction"
+        }
+    }
+}
