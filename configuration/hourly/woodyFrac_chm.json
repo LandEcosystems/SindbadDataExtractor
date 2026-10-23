@@ -1,0 +1,54 @@
+{
+    "extractor": "woodyfrac_chm",
+    "var_suffix": "chm",
+    "cache_path": "/Net/Groups/BGI/work_3/sindbad/data/site_footprint_1km/meta_chm_1km_sites.csv",
+    "fetch_missing": false,
+    "n_workers": 8,
+    "years": [
+        2019
+    ],
+    "time_placement": "constant",
+    "tiles_path": "/Net/Groups/BGI/work_3/sindbad/data/site_footprint_1km/meta_chm_tiles.geojson",
+    "base_info": {
+        "partitioning": "",
+        "variableUnit": "adimensional",
+        "bounds": [
+            0,
+            1
+        ],
+        "sourceVariableName": "",
+        "sourceVariableUnit": "adimensional",
+        "source2sindbadUnit": 1,
+        "isCategorical": false,
+        "nameShort": "",
+        "nameLong": "",
+        "spaceTimeType": "normal",
+        "sourceDataProductName": "Meta and WRI global 1 m canopy height map v1",
+        "QC": "",
+        "RANDUNC": "",
+        "weightVar": "",
+        "DaySum": false,
+        "DayMin": false,
+        "DayMax": false,
+        "wDayMean": false,
+        "DayTime": false,
+        "isEnergy": false,
+        "isWater": false,
+        "isCarbon": false,
+        "skipUnitcheck": false,
+        "publication": "DOI:10.1016/j.rse.2023.113888",
+        "data_path": "https://dataforgood-fb-data.s3.amazonaws.com/forests/v1/alsgedi_global_v6_float/chm",
+        "component": "",
+        "merge_insitu": false,
+        "description": "Share of 1 m canopy height pixels with centres within 1 km great-circle distance of the site at or above a height threshold. Representative of about 2018 to 2020."
+    },
+    "sel_variables": "all",
+    "variables": {
+        "woodyFrac": {
+            "sourceVariableName": "canopy_height>=2m",
+            "nameShort": "woody_fraction",
+            "nameLong": "Woody vegetation fraction, share of canopy height pixels of at least 2 m within 1 km",
+            "component": "woody"
+        }
+    }
+}
