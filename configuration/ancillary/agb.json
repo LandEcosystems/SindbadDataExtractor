@@ -46,7 +46,7 @@
             "nameLong": "Above-ground biomass from in-situ measurements",
             "sourceDataProductName": "FLUXNET BADM",
             "publication": "https://fluxnet.org/badm-data-product/",
-            "data_path": "/Net/Groups/BGI/work_3/biomass/BIOMASCAT/data/insitu/ancillary_data/insitu_AGB.csv"
+            "data_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/insitu_AGB.csv"
         }
     }
 }

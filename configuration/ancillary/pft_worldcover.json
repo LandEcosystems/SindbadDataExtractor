@@ -1,7 +1,7 @@
 {
     "extractor": "pft_worldcover",
     "var_suffix": "worldcover",
-    "cache_path": "",
+    "cache_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/prefetch/pft_worldcover_v200_10m_sites.csv",
     "fetch_missing": false,
     "n_workers": 4,
     "years": [
@@ -9,7 +9,7 @@
         2021
     ],
     "time_placement": "annual_extend",
-    "pft_path": "/Net/Groups/BGI/work_3/biomass/BIOMASCAT/data/insitu/ancillary_data/PFT.csv",
+    "pft_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/PFT.csv",
     "rs_fill": [
         "pft_cgls",
         "pft"

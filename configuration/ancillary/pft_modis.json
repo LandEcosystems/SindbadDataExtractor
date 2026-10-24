@@ -31,7 +31,7 @@
         2024
     ],
     "time_placement": "annual_extend",
-    "pft_path": "/Net/Groups/BGI/work_3/biomass/BIOMASCAT/data/insitu/ancillary_data/PFT.csv",
+    "pft_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/PFT.csv",
     "rs_fill": [
         "pft_cgls"
     ],

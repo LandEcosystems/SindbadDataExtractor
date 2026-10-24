@@ -31,7 +31,7 @@
         "isCarbon": false,
         "skipUnitcheck": false,
         "publication": "DOI:10.1088/1748-9326/aaeaeb",
-        "data_path": "/Net/Groups/BGI/work_3/biomass/BIOMASCAT/data/insitu/ancillary_data/forest_age.csv",
+        "data_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/forest_age.csv",
         "description": "Percentage of forest destroyed by disturbance based on the site age. Set as 1 on the date of occurrence and 0 otherwise."
     },
     "sel_variables": "all",

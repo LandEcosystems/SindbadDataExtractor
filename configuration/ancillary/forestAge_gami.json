@@ -1,7 +1,7 @@
 {
     "extractor": "forestage_gami",
     "var_suffix": "gami",
-    "cache_path": "/Net/Groups/BGI/work_3/sindbad/data/site_footprint_1km/gami_v2.1_1km_sites.csv",
+    "cache_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/prefetch/gami_v2.1_1km_sites.csv",
     "fetch_missing": true,
     "n_workers": 8,
     "years": [

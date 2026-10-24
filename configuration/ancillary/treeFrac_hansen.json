@@ -31,8 +31,8 @@
         2023
     ],
     "time_placement": "annual_extend",
-    "insitu_path": "/Net/Groups/BGI/work_3/sindbad/data/site_footprint_1km/FLUXNET_veg_frac.csv",
-    "pft_path": "/Net/Groups/BGI/work_3/biomass/BIOMASCAT/data/insitu/ancillary_data/PFT.csv",
+    "insitu_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/FLUXNET_veg_frac.csv",
+    "pft_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/PFT.csv",
     "tree_pfts": [
         "ENF",
         "EBF",

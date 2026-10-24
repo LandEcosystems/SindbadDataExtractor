@@ -4,7 +4,10 @@
     "base_info": {
         "partitioning": "",
         "variableUnit": "",
-        "bounds": [0, 30000],
+        "bounds": [
+            0,
+            30000
+        ],
         "sourceVariableName": "",
         "sourceVariableUnit": "",
         "source2sindbadUnit": 1,
@@ -27,8 +30,10 @@
         "skipUnitcheck": false,
         "publication": "",
         "data_path": "",
-        "AGB_scalar":1,
-        "PFT_types":[""],
+        "AGB_scalar": 1,
+        "PFT_types": [
+            ""
+        ],
         "description": "merged aboveground biomass estimate, insitu, if available, else globBiomass. _PFT indicates the variable where merged AGB in sites with PFT specified in PFT_types are scaled by AGB_scalar"
     },
     "sel_variables": "all",
@@ -47,7 +52,7 @@
             "description": "aboveground biomass estimates (unit conversion of 47 assumes dry mass ratio of 0.47 for carbon, and 0.47 x 100 (MG/ha to gc/m2) is applied.",
             "sourceDataProductName": "globBiomass",
             "publication": "https://globbiomass.org/DOI:10.5194/essd-2020-148",
-            "data_path": "/Net/Groups/BGI/work_3/biomass/BIOMASCAT/data/insitu/ancillary_data/globbiomass_agb_100m.csv"
+            "data_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/globbiomass_agb_100m.csv"
         },
         "agb_insitu": {
             "variableUnit": "gC m-2",
@@ -61,7 +66,7 @@
             "nameLong": "Above-ground biomass from in-situ measurements",
             "sourceDataProductName": "FLUXNET BADM",
             "publication": "https://fluxnet.org/badm-data-product/",
-            "data_path": "/Net/Groups/BGI/work_3/biomass/BIOMASCAT/data/insitu/ancillary_data/insitu_AGB.csv"
+            "data_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/insitu_AGB.csv"
         },
         "agb_merged": {
             "variableUnit": "gC m-2",
@@ -75,7 +80,7 @@
             "nameLong": "merged above-ground biomass",
             "sourceDataProductName": "FLUXNET BADM and globBiomass",
             "publication": "https://fluxnet.org/badm-data-product/; https://globbiomass.org/DOI:10.5194/essd-2020-148",
-            "data_path": "/Net/Groups/BGI/work_3/biomass/BIOMASCAT/data/insitu/ancillary_data/insitu_AGB.csv"
+            "data_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/insitu_AGB.csv"
         },
         "agb_merged_PFT": {
             "variableUnit": "gC m-2",
@@ -88,10 +93,14 @@
             "nameShort": "merged_AGB_scaled_down_for_PFT_types",
             "nameLong": "scaled down merged above-ground biomass",
             "sourceDataProductName": "FLUXNET BADM",
-            "PFT_types":["GRA", "CRO", "WET"],
-            "AGB_scalar":100,
+            "PFT_types": [
+                "GRA",
+                "CRO",
+                "WET"
+            ],
+            "AGB_scalar": 100,
             "publication": "https://fluxnet.org/badm-data-product/",
-            "data_path": "/Net/Groups/BGI/work_3/biomass/BIOMASCAT/data/insitu/ancillary_data/PFT.csv"
+            "data_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/PFT.csv"
         }
-}
+    }
 }
