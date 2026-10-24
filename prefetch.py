@@ -13,7 +13,8 @@ usage:
                        [--workers n] [--step submit|status|process]
 
 The datasets are keys of the dataset block of the main json, by default all datasets
-whose json sets cache_path. Their jsons are read from the folder of the main json.
+whose json sets cache_path. Their jsons are read from the folder of the main json,
+or from the ancillary folder next to it.
 Sites and coordinates come from --sites-csv with site, latitude and longitude columns
 when given, otherwise from the FLUXCOM site cube of --version, as in
 run_extraction.py. --step is only used by vf_modis, whose AppEEARS request is
@@ -28,6 +29,7 @@ import sys
 import pandas as pd
 
 sys.path.append(os.getcwd())
+from utils.shared_utils import dataset_json_path  # noqa: E402
 
 
 def site_table(args, main):
@@ -65,9 +67,8 @@ def main():
 
     main = json.load(open(args.main_json))
     conf_dir = os.path.dirname(os.path.abspath(args.main_json))
-    infos = {k: json.load(open(os.path.join(conf_dir, f)))
-             for k, f in main["dataset"].items()
-             if os.path.exists(os.path.join(conf_dir, f))}
+    paths = {k: dataset_json_path(conf_dir, f) for k, f in main["dataset"].items()}
+    infos = {k: json.load(open(p)) for k, p in paths.items() if os.path.exists(p)}
     datasets = args.datasets or [k for k, v in infos.items() if v.get("cache_path")]
     sites, lats, lons = site_table(args, main)
     print(f"{len(sites)} sites, datasets: {datasets}")

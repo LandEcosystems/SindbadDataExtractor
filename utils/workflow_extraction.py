@@ -335,8 +335,8 @@ def harmonize_data_attrs(site_info, data, _config, resampled=None):
             if 'data_path' in var_info[var_].keys():
                 src_path = var_info[var_]['data_path']
             attrs_dict = dict(
-                bounds=str([np.nanmin(data[var_]),
-                            np.nanmax(data[var_])]),
+                bounds=str([float(np.nanmin(data[var_])),
+                            float(np.nanmax(data[var_]))]),
                 units=units,
                 short_name=var_info[var_]['nameShort'],
                 long_name=nameLong,
@@ -347,6 +347,14 @@ def harmonize_data_attrs(site_info, data, _config, resampled=None):
                 description=var_info[var_]['description'],
                 data_path=src_path)
 
+            # Class variables carry their legend as CF flag attributes.
+            for flag in ('flag_values', 'flag_meanings', 'flag_pft'):
+                if flag in var_info[var_]:
+                    attrs_dict[flag] = var_info[var_][flag]
+            # CF wants flag_values in the type of the variable.
+            if 'flag_values' in attrs_dict:
+                attrs_dict['flag_values'] = np.array(attrs_dict['flag_values'],
+                                                     dtype=data[var_].dtype)
             data[var_] = data[var_].assign_attrs(
                 collections.OrderedDict(sorted(attrs_dict.items())))
             shut.log_and_print('attrs',
