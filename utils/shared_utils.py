@@ -10,10 +10,27 @@ import xarray as xr
 import numpy as np
 import json
 import logging
+import os
 logger = logging.getLogger(__name__)
 
 
 #%% Process data
+def dataset_json_path(config_dir, name, ancillary_dir=""):
+    """
+    Path of the dataset json name, from config_dir when it is there, otherwise from
+    ancillary_dir. The jsons that are the same for every temporal resolution live in
+    ancillary_dir, which defaults to the ancillary folder next to config_dir.
+    """
+    if not ancillary_dir:
+        ancillary_dir = os.path.join(os.path.dirname(os.path.normpath(config_dir)),
+                                     "ancillary")
+    for folder in (config_dir, ancillary_dir):
+        path = os.path.join(folder, name)
+        if os.path.exists(path):
+            return path
+    return os.path.join(config_dir, name)
+
+
 def data_structure_temporal_NoDepth(data, lat, lon):
 
     var_ = list(data.keys())

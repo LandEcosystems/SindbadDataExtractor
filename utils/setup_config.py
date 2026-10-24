@@ -158,12 +158,21 @@ def get_selected_list(sel, full):
                 return sel_list
 
 
+def add_suffix(var_base, suffix):
+    """
+    Variable name with the suffix of its extractor. The suffix goes before _merged
+    in the names of merged variables, so treeFrac_merged of the cgls extractor is
+    treeFrac_cgls_merged, and at the end of every other name.
+    """
+    if len(suffix) > 0 and "_merged" in var_base:
+        head, tail = var_base.split("_merged", 1)
+        return head + suffix + "_merged" + tail
+    return var_base + suffix
+
+
 def add_suffix_to_sel_variables(var_list, suffix):
     "adds the suffix to the variables that is provided as var_suffix in the json for each extractor"
-    if len(suffix) > 0:
-        return [_l + suffix for _l in var_list]
-    else:
-        return var_list
+    return [add_suffix(_l, suffix) for _l in var_list]
 
 
 def get_variable_info(_config):
@@ -180,7 +189,7 @@ def get_variable_info(_config):
                                      list(data_info["variables"].keys()))
         data_info['sel_variables'] = sel_vars
         for var_base in data_info["sel_variables"]:
-            var = var_base + var_sfx
+            var = add_suffix(var_base, var_sfx)
             merged_var_info = merge_var_info(data_info["base_info"],
                                              var_info[var_base])
             variables[var] = merged_var_info.copy()
@@ -398,7 +407,10 @@ def get_exp_configuration(exp_config_path,
 
     # get extractor information for each of the selected datasets
     for extractor in exp_config['sel_datasets']:
-        extractor_dict = get_extractor_configuration(os.path.join(exp_config['config_dir_path'], exp_config['dataset'][extractor]))
+        json_path = shut.dataset_json_path(exp_config['config_dir_path'],
+                                           exp_config['dataset'][extractor],
+                                           exp_config.get('ancillary_config_dir_path', ''))
+        extractor_dict = get_extractor_configuration(json_path)
         exp_config['dataset'][extractor] = extractor_dict
 
     # get variable information for each of the selected extractor
