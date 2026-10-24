@@ -74,6 +74,7 @@
         "cliff_erai": "cliff_erai_csv.json",
         "cliff_crun": "cliff_cruncepv8_csv.json",
         "cliff_cruj": "cliff_crujrav2_2_csv.json",
-        "swinpot": "oneflux_swinpot_csv.json"
+        "swinpot": "oneflux_swinpot_csv.json",
+        "swinpot_calc": "swinpot_calc.json"
     }
 }

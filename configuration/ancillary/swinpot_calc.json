@@ -1,0 +1,47 @@
+{
+    "extractor": "swinpot_calc",
+    "var_suffix": "calc",
+    "sites_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/sites_consolidated.csv",
+    "base_info": {
+        "partitioning": "",
+        "variableUnit": "",
+        "bounds": [],
+        "sourceVariableName": "",
+        "sourceVariableUnit": "",
+        "source2sindbadUnit": 1,
+        "isCategorical": false,
+        "nameShort": "",
+        "nameLong": "",
+        "spaceTimeType": "normal",
+        "sourceDataProductName": "ONEFlux algorithm",
+        "QC": "",
+        "RANDUNC": "",
+        "weightVar": "",
+        "DaySum": false,
+        "DayMin": false,
+        "DayMax": false,
+        "wDayMean": false,
+        "DayTime": false,
+        "isEnergy": false,
+        "isWater": false,
+        "isCarbon": false,
+        "skipUnitcheck": true,
+        "publication": "Pastorello, G., Trotta, C., Canfora, E. et al. The FLUXNET2015 dataset and the ONEFlux processing pipeline for eddy covariance data. Sci Data 7, 225 (2020). https://doi.org/10.1038/s41597-020-0534-3",
+        "data_path": "https://github.com/fluxnet/ONEFlux/blob/master/oneflux_steps/common/common.c",
+        "description": "Top of atmosphere shortwave radiation on a horizontal surface, computed per minute with the get_rpot_with_solar_noon algorithm of ONEFlux, solar constant 1376 W m-2, shifted to the NOAA solar noon of the site in local standard time from its UTC offset, and summed per time step"
+    },
+    "sel_variables": "all",
+    "variables": {
+        "SW_IN_POT": {
+            "variableUnit": "MJ m-2",
+            "bounds": [
+                0,
+                50
+            ],
+            "sourceVariableName": "SW_IN_POT",
+            "sourceVariableUnit": "MJ m-2",
+            "nameShort": "SW_IN_POT",
+            "nameLong": "potential shortwave radiation - incoming"
+        }
+    }
+}

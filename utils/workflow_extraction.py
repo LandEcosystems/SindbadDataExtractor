@@ -27,6 +27,9 @@ def get_site_info(site):
     lat=lat_lon_utc[0]
     lon=lat_lon_utc[1]
     site_info = {"site_ID": site, "latitude": lat, "longitude": lon}
+    # The UTC offset of the site cube, used by swinpot_calc.
+    if len(lat_lon_utc) > 2:
+        site_info["UTC"] = lat_lon_utc[2]
     return site_info
 
 

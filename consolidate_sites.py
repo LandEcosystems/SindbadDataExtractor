@@ -24,8 +24,8 @@ keep overseas regions such as French Guiana apart from their country. A site out
 every polygon, such as on a coast, takes the nearest polygon, and country_km gives
 its distance to it.
 
-Rows of the same site are merged in the order of SOURCE_PRIORITY. Coordinates and UTC
-come from the first network in that order that has the site. When the coordinates of
+Rows of the same site are merged in the order of SOURCE_PRIORITY. Coordinates and
+UTC_input come from the first network in that order that has the site. When the coordinates of
 the rows differ, the first row whose coordinates lie in the country of the identifier
 is preferred, which drops rows with a wrong sign of latitude or longitude. PFT comes
 from the first network in the order of PFT_PRIORITY that gives one, so that the
@@ -37,6 +37,16 @@ source_ID lists the identifiers of the input that were merged into the site.
 country is the country of the coordinates and id_country the country the identifier
 names, which differ for the UK sites of FLUXNET and for RU-FLUX sites, whose prefix
 is a Russian region such as KO for Komi.
+
+UTC is the offset of local standard time from UTC in hours, which FLUXNET timestamps
+use. time_zone is the IANA time zone of the coordinates from timezonefinder, and its
+standard offset is the smaller of its offsets in January and July of the current
+year, which leaves out summer time also where the zone defines winter time as the
+exception, as in Ireland. UTC_input keeps the offset of the networks. UTC takes the
+standard offset of the zone where UTC_input is missing or one hour ahead of it, which
+is summer time, and keeps UTC_input otherwise, so that offsets of zones that changed,
+such as Santarem before 2008, still match the period of the data. UTC_source says
+which of the two UTC holds, and the report lists the sites where they differ.
 
 --pft-csv also writes the PFT of every site in the layout of PFT.csv, with the
 columns Site_ID and PFT, for the pft_path of the extractors. --fallback-pft names an
@@ -132,6 +142,29 @@ def rank_rows(df, priority):
     return np.where(flags.any(axis=1), flags.argmax(axis=1), len(networks)), networks
 
 
+def standard_utc_offsets(lats, lons):
+    """
+    IANA time zone of each point and its standard offset from UTC in hours, the
+    smaller of its offsets in January and July of the current year.
+    """
+    import datetime
+    import zoneinfo
+    from timezonefinder import TimezoneFinder
+    finder = TimezoneFinder()
+    year = datetime.date.today().year
+    zones, offsets = [], []
+    for lat, lon in zip(lats, lons):
+        name = finder.timezone_at(lat=float(lat), lng=float(lon))
+        zones.append(name)
+        if name is None:
+            offsets.append(np.nan)
+            continue
+        zone = zoneinfo.ZoneInfo(name)
+        offsets.append(min(datetime.datetime(year, m, 15, 12, tzinfo=zone).utcoffset()
+                           .total_seconds() / 3600 for m in (1, 7)))
+    return zones, offsets
+
+
 def consolidate_sites(df, countries_path=COUNTRIES, priority=SOURCE_PRIORITY,
                       pft_priority=PFT_PRIORITY):
     """
@@ -179,7 +212,8 @@ def consolidate_sites(df, countries_path=COUNTRIES, priority=SOURCE_PRIORITY,
         spread = haversine_km(top["Lat"], top["Lon"], g["Lat"].values,
                               g["Lon"].values).max()
         row = {"site": sid, "latitude": top["Lat"], "longitude": top["Lon"],
-               "UTC": utc.iloc[0] if len(utc) else np.nan,
+               "UTC": np.nan, "UTC_input": utc.iloc[0] if len(utc) else np.nan,
+               "UTC_source": "", "UTC_zone": np.nan, "time_zone": "",
                "PFT": pfts[0] if pfts else np.nan,
                "PFT_all": ";".join(pfts) if len(pfts) > 1 else "",
                "country": top["country_xy"], "id_country": id_country,
@@ -188,7 +222,18 @@ def consolidate_sites(df, countries_path=COUNTRIES, priority=SOURCE_PRIORITY,
                "n_rows": len(g), "coord_spread_km": round(float(spread), 3)}
         row.update({c: int(g[c].fillna(0).max()) for c in networks})
         rows.append(row)
-    return pd.DataFrame(rows)
+    sites = pd.DataFrame(rows)
+    sites["time_zone"], std = standard_utc_offsets(sites["latitude"],
+                                                   sites["longitude"])
+    std = pd.Series(std, index=sites.index)
+    summer = sites["UTC_input"] - std == 1
+    use_zone = sites["UTC_input"].isna() | summer
+    sites["UTC"] = sites["UTC_input"].where(~use_zone, std)
+    sites["UTC_source"] = np.where(sites["UTC_input"].isna(), "time zone",
+                                   np.where(summer, "time zone, input was summer time",
+                                            "input"))
+    sites["UTC_zone"] = std
+    return sites
 
 
 def report(sites):
@@ -196,6 +241,13 @@ def report(sites):
     print(f"{len(sites)} sites: "
           + ", ".join(f"{n} {k}" for k, n in sites["id_style"].value_counts().items()))
     print(f"{sites['PFT'].isna().sum()} sites without PFT")
+    print(f"{sites['UTC'].isna().sum()} sites without UTC, UTC_source: "
+          + str(sites["UTC_source"].value_counts().to_dict()))
+    odd = sites[(sites["UTC_source"] == "input") & (sites["UTC"] != sites["UTC_zone"])]
+    print(f"{len(odd)} sites keep an input offset that differs from the standard offset "
+          "of their time zone today:")
+    for r in odd.itertuples():
+        print(f"    {r.site}: input {r.UTC_input}, {r.time_zone} {r.UTC_zone}")
     spread = sites[sites["coord_spread_km"] > SPREAD_WARN_KM]
     print(f"{len(spread)} sites whose rows are more than {SPREAD_WARN_KM} km apart:")
     for r in spread.itertuples():
