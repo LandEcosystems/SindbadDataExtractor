@@ -57,7 +57,7 @@
         "data_path": "https://dap.ceda.ac.uk/neodc/esacci/biomass/data/agb/maps/v7.0/geotiff/",
         "component": "",
         "merge_insitu": false,
-        "description": "Mean of all 100 m AGB pixels with centres within 1 km great-circle distance of the site, including zero pixels, converted from Mg ha-1 with a factor of 47 for a carbon fraction of 0.47. Map year Y is placed on the last time step of Y."
+        "description": "Mean of all 100 m AGB grid cells with centres within 1 km great-circle distance of the site, including zero grid cells, converted from Mg ha-1 with a factor of 47 for a carbon fraction of 0.47. Map year Y is placed on the last time step of Y."
     },
     "sel_variables": "all",
     "variables": {

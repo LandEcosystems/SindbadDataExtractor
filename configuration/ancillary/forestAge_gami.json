@@ -1,0 +1,113 @@
+{
+    "extractor": "forestage_gami",
+    "var_suffix": "gami",
+    "cache_path": "/Net/Groups/BGI/work_3/sindbad/data/site_footprint_1km/gami_v2.1_1km_sites.csv",
+    "fetch_missing": true,
+    "n_workers": 8,
+    "years": [
+        2010,
+        2020
+    ],
+    "time_placement": "constant",
+    "source_path": "/Net/Groups/BGI/data/DataStructureMDI/DATA/Incoming/GAMI/v2/datapub.gfz.de/download/10.5880.GFZ.1.4.2023.006-VEnuo/GAMIv2-1_2010-2020_100m.nc",
+    "base_info": {
+        "partitioning": "",
+        "variableUnit": "years",
+        "bounds": [
+            0,
+            300
+        ],
+        "sourceVariableName": "",
+        "sourceVariableUnit": "years",
+        "source2sindbadUnit": 1,
+        "isCategorical": false,
+        "nameShort": "",
+        "nameLong": "",
+        "spaceTimeType": "normal",
+        "sourceDataProductName": "GAMI v2.1",
+        "QC": "",
+        "RANDUNC": "",
+        "weightVar": "",
+        "DaySum": false,
+        "DayMin": false,
+        "DayMax": false,
+        "wDayMean": false,
+        "DayTime": false,
+        "isEnergy": false,
+        "isWater": false,
+        "isCarbon": false,
+        "skipUnitcheck": false,
+        "publication": "DOI:10.5880/GFZ.1.4.2023.006",
+        "data_path": "/Net/Groups/BGI/data/DataStructureMDI/DATA/Incoming/GAMI/v2/datapub.gfz.de/download/10.5880.GFZ.1.4.2023.006-VEnuo/GAMIv2-1_2010-2020_100m.nc",
+        "component": "",
+        "merge_insitu": false,
+        "description": "GAMI v2.1 forest age over the 100 m grid cells with centres within 1 km great-circle distance of the site, as the median over forest grid cells of the median over the 20 ensemble members."
+    },
+    "sel_variables": "all",
+    "variables": {
+        "forest_age_2010": {
+            "sourceVariableName": "forest_age",
+            "nameShort": "forest_age_2010",
+            "nameLong": "Median forest age within 1 km in 2010",
+            "component": "age_2010"
+        },
+        "forest_age_2020": {
+            "sourceVariableName": "forest_age",
+            "nameShort": "forest_age_2020",
+            "nameLong": "Median forest age within 1 km in 2020",
+            "component": "age_2020"
+        },
+        "disturbance_2010": {
+            "sourceVariableName": "forest_age",
+            "nameShort": "disturbance_year_2010",
+            "nameLong": "Year of the last stand-replacing disturbance, 2010 minus the 2010 forest age",
+            "component": "disturbance_2010",
+            "variableUnit": "year",
+            "sourceVariableUnit": "year",
+            "bounds": [
+                1700,
+                2020
+            ],
+            "description": "2010 minus the rounded median forest age of 2010. NaN for old growth at the 300 year cap."
+        },
+        "disturbance_2020": {
+            "sourceVariableName": "forest_age",
+            "nameShort": "disturbance_year_2020",
+            "nameLong": "Year of the last stand-replacing disturbance, 2020 minus the 2020 forest age",
+            "component": "disturbance_2020",
+            "variableUnit": "year",
+            "sourceVariableUnit": "year",
+            "bounds": [
+                1700,
+                2020
+            ],
+            "description": "2020 minus the rounded median forest age of 2020. NaN for old growth at the 300 year cap."
+        },
+        "disturbance_intensity_2010": {
+            "sourceVariableName": "forest_age",
+            "nameShort": "disturbance_intensity_2010",
+            "nameLong": "Occurrence of the disturbance dated from the 2010 forest age",
+            "component": "intensity_2010",
+            "variableUnit": "adimensional",
+            "sourceVariableUnit": "adimensional",
+            "bounds": [
+                0,
+                1
+            ],
+            "description": "1 on the first time step of the year 2010 minus the rounded median forest age of 2010, 0 on every other time step."
+        },
+        "disturbance_intensity_2020": {
+            "sourceVariableName": "forest_age",
+            "nameShort": "disturbance_intensity_2020",
+            "nameLong": "Occurrence of the disturbance dated from the 2020 forest age",
+            "component": "intensity_2020",
+            "variableUnit": "adimensional",
+            "sourceVariableUnit": "adimensional",
+            "bounds": [
+                0,
+                1
+            ],
+            "description": "1 on the first time step of the year 2020 minus the rounded median forest age of 2020, 0 on every other time step."
+        }
+    }
+}

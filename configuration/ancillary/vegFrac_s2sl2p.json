@@ -8,6 +8,17 @@
         2019
     ],
     "time_placement": "constant",
+    "insitu_path": "/Net/Groups/BGI/work_3/sindbad/data/site_footprint_1km/FLUXNET_veg_frac.csv",
+    "pft_path": "/Net/Groups/BGI/work_3/biomass/BIOMASCAT/data/insitu/ancillary_data/PFT.csv",
+    "tree_pfts": [
+        "ENF",
+        "EBF",
+        "DBF",
+        "DNF",
+        "MF",
+        "SAV",
+        "WSA"
+    ],
     "max_cloud": 30,
     "peak_dir": "/Net/Groups/BGI/work_3/sindbad/data/site_footprint_1km/s2_sl2p_fcover_2019_peak",
     "base_info": {
@@ -41,7 +52,7 @@
         "data_path": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-2-l2a",
         "component": "",
         "merge_insitu": false,
-        "description": "S2ToolBox FCOVER neural network on the clearest L2A scene of each two-month bin of 2019, per-pixel peak over the scenes averaged over 20 m pixels with centres within 1 km great-circle distance of the site. Cloud, shadow and snow pixels are dropped and water counts as zero."
+        "description": "S2ToolBox FCOVER neural network on the clearest L2A scene of each two-month bin of 2019, per-grid cell peak over the scenes averaged over 20 m grid cells with centres within 1 km great-circle distance of the site. Cloud, shadow and snow grid cells are dropped and water counts as zero."
     },
     "sel_variables": "all",
     "variables": {
@@ -50,6 +61,15 @@
             "nameShort": "vegetation_fraction",
             "nameLong": "Vegetation fraction from Sentinel-2 SL2P FCOVER, mean peak within 1 km",
             "component": "veg"
+        },
+        "vegFrac_merged": {
+            "sourceVariableName": "veg",
+            "nameShort": "vegetation_fraction_s2sl2p_merged",
+            "nameLong": "Vegetation fraction, in situ where available else Sentinel-2 MSI L2A, S2ToolBox SL2P FCOVER",
+            "component": "veg",
+            "merge_insitu": true,
+            "sourceDataProductName": "FLUXNET_veg_frac.csv and Sentinel-2 MSI L2A, S2ToolBox SL2P FCOVER",
+            "description": "FLUXNET_veg_frac.csv as 1 - frac_soil, or overstory + understory without soil, averaged over rows of a site, otherwise the product vegetation fraction"
         }
     }
 }

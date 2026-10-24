@@ -40,7 +40,7 @@
         "data_path": "/Net/Groups/BGI/work_3/sindbad/data/soilgrids/BDTICM_M_250m_ll.tif",
         "component": "",
         "merge_insitu": false,
-        "description": "Median depth to bedrock of 250 m pixels with centres within 1 km great-circle distance of the site, converted from cm to m."
+        "description": "Median depth to bedrock of 250 m grid cells with centres within 1 km great-circle distance of the site, converted from cm to m."
     },
     "sel_variables": "all",
     "variables": {

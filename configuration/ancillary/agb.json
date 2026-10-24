@@ -4,7 +4,10 @@
     "base_info": {
         "partitioning": "",
         "variableUnit": "",
-        "bounds": [0, 30000],
+        "bounds": [
+            0,
+            30000
+        ],
         "sourceVariableName": "",
         "sourceVariableUnit": "",
         "source2sindbadUnit": 1,
@@ -12,7 +15,7 @@
         "nameShort": "",
         "nameLong": "",
         "spaceTimeType": "normal",
-        "sourceDataProductName": "NOAA, SCRIPPS",
+        "sourceDataProductName": "FLUXNET BADM",
         "QC": "",
         "RANDUNC": "",
         "weightVar": "",
@@ -27,42 +30,10 @@
         "skipUnitcheck": false,
         "publication": "",
         "data_path": "",
-        "description": "aboveground biomass estimates"
+        "description": "in-situ aboveground biomass of FLUXNET BADM"
     },
     "sel_variables": "all",
     "variables": {
-        "agb_globBiomass": {
-            "variableUnit": "gC m-2",
-            "bounds": [
-                0,
-                30000
-            ],
-            "sourceVariableName": "AG_BIOMASS_TT_globBiomass",
-            "sourceVariableUnit": "Mg ha",
-            "source2sindbadUnit": 47,
-            "nameShort": "AG_BIOMASS_TT_globBiomass",
-            "nameLong": "Above-ground biomass from globBiomass product calculated as the mean of 21x21 pxiels 100m around the tower location",
-            "description": "aboveground biomass estimates (unit conversion of 47 assumes dry mass ratio of 0.47 for carbon, and 0.47 x 100 (MG/ha to gc/m2) is applied.",
-            "sourceDataProductName": "globBiomass",
-            "publication": "https://globbiomass.org/DOI:10.5194/essd-2020-148",
-            "data_path": "/Net/Groups/BGI/work_3/biomass/BIOMASCAT/data/insitu/ancillary_data/globbiomass_agb_100m.csv"
-        },
-        "agb_globBiomass_std": {
-            "variableUnit": "gC m-2",
-            "bounds": [
-                0,
-                30000
-            ],
-            "sourceVariableName": "AG_BIOMASS_TT_globBiomass",
-            "sourceVariableUnit": "Mg ha",
-            "source2sindbadUnit": 47,
-            "nameShort": "agb_globBiomass",
-            "nameLong": "Above-ground biomass from globBiomass product calculated as the stand deviation of 21x21 pxiels 100m around the tower location",
-            "description": "aboveground biomass estimates (unit conversion of 47 assumes dry mass ratio of 0.47 for carbon, and 0.47 x 100 (MG/ha to gc/m2) is applied.",
-            "sourceDataProductName": "globBiomass",
-            "publication": "https://globbiomass.org/DOI:10.5194/essd-2020-148",
-            "data_path": "/Net/Groups/BGI/work_3/biomass/BIOMASCAT/data/insitu/ancillary_data/globbiomass_agb_100m.csv"
-        },
         "agb_insitu": {
             "variableUnit": "gC m-2",
             "bounds": [
@@ -77,5 +48,5 @@
             "publication": "https://fluxnet.org/badm-data-product/",
             "data_path": "/Net/Groups/BGI/work_3/biomass/BIOMASCAT/data/insitu/ancillary_data/insitu_AGB.csv"
         }
-}
+    }
 }

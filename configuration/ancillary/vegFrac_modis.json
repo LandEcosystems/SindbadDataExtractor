@@ -51,7 +51,7 @@
         "data_path": "https://appeears.earthdatacloud.nasa.gov/api, MOD44B.061",
         "component": "",
         "merge_insitu": false,
-        "description": "Percentage averaged over 250 m pixels with centres within 1 km great-circle distance of the site, divided by 100. Water pixels count as non-vegetated. Sites north of 60 N with pixels reported as 100 % non-vegetated are NaN, a MOD44B v061 artefact. Representative of 2010."
+        "description": "Percentage averaged over 250 m grid cells with centres within 1 km great-circle distance of the site, divided by 100. Water grid cells count as non-vegetated. Sites north of 60 N with grid cells reported as 100 % non-vegetated are NaN, a MOD44B v061 artefact. Representative of 2010."
     },
     "sel_variables": "all",
     "variables": {
@@ -79,18 +79,18 @@
             "nameLong": "vegetation cover fraction from MODIS VCF MOD44B v061, mean within 1 km",
             "component": "veg"
         },
-        "treeFrac_insitu": {
+        "treeFrac_merged": {
             "sourceVariableName": "tree",
-            "nameShort": "tree_fraction_insitu_merged",
+            "nameShort": "tree_fraction_modis_merged",
             "nameLong": "Tree fraction, in situ where available else MODIS VCF MOD44B v061",
             "component": "tree",
             "merge_insitu": true,
             "sourceDataProductName": "FLUXNET_veg_frac.csv and MODIS VCF MOD44B v061",
             "description": "FLUXNET_veg_frac.csv frac_overstory for forest and savanna PFTs and 0 for other PFTs in the csv, otherwise the product tree fraction, capped at the merged vegetation fraction"
         },
-        "vegFrac_insitu": {
+        "vegFrac_merged": {
             "sourceVariableName": "veg",
-            "nameShort": "vegetation_fraction_insitu_merged",
+            "nameShort": "vegetation_fraction_modis_merged",
             "nameLong": "Vegetation fraction, in situ where available else MODIS VCF MOD44B v061",
             "component": "veg",
             "merge_insitu": true,

@@ -50,7 +50,7 @@
         "data_path": "https://zenodo.org/records/3939038/files/",
         "component": "",
         "merge_insitu": false,
-        "description": "Sum of cover fraction layers averaged over 100 m pixels with centres within 1 km great-circle distance of the site, divided by 100. Representative of the 2015 base epoch."
+        "description": "Sum of cover fraction layers averaged over 100 m grid cells with centres within 1 km great-circle distance of the site, divided by 100. Representative of the 2015 base epoch."
     },
     "sel_variables": "all",
     "variables": {
@@ -90,18 +90,18 @@
             "nameLong": "vegetation cover fraction from Copernicus LC100 collection 3, mean within 1 km",
             "component": "veg"
         },
-        "treeFrac_insitu": {
+        "treeFrac_merged": {
             "sourceVariableName": "tree",
-            "nameShort": "tree_fraction_insitu_merged",
+            "nameShort": "tree_fraction_cgls_merged",
             "nameLong": "Tree fraction, in situ where available else Copernicus LC100 collection 3",
             "component": "tree",
             "merge_insitu": true,
             "sourceDataProductName": "FLUXNET_veg_frac.csv and Copernicus LC100 collection 3",
             "description": "FLUXNET_veg_frac.csv frac_overstory for forest and savanna PFTs and 0 for other PFTs in the csv, otherwise the product tree fraction, capped at the merged vegetation fraction"
         },
-        "vegFrac_insitu": {
+        "vegFrac_merged": {
             "sourceVariableName": "veg",
-            "nameShort": "vegetation_fraction_insitu_merged",
+            "nameShort": "vegetation_fraction_cgls_merged",
             "nameLong": "Vegetation fraction, in situ where available else Copernicus LC100 collection 3",
             "component": "veg",
             "merge_insitu": true,

@@ -1,0 +1,144 @@
+{
+    "extractor": "pft_worldcover",
+    "var_suffix": "worldcover",
+    "cache_path": "",
+    "fetch_missing": false,
+    "n_workers": 4,
+    "years": [
+        2020,
+        2021
+    ],
+    "time_placement": "annual_extend",
+    "pft_path": "/Net/Groups/BGI/work_3/biomass/BIOMASCAT/data/insitu/ancillary_data/PFT.csv",
+    "rs_fill": [
+        "pft_cgls",
+        "pft"
+    ],
+    "base_info": {
+        "partitioning": "",
+        "variableUnit": "adimensional",
+        "bounds": [
+            10,
+            100
+        ],
+        "sourceVariableName": "map",
+        "sourceVariableUnit": "adimensional",
+        "source2sindbadUnit": 1,
+        "isCategorical": true,
+        "nameShort": "",
+        "nameLong": "",
+        "spaceTimeType": "normal",
+        "sourceDataProductName": "ESA WorldCover 2020 v100 and 2021 v200",
+        "QC": "",
+        "RANDUNC": "",
+        "weightVar": "",
+        "DaySum": false,
+        "DayMin": false,
+        "DayMax": false,
+        "wDayMean": false,
+        "DayTime": false,
+        "isEnergy": false,
+        "isWater": false,
+        "isCarbon": false,
+        "skipUnitcheck": true,
+        "publication": "DOI:10.5281/zenodo.5571936",
+        "data_path": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/esa-worldcover",
+        "component": "",
+        "merge_insitu": false,
+        "description": "WorldCover class at 10 m, 10 tree cover, 20 shrubland, 30 grassland, 40 cropland, 50 built-up, 60 bare and sparse vegetation, 70 snow and ice, 80 permanent water, 90 herbaceous wetland, 95 mangroves, 100 moss and lichen. Classes marked filled in flag_pft have no BADM PFT, and their PFT comes from the other class of the product, then the datasets in rs_fill, and then pft_path.",
+        "flag_values": [
+            10,
+            20,
+            30,
+            40,
+            50,
+            60,
+            70,
+            80,
+            90,
+            95,
+            100
+        ],
+        "flag_meanings": "tree_cover shrubland grassland cropland built-up bare_and_sparse_vegetation snow_and_ice permanent_water_bodies herbaceous_wetland mangroves moss_and_lichen",
+        "flag_pft": "filled OSH GRA CRO URB BSV SNO WAT WET EBF GRA"
+    },
+    "sel_variables": "all",
+    "variables": {
+        "PFT": {
+            "sourceVariableName": "map",
+            "nameShort": "pft_majority",
+            "nameLong": "Most frequent WorldCover class within 1 km of the site in 2020 and 2021, with the nearest year outside that range",
+            "component": "majority"
+        },
+        "PFT_grid": {
+            "sourceVariableName": "map",
+            "nameShort": "pft_grid",
+            "nameLong": "WorldCover class of the 10 m grid cell holding the site in 2020 and 2021, with the nearest year outside that range",
+            "component": "grid"
+        },
+        "PFT_merged": {
+            "sourceVariableName": "map",
+            "nameShort": "pft_merged",
+            "nameLong": "BADM PFT of the site from pft_path, filled with the most frequent WorldCover class within 1 km where the csv has none",
+            "component": "majority_merged",
+            "bounds": [
+                1,
+                17
+            ],
+            "description": "IGBP number, 1 ENF, 2 EBF, 3 DNF, 4 DBF, 5 MF, 6 CSH, 7 OSH, 8 WSA, 9 SAV, 10 GRA, 11 WET, 12 CRO, 13 URB, 14 CVM, 15 SNO, 16 BSV, 17 WAT. The PFT of the site in pft_path on every time step. Sites missing from the csv or with a PFT that is not an IGBP class, such as TBD, take the most frequent WorldCover class within 1 km of each year as its BADM PFT, When that class has no BADM PFT, the class of the grid cell holding the site is used, and years with neither take the nearest year that has one.",
+            "flag_values": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17
+            ],
+            "flag_meanings": "evergreen_needleleaf_forests evergreen_broadleaf_forests deciduous_needleleaf_forests deciduous_broadleaf_forests mixed_forests closed_shrublands open_shrublands woody_savannas savannas grasslands permanent_wetlands croplands urban_and_built-up_lands cropland_and_natural_vegetation_mosaics permanent_snow_and_ice barren water_bodies",
+            "flag_pft": "ENF EBF DNF DBF MF CSH OSH WSA SAV GRA WET CRO URB CVM SNO BSV WAT"
+        },
+        "PFT_grid_merged": {
+            "sourceVariableName": "map",
+            "nameShort": "pft_grid_merged",
+            "nameLong": "BADM PFT of the site from pft_path, filled with the WorldCover class of the grid cell holding the site where the csv has none",
+            "component": "grid_merged",
+            "bounds": [
+                1,
+                17
+            ],
+            "description": "IGBP number, 1 ENF, 2 EBF, 3 DNF, 4 DBF, 5 MF, 6 CSH, 7 OSH, 8 WSA, 9 SAV, 10 GRA, 11 WET, 12 CRO, 13 URB, 14 CVM, 15 SNO, 16 BSV, 17 WAT. The PFT of the site in pft_path on every time step. Sites missing from the csv or with a PFT that is not an IGBP class, such as TBD, take the WorldCover class of the grid cell holding the site of each year as its BADM PFT, When that class has no BADM PFT, the class of the most frequent class within 1 km is used, and years with neither take the nearest year that has one.",
+            "flag_values": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17
+            ],
+            "flag_meanings": "evergreen_needleleaf_forests evergreen_broadleaf_forests deciduous_needleleaf_forests deciduous_broadleaf_forests mixed_forests closed_shrublands open_shrublands woody_savannas savannas grasslands permanent_wetlands croplands urban_and_built-up_lands cropland_and_natural_vegetation_mosaics permanent_snow_and_ice barren water_bodies",
+            "flag_pft": "ENF EBF DNF DBF MF CSH OSH WSA SAV GRA WET CRO URB CVM SNO BSV WAT"
+        }
+    }
+}

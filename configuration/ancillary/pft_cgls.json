@@ -1,0 +1,157 @@
+{
+    "extractor": "pft_cgls",
+    "var_suffix": "cgls",
+    "cache_path": "",
+    "fetch_missing": false,
+    "n_workers": 2,
+    "years": [
+        2015,
+        2016,
+        2017,
+        2018,
+        2019
+    ],
+    "time_placement": "annual_extend",
+    "pft_path": "/Net/Groups/BGI/work_3/biomass/BIOMASCAT/data/insitu/ancillary_data/PFT.csv",
+    "rs_fill": [
+        "pft"
+    ],
+    "base_info": {
+        "partitioning": "",
+        "variableUnit": "adimensional",
+        "bounds": [
+            20,
+            200
+        ],
+        "sourceVariableName": "Discrete-Classification-map",
+        "sourceVariableUnit": "adimensional",
+        "source2sindbadUnit": 1,
+        "isCategorical": true,
+        "nameShort": "",
+        "nameLong": "",
+        "spaceTimeType": "normal",
+        "sourceDataProductName": "CGLS LC100 collection 3 v3.0.1",
+        "QC": "",
+        "RANDUNC": "",
+        "weightVar": "",
+        "DaySum": false,
+        "DayMin": false,
+        "DayMax": false,
+        "wDayMean": false,
+        "DayTime": false,
+        "isEnergy": false,
+        "isWater": false,
+        "isCarbon": false,
+        "skipUnitcheck": true,
+        "publication": "DOI:10.5281/zenodo.3939050",
+        "data_path": "https://zenodo.org/records/3939050",
+        "component": "",
+        "merge_insitu": false,
+        "description": "CGLS LC100 discrete class at 100 m, 20 shrubs, 30 herbaceous vegetation, 40 cropland, 50 urban, 60 bare and sparse vegetation, 70 snow and ice, 80 permanent water, 90 herbaceous wetland, 100 moss and lichen, 200 open sea, closed forest 111 evergreen needleleaf, 112 evergreen broadleaf, 113 deciduous needleleaf, 114 deciduous broadleaf, 115 mixed, 116 unknown, and open forest 121 to 126 in the same order. Classes marked filled in flag_pft have no BADM PFT, and their PFT comes from the other class of the product, then the datasets in rs_fill, and then pft_path.",
+        "flag_values": [
+            20,
+            30,
+            40,
+            50,
+            60,
+            70,
+            80,
+            90,
+            100,
+            111,
+            112,
+            113,
+            114,
+            115,
+            116,
+            121,
+            122,
+            123,
+            124,
+            125,
+            126,
+            200
+        ],
+        "flag_meanings": "shrubs herbaceous_vegetation cropland urban_and_built_up bare_and_sparse_vegetation snow_and_ice permanent_water_bodies herbaceous_wetland moss_and_lichen closed_forest_evergreen_needleleaf closed_forest_evergreen_broadleaf closed_forest_deciduous_needleleaf closed_forest_deciduous_broadleaf closed_forest_mixed closed_forest_unknown open_forest_evergreen_needleleaf open_forest_evergreen_broadleaf open_forest_deciduous_needleleaf open_forest_deciduous_broadleaf open_forest_mixed open_forest_unknown open_sea",
+        "flag_pft": "OSH GRA CRO URB BSV SNO WAT WET GRA ENF EBF DNF DBF MF filled ENF EBF DNF DBF MF filled WAT"
+    },
+    "sel_variables": "all",
+    "variables": {
+        "PFT": {
+            "sourceVariableName": "Discrete-Classification-map",
+            "nameShort": "pft_majority",
+            "nameLong": "Most frequent LC100 class within 1 km of the site from 2015 to 2019, with the nearest year outside that range",
+            "component": "majority"
+        },
+        "PFT_grid": {
+            "sourceVariableName": "Discrete-Classification-map",
+            "nameShort": "pft_grid",
+            "nameLong": "LC100 class of the 100 m grid cell holding the site from 2015 to 2019, with the nearest year outside that range",
+            "component": "grid"
+        },
+        "PFT_merged": {
+            "sourceVariableName": "Discrete-Classification-map",
+            "nameShort": "pft_merged",
+            "nameLong": "BADM PFT of the site from pft_path, filled with the most frequent LC100 class within 1 km where the csv has none",
+            "component": "majority_merged",
+            "bounds": [
+                1,
+                17
+            ],
+            "description": "IGBP number, 1 ENF, 2 EBF, 3 DNF, 4 DBF, 5 MF, 6 CSH, 7 OSH, 8 WSA, 9 SAV, 10 GRA, 11 WET, 12 CRO, 13 URB, 14 CVM, 15 SNO, 16 BSV, 17 WAT. The PFT of the site in pft_path on every time step. Sites missing from the csv or with a PFT that is not an IGBP class, such as TBD, take the most frequent LC100 class within 1 km of each year as its BADM PFT, When that class has no BADM PFT, the class of the grid cell holding the site is used, and years with neither take the nearest year that has one.",
+            "flag_values": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17
+            ],
+            "flag_meanings": "evergreen_needleleaf_forests evergreen_broadleaf_forests deciduous_needleleaf_forests deciduous_broadleaf_forests mixed_forests closed_shrublands open_shrublands woody_savannas savannas grasslands permanent_wetlands croplands urban_and_built-up_lands cropland_and_natural_vegetation_mosaics permanent_snow_and_ice barren water_bodies",
+            "flag_pft": "ENF EBF DNF DBF MF CSH OSH WSA SAV GRA WET CRO URB CVM SNO BSV WAT"
+        },
+        "PFT_grid_merged": {
+            "sourceVariableName": "Discrete-Classification-map",
+            "nameShort": "pft_grid_merged",
+            "nameLong": "BADM PFT of the site from pft_path, filled with the LC100 class of the grid cell holding the site where the csv has none",
+            "component": "grid_merged",
+            "bounds": [
+                1,
+                17
+            ],
+            "description": "IGBP number, 1 ENF, 2 EBF, 3 DNF, 4 DBF, 5 MF, 6 CSH, 7 OSH, 8 WSA, 9 SAV, 10 GRA, 11 WET, 12 CRO, 13 URB, 14 CVM, 15 SNO, 16 BSV, 17 WAT. The PFT of the site in pft_path on every time step. Sites missing from the csv or with a PFT that is not an IGBP class, such as TBD, take the LC100 class of the grid cell holding the site of each year as its BADM PFT, When that class has no BADM PFT, the class of the most frequent class within 1 km is used, and years with neither take the nearest year that has one.",
+            "flag_values": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17
+            ],
+            "flag_meanings": "evergreen_needleleaf_forests evergreen_broadleaf_forests deciduous_needleleaf_forests deciduous_broadleaf_forests mixed_forests closed_shrublands open_shrublands woody_savannas savannas grasslands permanent_wetlands croplands urban_and_built-up_lands cropland_and_natural_vegetation_mosaics permanent_snow_and_ice barren water_bodies",
+            "flag_pft": "ENF EBF DNF DBF MF CSH OSH WSA SAV GRA WET CRO URB CVM SNO BSV WAT"
+        }
+    }
+}

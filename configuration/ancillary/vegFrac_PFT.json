@@ -1,18 +1,87 @@
 {
     "extractor": "vegfrac_pft",
     "var_suffix": "PFT",
+    "cache_path": "",
+    "fetch_missing": false,
+    "n_workers": 4,
+    "years": [
+        2001,
+        2002,
+        2003,
+        2004,
+        2005,
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024
+    ],
+    "time_placement": "annual_extend",
+    "source_path": "/Net/Groups/BGI/data/DataStructureMDI/DATA/grid/Global/0d0083_static/MCD12Q1/V061/Data/MCD12Q1_061_IGBP.43200.21600.{year}.nc",
+    "groups": {
+        "tree": [
+            1,
+            2,
+            3,
+            4,
+            5
+        ],
+        "shrub": [
+            6,
+            7
+        ],
+        "savanna": [
+            8,
+            9
+        ],
+        "grass": [
+            10
+        ],
+        "wetland": [
+            11
+        ],
+        "crop": [
+            12
+        ],
+        "mosaic": [
+            14
+        ],
+        "other": [
+            13,
+            15,
+            16,
+            17
+        ]
+    },
     "base_info": {
         "partitioning": "",
         "variableUnit": "adimensional",
-        "bounds": [0, 1],
+        "bounds": [
+            0,
+            1
+        ],
         "sourceVariableName": "",
         "sourceVariableUnit": "adimensional",
         "source2sindbadUnit": 1,
-        "isCategorical": true,
+        "isCategorical": false,
         "nameShort": "",
         "nameLong": "",
         "spaceTimeType": "normal",
-        "sourceDataProductName": "FLUXNET BADM",
+        "sourceDataProductName": "MODIS MCD12Q1 v061 IGBP",
         "QC": "",
         "RANDUNC": "",
         "weightVar": "",
@@ -25,49 +94,61 @@
         "isWater": false,
         "isCarbon": false,
         "skipUnitcheck": false,
-        "publication": "https://fluxnet.org/badm-data-product/",
-        "data_path": "/Net/Groups/BGI/work_3/biomass/BIOMASCAT/data/insitu/ancillary_data/PFT.csv",
-        "PFT_types":[],
-        "description": "flags for indicating existence of vegetation types: 1 if exists, 0 otherwise, based on site PFTs."
+        "publication": "DOI:10.5067/MODIS/MCD12Q1.061",
+        "data_path": "/Net/Groups/BGI/data/DataStructureMDI/DATA/grid/Global/0d0083_static/MCD12Q1/V061/Data/MCD12Q1_061_IGBP.43200.21600.{year}.nc",
+        "component": "",
+        "merge_insitu": false,
+        "description": "Share of the 1 km MCD12Q1 IGBP cells with centres within 1 km great-circle distance of the site in the classes of the variable, per year from 2001 to 2024, with the nearest year outside that range."
     },
     "sel_variables": "all",
     "variables": {
-            "grassFrac": {
-                "sourceVariableName": "grassFrac_PFT",
-                "nameShort": "grass_fraction",
-                "nameLong": "Fraction of grass",
-                "PFT_types":["GRA"]
-            },
-            "shrubFrac": {
-                "sourceVariableName": "shrubFrac_PFT",
-                "nameShort": "shrub_fraction",
-                "nameLong": "Fraction of shrub",
-                "PFT_types":["OSH", "CSH"]
-            },
-            "treeFrac": {
-                "sourceVariableName": "treeFrac_PFT",
-                "nameShort": "tree_fraction",
-                "nameLong": "Fraction of tree",
-                "PFT_types":["DBF","MF","ENF","EBF","DNF"]
-            },
-            "cropFrac": {
-                "sourceVariableName": "cropFrac_PFT",
-                "nameShort": "crop__fraction",
-                "nameLong": "Fraction of crop",
-                "PFT_types":["CRO"]
-            },
-            "savannaFrac": {
-                "sourceVariableName": "savannaFrac_PFT",
-                "nameShort": "savanna_fraction",
-                "nameLong": "Fraction of savanna",
-                "PFT_types":["SAV", "WSA"]
-            },
-            "wetlandFrac": {
-                "sourceVariableName": "wetlandFrac_PFT",
-                "nameShort": "wetland_fraction",
-                "nameLong": "Fraction of wetland",
-                "PFT_types":["WET"]
-            }
-
-}
+        "treeFrac": {
+            "sourceVariableName": "MCD12Q1_061_IGBP",
+            "nameShort": "tree_fraction",
+            "nameLong": "Fraction of forest, IGBP 1-5",
+            "component": "tree"
+        },
+        "shrubFrac": {
+            "sourceVariableName": "MCD12Q1_061_IGBP",
+            "nameShort": "shrub_fraction",
+            "nameLong": "Fraction of shrubland, IGBP 6-7",
+            "component": "shrub"
+        },
+        "savannaFrac": {
+            "sourceVariableName": "MCD12Q1_061_IGBP",
+            "nameShort": "savanna_fraction",
+            "nameLong": "Fraction of savanna and woody savanna, IGBP 8-9",
+            "component": "savanna"
+        },
+        "grassFrac": {
+            "sourceVariableName": "MCD12Q1_061_IGBP",
+            "nameShort": "grass_fraction",
+            "nameLong": "Fraction of grassland, IGBP 10",
+            "component": "grass"
+        },
+        "wetlandFrac": {
+            "sourceVariableName": "MCD12Q1_061_IGBP",
+            "nameShort": "wetland_fraction",
+            "nameLong": "Fraction of permanent wetland, IGBP 11",
+            "component": "wetland"
+        },
+        "cropFrac": {
+            "sourceVariableName": "MCD12Q1_061_IGBP",
+            "nameShort": "crop_fraction",
+            "nameLong": "Fraction of cropland, IGBP 12",
+            "component": "crop"
+        },
+        "mosaicFrac": {
+            "sourceVariableName": "MCD12Q1_061_IGBP",
+            "nameShort": "mosaic_fraction",
+            "nameLong": "Fraction of cropland and natural vegetation mosaic, IGBP 14",
+            "component": "mosaic"
+        },
+        "otherFrac": {
+            "sourceVariableName": "MCD12Q1_061_IGBP",
+            "nameShort": "other_fraction",
+            "nameLong": "Fraction of urban, snow and ice, barren and water, IGBP 13 and 15-17",
+            "component": "other"
+        }
+    }
 }

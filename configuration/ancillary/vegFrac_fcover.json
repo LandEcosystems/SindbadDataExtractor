@@ -50,7 +50,7 @@
         "data_path": "/eodata/CLMS/bio-geophysical/vegetation_properties/fcover_global_300m_10daily_v1",
         "component": "",
         "merge_insitu": false,
-        "description": "Per-pixel maximum FCOVER over the 36 dekads of 2015, averaged over 300 m pixels with centres within 1 km great-circle distance of the site."
+        "description": "Per-grid cell maximum FCOVER over the 36 dekads of 2015, averaged over 300 m grid cells with centres within 1 km great-circle distance of the site."
     },
     "sel_variables": "all",
     "variables": {
@@ -60,9 +60,9 @@
             "nameLong": "Vegetation fraction from Copernicus FCOVER 300 m V1, mean of annual peak within 1 km",
             "component": "veg"
         },
-        "vegFrac_insitu": {
+        "vegFrac_merged": {
             "sourceVariableName": "veg",
-            "nameShort": "vegetation_fraction_insitu_merged",
+            "nameShort": "vegetation_fraction_fcover_merged",
             "nameLong": "Vegetation fraction, in situ where available else Copernicus FCOVER 300 m V1",
             "component": "veg",
             "merge_insitu": true,

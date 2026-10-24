@@ -51,7 +51,7 @@
         "data_path": "https://dap.ceda.ac.uk/thredds/dodsC/neodc/esacci/land_cover/data/pft/v2.0.81/ESACCI-LC-L4-PFT-Map-300m-P1Y-{year}-v2.0.81.nc",
         "component": "",
         "merge_insitu": false,
-        "description": "Sum of class percentage cover averaged over 300 m pixels with centres within 1 km great-circle distance of the site, divided by 100. With time_placement constant, the mean over years is used at all time steps; with annual, each year's value fills that year."
+        "description": "Sum of class percentage cover averaged over 300 m grid cells with centres within 1 km great-circle distance of the site, divided by 100. With time_placement constant, the mean over years is used at all time steps; with annual, each year's value fills that year."
     },
     "sel_variables": "all",
     "variables": {
@@ -85,18 +85,18 @@
             "nameLong": "vegetation cover fraction from ESA CCI Land Cover PFT v2.0.81, mean within 1 km",
             "component": "veg"
         },
-        "treeFrac_insitu": {
+        "treeFrac_merged": {
             "sourceVariableName": "tree",
-            "nameShort": "tree_fraction_insitu_merged",
+            "nameShort": "tree_fraction_esacci_merged",
             "nameLong": "Tree fraction, in situ where available else ESA CCI Land Cover PFT v2.0.81",
             "component": "tree",
             "merge_insitu": true,
             "sourceDataProductName": "FLUXNET_veg_frac.csv and ESA CCI Land Cover PFT v2.0.81",
             "description": "FLUXNET_veg_frac.csv frac_overstory for forest and savanna PFTs and 0 for other PFTs in the csv, otherwise the product tree fraction, capped at the merged vegetation fraction"
         },
-        "vegFrac_insitu": {
+        "vegFrac_merged": {
             "sourceVariableName": "veg",
-            "nameShort": "vegetation_fraction_insitu_merged",
+            "nameShort": "vegetation_fraction_esacci_merged",
             "nameLong": "Vegetation fraction, in situ where available else ESA CCI Land Cover PFT v2.0.81",
             "component": "veg",
             "merge_insitu": true,
