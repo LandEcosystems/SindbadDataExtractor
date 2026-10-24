@@ -4,9 +4,9 @@
 Above-ground biomass within 1 km of the site from ESA CCI Biomass v7.0, merged with
 the in-situ AGB of FLUXNET BADM.
 
-The CCI value is the mean of all 100 m AGB pixels whose centres lie within 1 km of
-the site, including zero pixels, read remotely from the CEDA GeoTIFF tiles. It is
-converted from Mg ha-1 dry matter to gC m-2 with a factor of 47, assuming a carbon
+The CCI value is the mean of all 100 m AGB grid cells whose centres lie within 1 km
+of the site, including zero grid cells, read remotely from the CEDA GeoTIFF tiles. It
+is converted from Mg ha-1 dry matter to gC m-2 with a factor of 47, assuming a carbon
 fraction of 0.47. The cache holds one row per site and map year with the mean in Mg
 ha-1.
 
@@ -53,7 +53,9 @@ def tile_name(top, left):
 
 
 def read_window(year, row0, row1, col0, col1):
-    """Read global pixel rows and cols, which may span several 10 degree tiles."""
+    """
+    Read global grid cell rows and cols, which may span several 10 degree tiles.
+    """
     import rasterio
     from rasterio.errors import RasterioIOError
     from rasterio.windows import Window
@@ -90,7 +92,7 @@ def site_year(site, lat, lon, year):
     n_valid = int(np.isfinite(vals).sum())
     return {"site": site, "year": year,
             "mean": np.nanmean(vals) if n_valid else np.nan,
-            "n_valid": n_valid, "n_pixels": len(vals)}
+            "n_valid": n_valid, "n_grids": len(vals)}
 
 
 def fetch_site(site, lat, lon, info):

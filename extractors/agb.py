@@ -41,22 +41,12 @@ def extract(dataset, site_info, config):
         })
         dval = data[tar_name].values
         if len(sel_data) > 0:
-            if '_globBiomass' in tar_name:
-                sel_data[sel_data <= 0.] = np.nan
-                if '_std' in tar_name:
-                    sel_data = np.nanstd(sel_data)
-                else:
-                    sel_data = np.nanmean(sel_data)
-                in_year = np.flatnonzero(years == 2010)
-                if len(in_year) > 0:
-                    dval[in_year[-1]] = sel_data
-            else:
-                # Each row is a year and its biomass, placed on the last time step
-                # of that year.
-                for yr, yr_bio in sel_data:
-                    in_year = np.flatnonzero(years == yr)
-                    if len(in_year) > 0 and yr_bio > 0:
-                        dval[in_year[-1]] = yr_bio
+            # Each row is a year and its biomass, placed on the last time step of
+            # that year.
+            for yr, yr_bio in sel_data:
+                in_year = np.flatnonzero(years == yr)
+                if len(in_year) > 0 and yr_bio > 0:
+                    dval[in_year[-1]] = yr_bio
             data[tar_name].values = dval
         else:
             logger.warning(f"::MISSING:: variable {tar_name} has no data in source {bxtr.vars[tar_name]['data_path']} for {bxtr.site}. NaN values will be set.")
