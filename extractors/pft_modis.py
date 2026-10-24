@@ -92,7 +92,10 @@ def extract(dataset, site_info, config):
         data = bxtr.convert_units(data, tar_name)
         bxtr.log_var_end(data, tar_name, None)
         src_data.append(data)
-    src_dataset = bxtr.merge_and_format(src_data)
+    src_dataset = fu.with_fetch_attrs(bxtr.merge_and_format(src_data), rows, info)
+    merged_vars = [v for v in bxtr.vars_list
+                   if bxtr.vars[v]["component"] == "class_merged"]
+    src_dataset = fu.with_insitu_paths(src_dataset, merged_vars, info, ["pft_path"])
     pft, source = fu.pft_mode(years, chain, pft_path, bxtr.site)
     return src_dataset.assign_attrs(PFT=pft, PFT_source=source)
 

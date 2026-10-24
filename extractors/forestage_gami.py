@@ -112,7 +112,7 @@ def extract(dataset, site_info, config):
         data = bxtr.convert_units(data, tar_name)
         bxtr.log_var_end(data, tar_name, None)
         src_data.append(data)
-    return bxtr.merge_and_format(src_data)
+    return fu.with_fetch_attrs(bxtr.merge_and_format(src_data), rows, info)
 
 
 if __name__ == '__main__':

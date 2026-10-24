@@ -151,7 +151,14 @@ def extract(dataset, site_info, config):
         data = bxtr.convert_units(data, tar_name)
         bxtr.log_var_end(data, tar_name, None)
         src_data.append(data)
-    return bxtr.merge_and_format(src_data)
+    src_dataset = fu.with_fetch_attrs(bxtr.merge_and_format(src_data), rows, info)
+    # merged_PFT also reads pft_path, the other in-situ components only insitu_path.
+    for tar_name in bxtr.vars_list:
+        comp = bxtr.vars[tar_name]["component"]
+        if comp in ("insitu", "merged", "merged_PFT"):
+            keys = ["insitu_path"] + (["pft_path"] if comp == "merged_PFT" else [])
+            src_dataset = fu.with_insitu_paths(src_dataset, [tar_name], info, keys)
+    return src_dataset
 
 
 if __name__ == '__main__':

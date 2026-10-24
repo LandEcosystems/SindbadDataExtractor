@@ -14,12 +14,19 @@ the source is local and is read on every call.
 A provider module defines fetch_site(site, lat, lon, info) returning a list of cache
 rows, components(rows, info) returning {component: {year: value}}, and optionally
 prefetch(sites, lats, lons, info, **kwargs) for a faster batch download.
+
+Every cache row records in fetched_utc when it was fetched. The output variables of
+the extractors that use these tools carry the fetch time as access_date, the cache
+they were read from as cache_path, and fetched_at_runtime, which is yes when the
+source was read during the run instead of from a cache. Variables merged with in-situ
+data also carry the csv files the merge read, as insitu_path and pft_path.
 """
 import fcntl
 import os
 import time
 import urllib.request
 from contextlib import contextmanager
+from datetime import datetime, timezone
 
 import numpy as np
 import pandas as pd
@@ -138,11 +145,26 @@ def read_cache(path):
     return pd.read_csv(path)
 
 
+def now_utc():
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def stamp(rows):
+    """Set fetched_utc of the rows that lack it to the current time."""
+    t = now_utc()
+    for r in rows:
+        r.setdefault("fetched_utc", t)
+    return rows
+
+
 def append_cache(path, rows):
-    """Add rows to the cache csv atomically, keeping the columns of both."""
+    """
+    Add rows to the cache csv atomically, keeping the columns of both. Rows without
+    fetched_utc get the current time.
+    """
     if not rows:
         return
-    new = pd.DataFrame(rows)
+    new = pd.DataFrame(stamp(rows))
     with file_lock(path):
         old = read_cache(path)
         out = pd.concat([old, new], ignore_index=True) if len(old) else new
@@ -169,7 +191,7 @@ def rows_for_site(provider, info, site, lat, lon):
     """
     path = info.get("cache_path", "")
     if not path:
-        return pd.DataFrame(provider.fetch_site(site, lat, lon, info))
+        return pd.DataFrame(stamp(provider.fetch_site(site, lat, lon, info)))
     rows = site_rows(read_cache(path), site)
     if len(rows) == 0 and info.get("fetch_missing", False):
         with file_lock(f"{path}.{site}"):
@@ -235,6 +257,41 @@ def prefetch_sites(provider, info, sites, lats, lons, workers=None, processes=Fa
             if rows is not None:
                 append_cache(info["cache_path"], rows)
                 print(f"done {site}", flush=True)
+
+
+def fetch_attrs(rows, info):
+    """
+    Attributes that tell when and how the cache rows of a site were fetched. The
+    access date lists the dates of fetched_utc, or is unknown for rows cached before
+    the fetch time was recorded.
+    """
+    path = info.get("cache_path", "")
+    dates = []
+    if len(rows) and "fetched_utc" in rows:
+        dates = sorted({str(t)[:10] for t in rows["fetched_utc"].dropna()})
+    return {"access_date": ", ".join(dates) or "unknown",
+            "cache_path": path,
+            "fetched_at_runtime": "no" if path else "yes"}
+
+
+def with_fetch_attrs(ds, rows, info):
+    """ds with the fetch_attrs of rows on every data variable."""
+    attrs = fetch_attrs(rows, info)
+    for v in ds.data_vars:
+        ds[v].attrs.update(attrs)
+    return ds
+
+
+def with_insitu_paths(ds, variables, info, keys=("insitu_path", "pft_path")):
+    """
+    ds with the paths of info under keys, such as insitu_path and pft_path, on the
+    variables merged with them. Keys that info leaves empty are skipped.
+    """
+    attrs = {k: info[k] for k in keys if info.get(k)}
+    for v in variables:
+        if v in ds:
+            ds[v].attrs.update(attrs)
+    return ds
 
 
 def site_pft(pft_path, site):
@@ -496,7 +553,8 @@ def extract_footprint(provider, dataset, site_info, config):
         data = bxtr.convert_units(data, tar_name)
         bxtr.log_var_end(data, tar_name, None)
         src_data.append(data)
-    src_dataset = bxtr.merge_and_format(src_data)
+    src_dataset = with_fetch_attrs(bxtr.merge_and_format(src_data), rows, info)
+    src_dataset = with_insitu_paths(src_dataset, merged, info)
     if len(rows) and hasattr(provider, "site_attrs"):
         src_dataset = src_dataset.assign_attrs(**provider.site_attrs(rows, info))
     return src_dataset
@@ -586,7 +644,10 @@ def extract_classes(provider, dataset, site_info, config):
         data = bxtr.convert_units(data, tar_name)
         bxtr.log_var_end(data, tar_name, None)
         src_data.append(data)
-    src_dataset = bxtr.merge_and_format(src_data)
+    src_dataset = with_fetch_attrs(bxtr.merge_and_format(src_data), rows, info)
+    merged_vars = [v for v in bxtr.vars_list
+                   if bxtr.vars[v]["component"].endswith("_merged")]
+    src_dataset = with_insitu_paths(src_dataset, merged_vars, info, ["pft_path"])
 
     sfx = info.get("var_suffix", dataset)
     grid_pft, grid_src = pft_mode(years, chain["grid"], pft_path, bxtr.site)
