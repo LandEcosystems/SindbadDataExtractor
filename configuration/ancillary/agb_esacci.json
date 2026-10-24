@@ -19,7 +19,7 @@
     ],
     "time_placement": "year_end",
     "insitu_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/insitu_AGB.csv",
-    "pft_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/PFT.csv",
+    "pft_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/PFT_consolidated.csv",
     "pft_fixed": [
         "GRA",
         "CRO",

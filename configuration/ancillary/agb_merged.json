@@ -100,7 +100,7 @@
             ],
             "AGB_scalar": 100,
             "publication": "https://fluxnet.org/badm-data-product/",
-            "data_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/PFT.csv"
+            "data_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/PFT_consolidated.csv"
         }
     }
 }

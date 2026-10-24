@@ -12,7 +12,7 @@
         2019
     ],
     "time_placement": "annual_extend",
-    "pft_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/PFT.csv",
+    "pft_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/PFT_consolidated.csv",
     "rs_fill": [
         "pft"
     ],
