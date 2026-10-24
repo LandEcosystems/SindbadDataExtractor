@@ -3,7 +3,7 @@
 """
 Depth to bedrock within 1 km of the site from SoilGrids250m BDTICM_M_250m_ll.tif.
 
-The value is the median of the 250 m pixels whose centres lie within 1 km of the
+The value is the median of the 250 m grid cells whose centres lie within 1 km of the
 site, in cm as in the source file. The file is local, so cache_path is empty and the
 window is read on every call. The SoilGrids map has no time dimension and is placed
 under the year 2017 of its release.
@@ -28,7 +28,7 @@ def fetch_site(site, lat, lon, info):
     vals = data[inside]
     n_valid = int(np.isfinite(vals).sum())
     return [{"site": site, "median": np.nanmedian(vals) if n_valid else np.nan,
-             "n_valid": n_valid, "n_pixels": int(inside.sum())}]
+             "n_valid": n_valid, "n_grids": int(inside.sum())}]
 
 
 def components(rows, info):
