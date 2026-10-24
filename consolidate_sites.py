@@ -39,7 +39,13 @@ names, which differ for the UK sites of FLUXNET and for RU-FLUX sites, whose pre
 is a Russian region such as KO for Komi.
 
 --pft-csv also writes the PFT of every site in the layout of PFT.csv, with the
-columns Site_ID and PFT, for the pft_path of the extractors.
+columns Site_ID and PFT, for the pft_path of the extractors. --fallback-pft names an
+older csv in that layout, whose PFT is added for the sites that have none, both those
+missing from the input and those whose networks give no PFT. Values that are not a
+PFT, such as TBD, are skipped. --pft-overrides names a csv with the columns Site_ID,
+PFT and reason, whose PFT replaces that of the networks and of the fallback csv, for
+sites that were checked by hand. PFT_source says whether the PFT of a site comes from
+the networks, the fallback csv or the overrides.
 """
 import argparse
 import os
@@ -210,12 +216,41 @@ def report(sites):
         print(f"    {r.site}: {r.country_km} km from {r.country}")
 
 
+def pft_table(sites, fallback_path="", overrides_path=""):
+    """
+    Site_ID, PFT and PFT_source of every site with a PFT, numbered from 1 like the
+    index column of PFT.csv, with the PFT of fallback_path where the sites have none
+    and the PFT of overrides_path replacing any other.
+    """
+    pft = sites[["site", "PFT"]].dropna().rename(columns={"site": "Site_ID"})
+    pft["PFT_source"] = "networks"
+    if fallback_path:
+        old = pd.read_csv(fallback_path)[["Site_ID", "PFT"]].dropna()
+        old["PFT"] = old["PFT"].astype(str).str.strip()
+        old = old[~old["PFT"].isin(["", "TBD"]) & ~old["Site_ID"].isin(pft["Site_ID"])]
+        old["PFT_source"] = os.path.basename(fallback_path)
+        print(f"{len(old)} sites take their PFT from {fallback_path}: "
+              + " ".join(old["Site_ID"]))
+        pft = pd.concat([pft, old])
+    if overrides_path:
+        fix = pd.read_csv(overrides_path)[["Site_ID", "PFT"]].dropna()
+        fix["PFT_source"] = os.path.basename(overrides_path)
+        print(f"{len(fix)} sites take their PFT from {overrides_path}: "
+              + " ".join(fix["Site_ID"]))
+        pft = pd.concat([pft[~pft["Site_ID"].isin(fix["Site_ID"])], fix])
+    pft = pft.sort_values("Site_ID")
+    pft.index = range(1, len(pft) + 1)
+    return pft
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("input")
     p.add_argument("output")
     p.add_argument("--pft-csv", default="")
+    p.add_argument("--fallback-pft", default="")
+    p.add_argument("--pft-overrides", default="")
     p.add_argument("--countries", default=COUNTRIES)
     args = p.parse_args()
 
@@ -224,10 +259,7 @@ def main():
     sites.to_csv(args.output, index=False)
     print(f"written {args.output}")
     if args.pft_csv:
-        pft = sites[["site", "PFT"]].dropna().rename(columns={"site": "Site_ID"})
-        # Numbered from 1 like the index column of PFT.csv.
-        pft.index = range(1, len(pft) + 1)
-        pft.to_csv(args.pft_csv)
+        pft_table(sites, args.fallback_pft, args.pft_overrides).to_csv(args.pft_csv)
         print(f"written {args.pft_csv}")
 
 
