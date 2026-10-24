@@ -4,11 +4,12 @@
 Woody vegetation fraction within 1 km of the site from the Meta and WRI global 1 m
 canopy height map v1 (Tolan et al. 2024).
 
-woody is the share of canopy height pixels of at least 2 m among the pixels whose
-centres lie within 1 km of the site, tree5 the share of at least 5 m and mean_height
-their mean height in m. Pixels are read remotely from the public cloud optimised
-GeoTIFFs, whose tile index is downloaded once to tiles_path. The cache holds one row
-per site, the same format as meta_chm_1km_sites.csv of add_woody_chm.py.
+woody is the share of canopy height grid cells of at least 2 m among the grid cells
+whose centres lie within 1 km of the site, tree5 the share of at least 5 m and
+mean_height their mean height in m. Grid cells are read remotely from the public
+cloud optimised GeoTIFFs, whose tile index is downloaded once to tiles_path. The
+cache holds one row per site, the same format as meta_chm_1km_sites.csv of
+add_woody_chm.py.
 """
 import json
 import os
@@ -75,7 +76,7 @@ def fetch_site(site, lat, lon, info):
     rec = {"site": site, "n_tiles": len(hits)}
     if heights:
         v = np.concatenate(heights).astype(float)
-        rec.update({"n_pixels": v.size, "woody": float((v >= WOODY_M).mean()),
+        rec.update({"n_grids": v.size, "woody": float((v >= WOODY_M).mean()),
                     "tree5": float((v >= TREE_M).mean()),
                     "mean_height": float(v.mean())})
     return [rec]

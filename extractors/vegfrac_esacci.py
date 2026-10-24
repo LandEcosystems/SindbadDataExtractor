@@ -3,9 +3,9 @@
 """
 ESA CCI Land Cover PFT v2.0.81 cover fractions within 1 km of the site.
 
-Each class is the mean of the 300 m pixels whose centres lie within 1 km of the site,
-read through the CEDA OPeNDAP server for every year in years. The cache holds one row
-per site and year with the mean percentage of every class, the same format as
+Each class is the mean of the 300 m grid cells whose centres lie within 1 km of the
+site, read through the CEDA OPeNDAP server for every year in years. The cache holds
+one row per site and year with the mean percentage of every class, the same format as
 esacci_lc_pft_v2.0.81_1km_sites.csv of add_vegfrac_esacci.py.
 
 Tree is the four TREES classes, shrub the four SHRUBS classes and grass the natural
@@ -63,7 +63,7 @@ def site_year(site, lat, lon, year):
     lons = -180 + (np.arange(col0, col1) + 0.5) / PX_PER_DEG
     lon2d, lat2d = np.meshgrid(lons, lats)
     inside = fu.haversine(lat, lon, lat2d, lon2d) <= fu.RADIUS_M
-    rec = {"site": site, "year": year, "n_pixels": int(inside.sum())}
+    rec = {"site": site, "year": year, "n_grids": int(inside.sum())}
     for c in CLASSES:
         v = data[c][inside]
         v[(v < 0) | (v > 100)] = np.nan

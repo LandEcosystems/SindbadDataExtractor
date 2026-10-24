@@ -3,11 +3,12 @@
 """
 ESA WorldCover 2021 v200 cover fractions within 1 km of the site.
 
-Each fraction is the share of valid 10 m pixels of a class among the pixels whose
-centres lie within 1 km of the site. Windows are cut through the Planetary Computer
-data API on the 10 m grid without resampling, since the blob storage behind it is not
-always reachable. The cache holds one row per site with the share of every class, the
-same format as worldcover_2021_v200_1km_sites.csv of add_vegfrac_worldcover.py.
+Each fraction is the share of valid 10 m grid cells of a class among the grid cells
+whose centres lie within 1 km of the site. Windows are cut through the Planetary
+Computer data API on the 10 m grid without resampling, since the blob storage behind
+it is not always reachable. The cache holds one row per site with the share of every
+class, the same format as worldcover_2021_v200_1km_sites.csv of
+add_vegfrac_worldcover.py.
 
 Tree is tree cover and mangroves. Grass is grassland, herbaceous wetland and moss and
 lichen. Vegetation is tree, shrub, grass and cropland.
@@ -38,11 +39,14 @@ GROUPS = {
 }
 
 
-def fetch_site(site, lat, lon, info):
+def read_grids(lat, lon, year):
+    """
+    Classes and centre coordinates of the valid 10 m grid cells of the WorldCover map
+    of year in the box around the site, with the number of map items it touches.
+    """
     import rasterio
-    year = str(info.get("years", [2021])[0])
     half_lat, half_lon = fu.half_box(lat)
-    # Snap to the 10 m grid so the data API returns native pixels.
+    # Snap to the 10 m grid so the data API returns native grid cells.
     minx = np.floor((lon - half_lon) / PX) * PX
     maxx = np.ceil((lon + half_lon) / PX) * PX
     miny = np.floor((lat - half_lat) / PX) * PX
@@ -52,7 +56,7 @@ def fetch_site(site, lat, lon, info):
     items = json.loads(fu.fetch_url(STAC, query,
                                     {"Content-Type": "application/json"}))
     items = [f for f in items["features"]
-             if f["properties"]["start_datetime"].startswith(year)]
+             if f["properties"]["start_datetime"].startswith(str(year))]
     codes, plats, plons = [], [], []
     for f in items:
         b = f["bbox"]
@@ -72,11 +76,18 @@ def fetch_site(site, lat, lon, info):
         codes.append(a[valid])
         plats.append(lat2d[valid])
         plons.append(lon2d[valid])
-    rec = {"site": site, "n_items": len(items)}
-    if codes:
-        codes, plats, plons = map(np.concatenate, (codes, plats, plons))
+    if not codes:
+        return None, None, None, len(items)
+    return (*map(np.concatenate, (codes, plats, plons)), len(items))
+
+
+def fetch_site(site, lat, lon, info):
+    year = info.get("years", [2021])[0]
+    codes, plats, plons, n_items = read_grids(lat, lon, year)
+    rec = {"site": site, "n_items": n_items}
+    if codes is not None:
         c = codes[fu.haversine(lat, lon, plats, plons) <= fu.RADIUS_M]
-        rec["n_pixels"] = int(c.size)
+        rec["n_grids"] = int(c.size)
         for code, name in CLASSES.items():
             rec[name] = float((c == code).mean()) if c.size else np.nan
     return [rec]

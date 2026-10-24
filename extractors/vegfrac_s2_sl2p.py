@@ -12,8 +12,8 @@ the Sentinel Hub custom script for FCOVER. Angles come from the 5 km angle grids
 the granule metadata at the node nearest the site.
 
 Scenes and masking follow vegfrac_s2.py. veg is the mean over the 20 m footprint
-pixels of the per-pixel peak over the scenes. The cache holds one row per site, the
-same format as s2_sl2p_fcover_2019_1km_sites.csv of add_vegfrac_s2_sl2p.py.
+grid cells of the per grid cell peak over the scenes. The cache holds one row per
+site, the same format as s2_sl2p_fcover_2019_1km_sites.csv of add_vegfrac_s2_sl2p.py.
 """
 import os
 import sys
@@ -103,7 +103,7 @@ def angles(item, x, y):
 
 
 def scene_cover(item, lat, lon):
-    """SL2P FCOVER of the pixels within the radius, on the scene 20 m grid."""
+    """SL2P FCOVER of the grid cells within the radius, on the scene 20 m grid."""
     import rasterio
     from rasterio.enums import Resampling
     from rasterio.warp import transform
@@ -157,7 +157,7 @@ def fetch_site(site, lat, lon, info):
                 pcover[ok].astype(np.float16))
     with np.errstate(all="ignore"):
         mean = np.nanmean(arr, axis=0)
-    rec.update({"n_pixels": int(inside.sum()), "n_valid": int(ok.sum()),
+    rec.update({"n_grids": int(inside.sum()), "n_valid": int(ok.sum()),
                 "veg": float(np.nanmean(pcover[ok])) if ok.any() else np.nan,
                 "veg_scene_mean": float(np.nanmean(mean[ok])) if ok.any()
                 else np.nan})

@@ -4,12 +4,12 @@
 Vegetation fraction within 1 km of the site from Copernicus FCOVER 300 m V1.
 
 FCOVER is the fraction of ground covered by green vegetation every 10 days, so the
-vegetation fraction is the per-pixel maximum over the 36 dekads of the year, averaged
-over the 300 m pixels whose centres lie within 1 km of the site. Windows are read
-from the cloud optimised GeoTIFFs on the Copernicus Data Space S3 endpoint with the
-keys of the cdse profile in ~/.aws/credentials. prefetch opens each dekad file once
-and reads the windows of all missing sites from it. The dekad file list is saved next
-to the cache. The cache holds one row per site, the same format as
+vegetation fraction is the per grid cell maximum over the 36 dekads of the year,
+averaged over the 300 m grid cells whose centres lie within 1 km of the site. Windows
+are read from the cloud optimised GeoTIFFs on the Copernicus Data Space S3 endpoint
+with the keys of the cdse profile in ~/.aws/credentials. prefetch opens each dekad
+file once and reads the windows of all missing sites from it. The dekad file list is
+saved next to the cache. The cache holds one row per site, the same format as
 fcover300_2015/site_means.csv of add_vegfrac_fcover.py.
 
 FCOVER has no tree layer, so only vegetation is provided.
@@ -56,7 +56,7 @@ def dekad_paths(info):
 
 
 def dekad_values(path, sites, lats, lons):
-    """FCOVER of the pixels within the radius of every site for one dekad."""
+    """FCOVER of the grid cells within the radius of every site for one dekad."""
     import rasterio
     from rasterio.windows import Window
     vals = []
@@ -75,12 +75,12 @@ def dekad_values(path, sites, lats, lons):
 
 
 def site_record(site, lat, lon, arr):
-    """Peak over the dekads per pixel, then its mean over the footprint."""
+    """Peak over the dekads per grid cell, then its mean over the footprint."""
     n_obs = np.isfinite(arr).sum(axis=0)
     peak = np.where(n_obs > 0, np.nanmax(np.where(np.isfinite(arr), arr, -1), axis=0),
                     np.nan)
-    return {"site": site, "n_pixels": arr.shape[1],
-            "n_pixels_valid": int((n_obs > 0).sum()),
+    return {"site": site, "n_grids": arr.shape[1],
+            "n_grids_valid": int((n_obs > 0).sum()),
             "median_dekads_valid": float(np.median(n_obs)),
             "veg": np.nanmean(peak) if np.isfinite(peak).any() else np.nan,
             "mean_fcover": np.nanmean(arr) if np.isfinite(arr).any() else np.nan,

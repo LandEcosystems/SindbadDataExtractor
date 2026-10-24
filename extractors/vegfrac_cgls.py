@@ -4,11 +4,11 @@
 Copernicus Global Land Service LC100 collection 3 cover fractions within 1 km of the
 site.
 
-Each layer is the mean of the 100 m pixels whose centres lie within 1 km of the site,
-read remotely from the Zenodo GeoTIFFs. Zenodo allows about 133 requests a minute, so
-prefetch opens each layer file once and reads the windows of all missing sites from
-it, with few workers. The cache holds one row per site, year and layer, the same
-format as cgls_lc100_v3_1km_sites.csv of add_vegfrac_cgls.py.
+Each layer is the mean of the 100 m grid cells whose centres lie within 1 km of the
+site, read remotely from the Zenodo GeoTIFFs. Zenodo allows about 133 requests a
+minute, so prefetch opens each layer file once and reads the windows of all missing
+sites from it, with few workers. The cache holds one row per site, year and layer,
+the same format as cgls_lc100_v3_1km_sites.csv of add_vegfrac_cgls.py.
 
 Grass is Grass + MossLichen. Vegetation is Tree + Shrub + Grass + Crops + MossLichen.
 """
@@ -62,7 +62,7 @@ def layer_means(year, layer, sites, lats, lons):
                 data[data == src.nodata] = np.nan
                 v = data[inside]
                 out.append({"site": s, "year": year, "layer": layer,
-                            "n_pixels": v.size, "n_valid": int(np.isfinite(v).sum()),
+                            "n_grids": v.size, "n_valid": int(np.isfinite(v).sum()),
                             "mean": np.nanmean(v) if np.isfinite(v).any() else np.nan,
                             "latitude": lat, "longitude": lon})
     return out

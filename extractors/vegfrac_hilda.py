@@ -33,7 +33,8 @@ def extract(dataset, site_info, config):
 
         if len(hilda_data) > 0:
             classes = np.atleast_1d(bxtr.vars[tar_name]['class'])
-            # Pixels without a HILDA+ state stay NaN rather than counting as absent.
+            # Grid cells without a HILDA+ state stay NaN rather than counting as
+            # absent.
             vegfrac = hilda_data.isin(classes).astype(float).where(hilda_data.notnull())
             annual_vegfrac = []
 

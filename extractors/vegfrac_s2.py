@@ -5,14 +5,14 @@ Vegetation fraction within 1 km of the site from Sentinel-2 L2A at 10 m.
 
 For each site the year is split into six two-month bins and the clearest L2A scene of
 each bin with at most max_cloud % cloud is used. Per scene, red and near infrared are
-read for the pixels within 1 km of the site, the scene classification layer drops
-cloud, shadow, snow and saturated pixels, and water counts as zero cover. NDVI is
+read for the grid cells within 1 km of the site, the scene classification layer drops
+cloud, shadow, snow and saturated grid cells, and water counts as zero cover. NDVI is
 scaled linearly to a cover fraction between NDVI_SOIL and NDVI_VEG.
 
-veg is the mean over the footprint of the per-pixel peak cover over the scenes.
-share_ndvi_gt_0.15 is the share of footprint pixels whose peak NDVI is above 0.15.
-The per-pixel peak NDVI of each site is saved in peak_dir when it is set, so other
-thresholds can be tried without reading the scenes again.
+veg is the mean over the footprint of the per grid cell peak cover over the scenes.
+share_ndvi_gt_0.15 is the share of footprint grid cells whose peak NDVI is above
+0.15. The per grid cell peak NDVI of each site is saved in peak_dir when it is set,
+so other thresholds can be tried without reading the scenes again.
 
 Scenes and bands come from the Planetary Computer cloud optimised GeoTIFFs, signed
 with a SAS token that is renewed every 30 minutes. The cache holds one row per site,
@@ -81,7 +81,7 @@ def offset(item):
 
 
 def scene_cover(item, lat, lon):
-    """Cover and NDVI of the pixels within the radius, on the scene 10 m grid."""
+    """Cover and NDVI of the grid cells within the radius, on the scene 10 m grid."""
     import rasterio
     from rasterio.enums import Resampling
     from rasterio.warp import transform
@@ -165,7 +165,7 @@ def fetch_site(site, lat, lon, info):
         os.makedirs(info["peak_dir"], exist_ok=True)
         np.save(os.path.join(info["peak_dir"], f"{site}.npy"),
                 pndvi[ok].astype(np.float16))
-    rec.update({"n_pixels": int(inside.sum()), "n_valid": int(ok.sum()),
+    rec.update({"n_grids": int(inside.sum()), "n_valid": int(ok.sum()),
                 "veg": float(np.nanmean(pcover[ok])) if ok.any() else np.nan,
                 f"share_ndvi_gt_{NDVI_MIN}": float((pndvi[ok] > NDVI_MIN).mean())
                 if ok.any() else np.nan,
