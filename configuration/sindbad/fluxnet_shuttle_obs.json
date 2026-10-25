@@ -1,0 +1,133 @@
+{
+    "extractor": "fluxnet_shuttle",
+    "var_suffix": "shuttle",
+    "cache_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/prefetch/fluxnet_shuttle/index_fluxnet_shuttle.csv",
+    "nee_variant": "USTAR50",
+    "n_workers": 10,
+    "base_info": {
+        "partitioning": "",
+        "variableUnit": "",
+        "bounds": [],
+        "sourceVariableName": "",
+        "sourceVariableUnit": "",
+        "source2sindbadUnit": 1,
+        "isCategorical": false,
+        "nameShort": "",
+        "nameLong": "",
+        "spaceTimeType": "normal",
+        "sourceDataProductName": "FLUXNET-Shuttle",
+        "QC": "QC",
+        "RANDUNC": "RANDUNC",
+        "weightVar": "",
+        "DaySum": false,
+        "DayMin": false,
+        "DayMax": false,
+        "wDayMean": false,
+        "DayTime": false,
+        "isEnergy": false,
+        "isWater": false,
+        "isCarbon": false,
+        "skipUnitcheck": false,
+        "publication": "FLUXNET Shuttle, https://github.com/fluxnet/shuttle; ONEFlux, Pastorello et al. 2020, DOI:10.1038/s41597-020-0534-3; per site DOI and citation in the product_id and citation attributes",
+        "data_path": "",
+        "description": "ONEFlux v1.3 eddy covariance fluxes and meteorology of the FLUXNET Shuttle"
+    },
+    "sel_variables": "all",
+    "variables": {
+        "GPP_DT": {
+            "partitioning": "DT",
+            "variableUnit": "gC m-2",
+            "bounds": [
+                -10,
+                100
+            ],
+            "sourceVariableName": "GPP",
+            "sourceVariableUnit": "umolCO2 m-2 s-1",
+            "nameShort": "GPP",
+            "nameLong": "gross primary productivity - from day time partitioning method [NEE_VUT_USTAR50]",
+            "isCarbon": true,
+            "skipUnitcheck": true
+        },
+        "GPP_NT": {
+            "partitioning": "NT",
+            "variableUnit": "gC m-2",
+            "bounds": [
+                -10,
+                100
+            ],
+            "sourceVariableName": "GPP",
+            "sourceVariableUnit": "umolCO2 m-2 s-1",
+            "nameShort": "GPP",
+            "nameLong": "gross primary productivity - from night time partitioning method [NEE_VUT_USTAR50]",
+            "isCarbon": true,
+            "skipUnitcheck": true
+        },
+        "H": {
+            "variableUnit": "MJ m-2",
+            "bounds": [
+                -50,
+                50
+            ],
+            "sourceVariableName": "H",
+            "sourceVariableUnit": "W m-2",
+            "nameShort": "H",
+            "nameLong": "sensible heatflux",
+            "isEnergy": true,
+            "skipUnitcheck": true
+        },
+        "LE": {
+            "variableUnit": "MJ m-2",
+            "bounds": [
+                -50,
+                50
+            ],
+            "sourceVariableName": "LE",
+            "sourceVariableUnit": "W m-2",
+            "nameShort": "LE",
+            "nameLong": "latent heatflux",
+            "isEnergy": true,
+            "skipUnitcheck": true
+        },
+        "NEE": {
+            "variableUnit": "gC m-2",
+            "bounds": [
+                -100,
+                100
+            ],
+            "sourceVariableName": "NEE",
+            "sourceVariableUnit": "umolCO2 m-2 s-1",
+            "nameShort": "NEE",
+            "nameLong": "Net Ecosystem Exchange [Variable Ustar Threshold (VUT)50 percentile]",
+            "isCarbon": true,
+            "skipUnitcheck": true
+        },
+        "RECO_NT": {
+            "partitioning": "NT",
+            "variableUnit": "gC m-2",
+            "bounds": [
+                0,
+                100
+            ],
+            "sourceVariableName": "RECO",
+            "sourceVariableUnit": "umolCO2 m-2 s-1",
+            "nameShort": "RECO_NT",
+            "nameLong": "Daily Ecosystem Respiration from Nighttime partitioning method [NEE_VUT_USTAR50]",
+            "isCarbon": true,
+            "skipUnitcheck": true
+        },
+        "RECO_DT": {
+            "partitioning": "DT",
+            "variableUnit": "gC m-2",
+            "bounds": [
+                0,
+                100
+            ],
+            "sourceVariableName": "RECO",
+            "sourceVariableUnit": "umolCO2 m-2 s-1",
+            "nameShort": "RECO_DT",
+            "nameLong": "Daily Ecosystem Respiration from Daytime partitioning method [NEE_VUT_USTAR50]",
+            "isCarbon": true,
+            "skipUnitcheck": true
+        }
+    }
+}
