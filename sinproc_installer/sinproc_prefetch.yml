@@ -1,0 +1,36 @@
+name: sinproc-prefetch
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - python=3.12
+  - numpy=2.5
+  - scipy
+  - pandas=3.1
+  - xarray=2026.9
+  - zarr=3.4
+  - dask
+  - netcdf4
+  - h5netcdf
+  - fsspec
+  - aiohttp
+  - requests
+  - pyyaml
+  - rasterio
+  - shapely
+  - geopandas
+  - timezonefinder
+  - matplotlib
+  - scikit-learn=1.8
+  - numba
+  - statsmodels
+  - cdsapi
+  - tqdm
+  - pip
+  - pip:
+    - icechunk==2.3.0
+    - pcodec==1.0.4
+    - arraylake==1.7.0
+    - ecmwf-datastores-client==0.5.3
+    - git+https://github.com/fluxnet/shuttle.git@028818791fef116db03e97f3f6b0aebdf1a89e90
+    - git+https://github.com/epsilon-machine/missingpy.git@0b526a7314dc3cc47f708702765b7aed1b55d4ab

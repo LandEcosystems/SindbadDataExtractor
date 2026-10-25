@@ -37,7 +37,7 @@
             "qc_thres": 0.85
         }
     },
-    "sel_datasets": "all except cliff_crun cliff_cruj cliff_erai modis_MxD11A1 modis_MxDx1x1",
+    "sel_datasets": "all except cliff_crun cliff_cruj cliff_erai era5_API shuttle_obs shuttle_clim jung_C2F modis_MxD11A1 modis_MxDx1x1",
     "sel_datasetsa": "bgi_FLUXCOM_obs",
     "sel_datasetst": "agb agb_merged",
     "dataset": {
@@ -75,6 +75,10 @@
         "cliff_crun": "cliff_cruncepv8_csv.json",
         "cliff_cruj": "cliff_crujrav2_2_csv.json",
         "swinpot": "oneflux_swinpot_csv.json",
-        "swinpot_calc": "swinpot_calc.json"
+        "swinpot_calc": "swinpot_calc.json",
+        "era5_API": "era5_API.json",
+        "shuttle_obs": "fluxnet_shuttle_obs.json",
+        "shuttle_clim": "fluxnet_shuttle_clim.json",
+        "jung_C2F": "jung_C2F.json"
     }
 }
