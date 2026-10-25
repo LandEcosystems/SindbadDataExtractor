@@ -1,0 +1,832 @@
+<style>
+.sv { font-family: var(--font-anthropic-sans); display: flex; flex-direction: column; gap: var(--cds-gap-lg); }
+.sv h1 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; text-wrap: balance; }
+.sv .lede { color: var(--color-fg-muted); max-width: 72ch; margin: 0; line-height: 1.5; }
+.sv .page b { font-weight: var(--cds-font-weight-medium); color: var(--color-fg); }
+.sv .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); gap: var(--cds-gap-md); }
+.sv .tile { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: flex; flex-direction: column; gap: var(--cds-gap-xs); }
+.sv .tile .k { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.sv .tile .v { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); font-variant-numeric: tabular-nums; min-height: 1.2em; }
+.sv .controls { display: flex; flex-wrap: wrap; gap: var(--cds-gap-md); align-items: center; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 2; background: var(--color-bg); padding-block: var(--cds-pad-sm); }
+.sv .seg { display: inline-flex; border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); overflow: hidden; }
+.sv .seg button { font: inherit; font-size: var(--cds-font-size-body); background: transparent; color: var(--color-fg-muted); border: 0; padding: var(--cds-pad-xs) var(--cds-pad-md); cursor: pointer; }
+.sv .seg button[aria-pressed="true"] { background: var(--color-panel); color: var(--color-fg); font-weight: var(--cds-font-weight-medium); }
+.sv .seg button:focus-visible, .sv select:focus-visible, .sv input:focus-visible, .sv th button:focus-visible { outline: 2px solid var(--cds-chart-axis); outline-offset: 1px; }
+.sv label.ctl { display: inline-flex; gap: var(--cds-gap-sm); align-items: center; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.sv select, .sv input[type="search"] { font: inherit; font-size: var(--cds-font-size-body); color: var(--color-fg); background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-xs) var(--cds-pad-sm); }
+.sv .card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: flex; flex-direction: column; gap: var(--cds-gap-sm); min-width: 0; }
+.sv .card h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0; }
+.sv .note { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); margin: 0; line-height: 1.45; max-width: 80ch; }
+.sv .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr)); gap: var(--cds-gap-md); }
+.sv .tablebox { max-height: 30rem; overflow: auto; min-width: 0; }
+.sv table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; font-size: var(--cds-font-size-caption); }
+.sv th { position: sticky; top: 0; background: var(--color-panel); text-align: right; font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); padding: 0; white-space: nowrap; z-index: 1; }
+.sv th button { font: inherit; color: inherit; background: none; border: 0; padding: var(--cds-pad-xs) var(--cds-pad-sm); cursor: pointer; width: 100%; text-align: inherit; }
+.sv th.l, .sv td.l { text-align: left; }
+.sv td { padding: var(--cds-pad-xs) var(--cds-pad-sm); border-top: 1px solid var(--color-border-line); text-align: right; white-space: nowrap; }
+.sv td.wrap { white-space: normal; min-width: 14rem; }
+.sv .bad { color: var(--color-bad); }
+.sv .warn { color: var(--color-warn); }
+.sv .rcell { display: inline-flex; align-items: center; gap: var(--cds-gap-sm); }
+.sv .rbar { position: relative; width: 7rem; height: 0.5rem; background: var(--cds-chart-grid); border-radius: 999px; }
+.sv .rbar span { position: absolute; top: 0; bottom: 0; border-radius: 999px; background: var(--cds-chart-muted); }
+.sv .rbar i { position: absolute; top: -0.15rem; bottom: -0.15rem; width: 3px; border-radius: 2px; }
+.sv .plot { position: relative; min-height: 320px; }
+.sv .tip { position: absolute; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius); box-shadow: var(--cds-shadow-popover); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.sv .tip .h { color: var(--cds-text-secondary); }
+.sv .fail { display: flex; align-items: center; justify-content: center; gap: var(--cds-gap-sm); color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); min-height: inherit; }
+.sv .fail::before { content: ""; width: 0.375rem; height: 0.375rem; border-radius: 50%; background: var(--color-bad); }
+.sv [data-dash-source-state=empty] { color: transparent; }
+.sv [data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+.sv .legend { display: flex; gap: var(--cds-gap-md); flex-wrap: wrap; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.sv .legend span { display: inline-flex; align-items: center; gap: 0.35rem; }
+.sv .legend i { width: 0.6rem; height: 0.6rem; border-radius: 50%; display: inline-block; }
+.sv [hidden] { display: none !important; }
+.sv .pg { display: flex; flex-direction: column; gap: var(--cds-gap-lg); }
+.sv .tabs { display: flex; gap: var(--cds-gap-md); border-bottom: 1px solid var(--color-border-line); }
+.sv .tabs button { font: inherit; font-size: var(--cds-font-size-body); background: none; border: 0; border-bottom: 2px solid transparent; color: var(--color-fg-muted); padding: var(--cds-pad-sm) var(--cds-pad-xs); cursor: pointer; margin-bottom: -1px; }
+.sv .tabs button[aria-selected="true"] { color: var(--color-fg); border-bottom-color: var(--color-fg); font-weight: var(--cds-font-weight-medium); }
+.sv .tabs button:focus-visible, .sv .back:focus-visible { outline: 2px solid var(--cds-chart-axis); outline-offset: 2px; }
+.sv .back { font: inherit; font-size: var(--cds-font-size-body); color: var(--color-fg); background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-xs) var(--cds-pad-md); cursor: pointer; }
+.sv .vp-head { display: flex; flex-direction: column; gap: var(--cds-gap-xs); }
+.sv .vp-head h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0; }
+.sv .mgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr)); gap: var(--cds-gap-md); }
+.sv .mini { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-md); display: flex; flex-direction: column; gap: var(--cds-gap-xs); min-width: 0; }
+.sv .mini h3 { font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); margin: 0; display: flex; justify-content: space-between; gap: var(--cds-gap-sm); }
+.sv .mini h3 .u { color: var(--color-fg-muted); font-weight: 400; font-size: var(--cds-font-size-caption); }
+.sv .mini .stats { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); font-variant-numeric: tabular-nums; min-height: 1.2em; }
+.sv .mini .box { position: relative; min-height: 180px; }
+.sv .mini circle.pt { cursor: pointer; }
+@media (max-width: 640px) { .sv .sec { display: none; } }
+</style>
+
+<div class="sv">
+  <div class="page" style="display:flex;flex-direction:column;gap:var(--cds-gap-sm)">
+    <h1 id="top">FLUXNET Shuttle against FLUXNET2015</h1>
+    <p class="lede" id="takeaway">
+      <span data-source="overview" data-field="sites_compared" class="dash-skeleton">—</span> sites compared on the years both products cover, each variable on the time steps where both have a value.
+      Within sites the median daily correlation is
+      <b data-source="variables" data-field="within_r_median" data-where="id=daily|LE" class="dash-skeleton">—</b> for LE,
+      <b data-source="variables" data-field="within_r_median" data-where="id=daily|GPP_NT" class="dash-skeleton">—</b> for GPP_NT and
+      <b data-source="variables" data-field="within_r_median" data-where="id=daily|RECO_DT" class="dash-skeleton">—</b> for RECO_DT.
+      Where a site has no rain gauge, shuttle precipitation is uncorrected ERA5 and up to
+      <b data-source="precip_max" data-field="ratio" class="dash-skeleton">—</b> times FLUXNET2015.
+    </p>
+  </div>
+
+  <nav class="tabs" role="tablist" aria-label="Pages">
+    <button type="button" role="tab" id="tab-overview" aria-controls="overview" aria-selected="true">Overview</button>
+    <button type="button" role="tab" id="tab-variables" aria-controls="variables" aria-selected="false">Variables</button>
+  </nav>
+
+  <div class="pg" id="overview" role="tabpanel" aria-labelledby="tab-overview">
+  <div class="tiles" id="tiles">
+    <div class="tile"><span class="k">Sites compared</span><span class="v dash-skeleton" data-source="overview" data-field="sites_compared">—</span></div>
+    <div class="tile"><span class="k">Site-years, daily</span><span class="v dash-skeleton" data-source="overview" data-field="site_years">—</span></div>
+    <div class="tile"><span class="k">Sites with no common years</span><span class="v dash-skeleton" data-source="overview" data-field="sites_no_overlap">—</span></div>
+    <div class="tile"><span class="k">Sites with an hourly time offset</span><span class="v dash-skeleton" data-source="overview" data-field="sites_with_lag">—</span></div>
+  </div>
+
+  <div class="controls">
+    <div class="seg" role="group" aria-label="Resolution">
+      <button type="button" id="reso-daily" aria-pressed="true">Daily</button>
+      <button type="button" id="reso-hourly" aria-pressed="false">Hourly</button>
+    </div>
+    <label class="ctl" for="var-select">Variable <select id="var-select"></select></label>
+    <label class="ctl" for="kind-select">Group <select id="kind-select">
+      <option value="">All</option><option>Flux</option><option>Meteo</option><option>Uncertainty</option><option>QC</option>
+    </select></label>
+  </div>
+
+  <section class="card" id="agreement">
+    <h2>Agreement by variable</h2>
+    <p class="note">One row per variable at the chosen resolution. Within-site r is the correlation at each site over its paired time steps: the bar spans the 10th percentile to the median across sites, the tick is the median. NSE is the Nash-Sutcliffe efficiency of the shuttle with FLUXNET2015 as reference, 1 for identical series. Across-site r compares the site means of the two products. QC values are near constant, so for QC rows the share of equal values says more than r. QC is compared only where its flux exists in both products.</p>
+    <div class="tablebox">
+      <table id="var-table" data-source="variables" data-row-key="id">
+        <thead><tr>
+          <th class="l" data-field="variable"><button type="button" data-sort="variable">Variable</button></th>
+          <th class="l sec" data-field="kind"><button type="button" data-sort="kind">Group</button></th>
+          <th data-field="n_sites"><button type="button" data-sort="n_sites">Sites</button></th>
+          <th class="l" data-field="within_r_median"><button type="button" data-sort="within_r_median">Within-site r, median</button></th>
+          <th class="sec" data-field="within_r_p10"><button type="button" data-sort="within_r_p10">r, 10th pct</button></th>
+          <th data-field="nse_median"><button type="button" data-sort="nse_median">NSE, median</button></th>
+          <th class="sec" data-field="nse_p10"><button type="button" data-sort="nse_p10">NSE, 10th pct</button></th>
+          <th data-field="slope_median"><button type="button" data-sort="slope_median">Slope</button></th>
+          <th data-field="rel_bias_median"><button type="button" data-sort="rel_bias_median">Rel. bias</button></th>
+          <th class="sec" data-field="frac_equal_median"><button type="button" data-sort="frac_equal_median">Equal</button></th>
+          <th class="sec" data-field="sites_r_below_0_9"><button type="button" data-sort="sites_r_below_0_9">Sites r&lt;0.9</button></th>
+          <th data-field="across_r"><button type="button" data-sort="across_r">Across-site r</button></th>
+          <th class="l sec" data-field="worst_sites"><button type="button" data-sort="worst_sites">Lowest r</button></th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="grid2">
+    <section class="card" id="across">
+      <h2 id="across-title">Site means</h2>
+      <p class="note">Mean of each site over its paired time steps, shuttle against FLUXNET2015, with the 1:1 line. Sites whose means differ by more than 20% are marked.</p>
+      <div class="legend" id="across-legend"></div>
+      <div class="plot" id="scatter" data-source="site_variable"></div>
+    </section>
+    <section class="card" id="per-site">
+      <h2 id="sites-title">Per site</h2>
+      <p class="note">Ref only and shuttle only count time steps where just one product has a value, which shows record differences outside the paired steps.</p>
+      <input type="search" id="site-search" placeholder="Filter sites" aria-label="Filter sites">
+      <div class="tablebox">
+        <table id="site-table" data-source="site_variable" data-row-key="id">
+          <thead><tr>
+            <th class="l" data-field="site"><button type="button" data-sort="site">Site</button></th>
+            <th class="l sec" data-field="years"><button type="button" data-sort="years">Years</button></th>
+            <th data-field="n"><button type="button" data-sort="n">Paired</button></th>
+            <th data-field="mean_ref"><button type="button" data-sort="mean_ref">FLUXNET2015</button></th>
+            <th data-field="mean_shuttle"><button type="button" data-sort="mean_shuttle">Shuttle</button></th>
+            <th data-field="rel_bias"><button type="button" data-sort="rel_bias">Rel. bias</button></th>
+            <th data-field="r"><button type="button" data-sort="r">r</button></th>
+            <th data-field="nse"><button type="button" data-sort="nse">NSE</button></th>
+            <th class="sec" data-field="slope"><button type="button" data-sort="slope">Slope</button></th>
+            <th class="sec" data-field="frac_equal"><button type="button" data-sort="frac_equal">Equal</button></th>
+            <th class="sec" data-field="n_ref_only"><button type="button" data-sort="n_ref_only">Ref only</button></th>
+            <th class="sec" data-field="n_shuttle_only"><button type="button" data-sort="n_shuttle_only">Shuttle only</button></th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <div class="grid2" id="issues">
+    <section class="card" id="precip">
+      <h2>Precipitation without a rain gauge</h2>
+      <p class="note">Sites whose shuttle record has no measured P, so P_F is the ERA5 series of the zip without site correction. Where a gauge exists, ERA5 P matches it. FLUXNET2015 and shuttle columns are mm per year over the common years; blank where FLUXNET2015 has no P in those years.</p>
+      <div class="tablebox">
+        <table id="precip-table" data-source="era5_precip" data-row-key="site">
+          <thead><tr>
+            <th class="l" data-field="site"><button type="button" data-sort="site">Site</button></th>
+            <th data-field="P_ERA_mm_per_year"><button type="button" data-sort="P_ERA_mm_per_year">ERA5 P, full record</button></th>
+            <th data-field="fluxnet2015_P_mm_per_year"><button type="button" data-sort="fluxnet2015_P_mm_per_year">FLUXNET2015</button></th>
+            <th data-field="shuttle_P_mm_per_year_common"><button type="button" data-sort="shuttle_P_mm_per_year_common">Shuttle</button></th>
+            <th data-field="ratio"><button type="button" data-sort="ratio">Ratio</button></th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+    <section class="card" id="lags">
+      <h2>Hourly time offsets</h2>
+      <p class="note">Hourly variables whose correlation is highest with the shuttle shifted by whole hours. A positive lag means the shuttle series runs later than FLUXNET2015. All other sites and variables match best at zero.</p>
+      <div class="tablebox">
+        <table id="lag-table" data-source="hourly_lags" data-row-key="id">
+          <thead><tr>
+            <th class="l" data-field="site"><button type="button" data-sort="site">Site</button></th>
+            <th class="l" data-field="variable"><button type="button" data-sort="variable">Variable</button></th>
+            <th data-field="best_lag_h"><button type="button" data-sort="best_lag_h">Best lag, h</button></th>
+            <th data-field="r_lag0"><button type="button" data-sort="r_lag0">r at lag 0</button></th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <h2 style="margin-top:var(--cds-gap-md)">No common years</h2>
+      <p class="note">Sites on both lists whose shuttle years do not overlap the FLUXNET2015 record.</p>
+      <div class="tablebox">
+        <table id="gap-table" data-source="site_status" data-row-key="id">
+          <thead><tr>
+            <th class="l" data-field="site"><button type="button" data-sort="site">Site</button></th>
+            <th class="l" data-field="reso"><button type="button" data-sort="reso">Resolution</button></th>
+            <th class="l" data-field="shuttle_years"><button type="button" data-sort="shuttle_years">Shuttle years</button></th>
+            <th class="l sec" data-field="data_hub"><button type="button" data-sort="data_hub">Hub</button></th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+  </div>
+
+  <div class="pg" id="variables" role="tabpanel" aria-labelledby="tab-variables" hidden>
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Resolution of the site means" id="vp-reso">
+        <button type="button" id="vp-daily" aria-pressed="true">Daily</button>
+        <button type="button" id="vp-hourly" aria-pressed="false">Hourly</button>
+      </div>
+      <label class="ctl" for="vp-site">Site <select id="vp-site"><option value="">All sites</option></select></label>
+      <label class="ctl" for="vp-kind">Group <select id="vp-kind">
+        <option value="">All</option><option>Flux</option><option>Meteo</option><option>Uncertainty</option><option>QC</option>
+      </select></label>
+      <div class="seg" role="group" aria-label="Time series view" id="vp-view" hidden>
+        <button type="button" id="vp-v-daily" aria-pressed="false">Daily</button>
+        <button type="button" id="vp-v-monthly" aria-pressed="true">Monthly</button>
+        <button type="button" id="vp-v-diurnal" aria-pressed="false">Sub-daily</button>
+      </div>
+      <label class="ctl" for="vp-month" id="vp-month-wrap" hidden>Month <select id="vp-month">
+        <option value="0">All months</option><option value="1">Jan</option><option value="2">Feb</option><option value="3">Mar</option>
+        <option value="4">Apr</option><option value="5">May</option><option value="6">Jun</option><option value="7">Jul</option>
+        <option value="8">Aug</option><option value="9">Sep</option><option value="10">Oct</option><option value="11">Nov</option><option value="12">Dec</option>
+      </select></label>
+      <button type="button" class="back" id="vp-back" hidden>All sites</button>
+    </div>
+    <div class="vp-head">
+      <h2 id="vp-title">Site means, every variable</h2>
+      <p class="note" id="vp-note">Each point is one site: its mean over the paired time steps, shuttle against FLUXNET2015, with the 1:1 line. Click a point or pick a site to see its time series.</p>
+      <div class="legend" id="vp-legend"></div>
+    </div>
+    <div class="mgrid" id="vp-grid"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  const NUM = ["n", "n_ref_only", "n_shuttle_only", "mean_ref", "mean_shuttle", "bias", "rel_bias", "rmse", "r", "slope",
+    "frac_equal", "best_lag_h", "n_sites", "n_steps", "within_r_median", "within_r_p10", "within_r_min", "slope_median",
+    "rel_bias_median", "abs_rel_bias_p90", "frac_equal_median", "sites_r_below_0_9", "across_r", "across_bias", "across_rmse",
+    "across_mean_ref", "across_mean_shuttle", "P_ERA_mm_per_year", "fluxnet2015_P_mm_per_year", "shuttle_P_mm_per_year_common",
+    "ratio", "r_lag0", "step_h", "nse", "nse_median", "nse_p10"];
+  const num = (v) => (v === "" || v == null ? NaN : Number(v));
+  const typed = (rows) => rows.map((r) => { const o = { ...r }; NUM.forEach((k) => { if (k in o) o[k] = num(o[k]); }); return o; });
+
+  dash.calc("overview", {
+    inputs: ["site_status", "site_variable", "hourly_lags"],
+    title: "Coverage counts",
+    description: "Sites compared, daily site-years as the largest paired day count per site over 365.25, sites with no common years, and sites with an hourly offset.",
+    fn: (site_status, site_variable, hourly_lags) => {
+      const sites = new Set(site_variable.map((r) => r.site));
+      const days = {};
+      site_variable.filter((r) => r.reso === "daily").forEach((r) => { days[r.site] = Math.max(days[r.site] || 0, Number(r.n)); });
+      const total = Object.values(days).reduce((a, b) => a + b, 0);
+      const none = new Set(site_status.filter((r) => r.status === "no overlap").map((r) => r.site));
+      return [{ sites_compared: sites.size, site_years: Math.round(total / 365.25), sites_no_overlap: none.size,
+        sites_with_lag: new Set(hourly_lags.map((r) => r.site)).size }];
+    },
+  });
+  dash.calc("precip_max", {
+    inputs: ["era5_precip"],
+    title: "Largest ERA5 precipitation ratio",
+    description: "Largest ratio of shuttle to FLUXNET2015 precipitation among sites without a rain gauge.",
+    fn: (era5_precip) => [{ ratio: Math.max(...era5_precip.map((r) => Number(r.ratio)).filter((x) => isFinite(x))) }],
+  });
+
+  const state = { reso: "daily", variable: "GPP_NT", kind: "", search: "", sorts: {} };
+  const save = () => {};
+
+  const $ = (s) => document.querySelector(s);
+  const f3 = d3.format(".3f"), f2 = d3.format(".2f"), pct = d3.format("+.1%"), pct0 = d3.format(".0%"), cnt = d3.format(",");
+  const fv = (v) => {
+    if (!isFinite(v)) return "";
+    const a = Math.abs(v);
+    if (a >= 1000) return d3.format(",.0f")(v);
+    if (a >= 10) return d3.format(".1f")(v);
+    if (a >= 0.01 || a === 0) return d3.format(".3f")(v);
+    return d3.format(".2e")(v);
+  };
+  const fmt = { r: (v) => (isFinite(v) ? f3(v) : ""), slope: (v) => (isFinite(v) ? f2(v) : ""), rel: (v) => (isFinite(v) ? pct(v) : ""),
+    pct: (v) => (isFinite(v) ? pct0(v) : ""), n: (v) => (isFinite(v) ? cnt(v) : ""), v: fv, mm: (v) => (isFinite(v) ? d3.format(",.0f")(v) : ""),
+    lag: (v) => (isFinite(v) ? d3.format("+d")(v) : ""), ratio: (v) => (isFinite(v) ? f2(v) : ""),
+    nse: (v) => (isFinite(v) ? (v < -9.99 ? "< -10" : f2(v)) : "") };
+
+  function sortRows(rows, id, def) {
+    const s = state.sorts[id] || def;
+    const k = s.key, dir = s.dir;
+    return rows.slice().sort((a, b) => {
+      const x = a[k], y = b[k];
+      if (typeof x === "number" || typeof y === "number") {
+        const xn = isFinite(x), yn = isFinite(y);
+        if (!xn && !yn) return 0; if (!xn) return 1; if (!yn) return -1;
+        return dir * (x - y);
+      }
+      return dir * String(x).localeCompare(String(y));
+    });
+  }
+  function wireSort(tableId, def, redraw) {
+    const t = document.getElementById(tableId);
+    t.querySelectorAll("th button[data-sort]").forEach((b) => {
+      b.addEventListener("click", () => {
+        const cur = state.sorts[tableId] || def;
+        const key = b.dataset.sort;
+        state.sorts[tableId] = { key, dir: cur.key === key ? -cur.dir : (key === "site" || key === "variable" ? 1 : -1) };
+        redraw();
+      });
+    });
+  }
+  function markSort(tableId, def) {
+    const s = state.sorts[tableId] || def;
+    document.querySelectorAll(`#${tableId} th`).forEach((th) => {
+      const b = th.querySelector("button");
+      th.setAttribute("aria-sort", b && b.dataset.sort === s.key ? (s.dir > 0 ? "ascending" : "descending") : "none");
+    });
+  }
+  function fillTable(tableId, rows, cols, keyOf) {
+    const tb = document.querySelector(`#${tableId} tbody`);
+    tb.textContent = "";
+    rows.forEach((r) => {
+      const tr = document.createElement("tr");
+      tr.dataset.key = keyOf(r);
+      cols.forEach((c) => {
+        const td = document.createElement("td");
+        if (c.cls) td.className = c.cls;
+        if (c.render) c.render(td, r); else td.textContent = c.f ? c.f(r[c.k]) : (r[c.k] ?? "");
+        if (c.flag) { const fl = c.flag(r[c.k], r); if (fl) td.classList.add(fl); }
+        tr.appendChild(td);
+      });
+      tb.appendChild(tr);
+    });
+  }
+  function failRow(tableId, ncol, status) {
+    const tb = document.querySelector(`#${tableId} tbody`);
+    tb.textContent = "";
+    if (status === "error") {
+      const tr = document.createElement("tr"), td = document.createElement("td");
+      td.colSpan = ncol; const d = document.createElement("div"); d.className = "fail"; d.textContent = "Failed to load";
+      td.appendChild(d); tr.appendChild(td); tb.appendChild(tr);
+    }
+  }
+
+  const rFlag = (v) => (isFinite(v) && v < 0.9 ? "bad" : "");
+  const nseFlag = (v) => (isFinite(v) && v < 0.5 ? "bad" : isFinite(v) && v < 0.8 ? "warn" : "");
+  const relFlag = (v) => (isFinite(v) && Math.abs(v) > 0.2 ? "bad" : isFinite(v) && Math.abs(v) > 0.05 ? "warn" : "");
+
+  function setReso(reso) {
+    state.reso = reso;
+    $("#reso-daily").setAttribute("aria-pressed", reso === "daily");
+    $("#reso-hourly").setAttribute("aria-pressed", reso === "hourly");
+    save(); draw();
+  }
+  $("#reso-daily").addEventListener("click", () => setReso("daily"));
+  $("#reso-hourly").addEventListener("click", () => setReso("hourly"));
+  $("#var-select").addEventListener("change", (e) => { state.variable = e.target.value; save(); draw(); });
+  $("#kind-select").addEventListener("change", (e) => { state.kind = e.target.value; draw(); });
+  $("#site-search").addEventListener("input", (e) => { state.search = e.target.value.trim().toLowerCase(); draw(); });
+  const VDEF = { key: "kind", dir: 1 }, SDEF = { key: "r", dir: 1 }, PDEF = { key: "ratio", dir: -1 }, LDEF = { key: "site", dir: 1 }, GDEF = { key: "site", dir: 1 };
+  wireSort("var-table", VDEF, () => draw());
+  wireSort("site-table", SDEF, () => draw());
+  wireSort("precip-table", PDEF, () => draw());
+  wireSort("lag-table", LDEF, () => draw());
+  wireSort("gap-table", GDEF, () => draw());
+
+  const KIND_ORDER = { Flux: 0, Meteo: 1, Uncertainty: 2, QC: 3 };
+  let drawn = false;
+
+  function drawVars(V) {
+    let rows = V.filter((r) => r.reso === state.reso && (!state.kind || r.kind === state.kind));
+    const s = state.sorts["var-table"] || VDEF;
+    if (s.key === "kind") rows = rows.slice().sort((a, b) => s.dir * ((KIND_ORDER[a.kind] - KIND_ORDER[b.kind]) || a.variable.localeCompare(b.variable)));
+    else rows = sortRows(rows, "var-table", VDEF);
+    markSort("var-table", VDEF);
+    const col0 = dash.colors[0];
+    fillTable("var-table", rows, [
+      { k: "variable", cls: "l" }, { k: "kind", cls: "l sec" }, { k: "n_sites", f: fmt.n },
+      { k: "within_r_median", cls: "l", render: (td, r) => {
+        const w = document.createElement("span"); w.className = "rcell";
+        const t = document.createElement("span"); t.textContent = fmt.r(r.within_r_median);
+        if (rFlag(r.within_r_median)) t.className = "bad";
+        const bar = document.createElement("span"); bar.className = "rbar";
+        const lo = Math.max(0, isFinite(r.within_r_p10) ? r.within_r_p10 : 0), md = Math.max(0, isFinite(r.within_r_median) ? r.within_r_median : 0);
+        const sp = document.createElement("span"); sp.style.left = (lo * 100) + "%"; sp.style.width = Math.max(0, (md - lo) * 100) + "%";
+        const tk = document.createElement("i"); tk.style.left = `calc(${md * 100}% - 1.5px)`; tk.style.background = col0;
+        bar.append(sp, tk); w.append(bar, t); td.appendChild(w);
+      } },
+      { k: "within_r_p10", cls: "sec", f: fmt.r, flag: rFlag },
+      { k: "nse_median", f: fmt.nse, flag: nseFlag }, { k: "nse_p10", cls: "sec", f: fmt.nse, flag: nseFlag },
+      { k: "slope_median", f: fmt.slope },
+      { k: "rel_bias_median", f: fmt.rel, flag: relFlag }, { k: "frac_equal_median", cls: "sec", f: fmt.pct },
+      { k: "sites_r_below_0_9", cls: "sec", f: fmt.n }, { k: "across_r", f: fmt.r, flag: rFlag },
+      { k: "worst_sites", cls: "l sec wrap" },
+    ], (r) => r.id);
+  }
+
+  function drawVarSelect(V) {
+    const sel = $("#var-select");
+    const vars = V.filter((r) => r.reso === state.reso).sort((a, b) => (KIND_ORDER[a.kind] - KIND_ORDER[b.kind]) || a.variable.localeCompare(b.variable));
+    if (!vars.some((r) => r.variable === state.variable) && vars.length) state.variable = vars.some((r) => r.variable === "GPP_NT") ? "GPP_NT" : vars[0].variable;
+    sel.textContent = "";
+    let grp = null, og = null;
+    vars.forEach((r) => {
+      if (r.kind !== grp) { grp = r.kind; og = document.createElement("optgroup"); og.label = grp; sel.appendChild(og); }
+      const o = document.createElement("option"); o.value = r.variable; o.textContent = r.variable; og.appendChild(o);
+    });
+    sel.value = state.variable;
+  }
+
+  function drawSites(S) {
+    let rows = S.filter((r) => r.reso === state.reso && r.variable === state.variable);
+    const unit = rows.length ? rows[0].units : "";
+    $("#sites-title").textContent = `${state.variable}, ${state.reso}, per site`;
+    $("#across-title").textContent = `${state.variable}, ${state.reso}, site means` + (unit ? ` (${unit})` : "");
+    drawScatter(rows, unit);
+    if (state.search) rows = rows.filter((r) => r.site.toLowerCase().includes(state.search));
+    rows = sortRows(rows, "site-table", SDEF);
+    markSort("site-table", SDEF);
+    fillTable("site-table", rows, [
+      { k: "site", cls: "l" }, { k: "years", cls: "l sec" }, { k: "n", f: fmt.n },
+      { k: "mean_ref", f: fmt.v }, { k: "mean_shuttle", f: fmt.v }, { k: "rel_bias", f: fmt.rel, flag: relFlag },
+      { k: "r", f: fmt.r, flag: rFlag }, { k: "nse", f: fmt.nse, flag: nseFlag },
+      { k: "slope", cls: "sec", f: fmt.slope }, { k: "frac_equal", cls: "sec", f: fmt.pct },
+      { k: "n_ref_only", cls: "sec", f: fmt.n }, { k: "n_shuttle_only", cls: "sec", f: fmt.n },
+    ], (r) => r.id);
+  }
+
+  function drawScatter(rows, unit) {
+    const box = $("#scatter");
+    box.textContent = "";
+    rows = rows.filter((r) => isFinite(r.mean_ref) && isFinite(r.mean_shuttle));
+    const legend = $("#across-legend");
+    legend.textContent = "";
+    if (!rows.length) return;
+    const crit = "var(--cds-chart-status-critical)";
+    [["Within 20%", dash.colors[0]], ["Differs by more than 20%", crit]].forEach(([t, c]) => {
+      const s = document.createElement("span"); const i = document.createElement("i"); i.style.background = c; s.append(i, document.createTextNode(t)); legend.appendChild(s);
+    });
+    const W = Math.max(280, box.clientWidth || 480), H = Math.round(Math.min(440, Math.max(300, W * 0.72)));
+    const ext = d3.extent(rows.flatMap((r) => [r.mean_ref, r.mean_shuttle]));
+    const pad = (ext[1] - ext[0]) * 0.05 || Math.abs(ext[0]) * 0.05 || 1;
+    const dom = [ext[0] - pad, ext[1] + pad];
+    const svg = d3.select(box).append("svg").attr("width", "100%").attr("viewBox", `0 0 ${W} ${H}`).attr("role", "img")
+      .attr("aria-label", `Site means of ${state.variable}, shuttle against FLUXNET2015`);
+    const probeY = d3.scaleLinear(dom, [H, 0]).nice();
+    const tf = probeY.tickFormat(6);
+    const probe = svg.append("g").attr("font-size", "11");
+    let maxw = 0;
+    probeY.ticks(6).forEach((t) => { const tx = probe.append("text").text(tf(t)); maxw = Math.max(maxw, tx.node().getComputedTextLength()); });
+    probe.remove();
+    const m = { t: 10, r: 14, b: 40, l: Math.ceil(maxw) + 30 };
+    const x = d3.scaleLinear(dom, [m.l, W - m.r]).nice(), y = d3.scaleLinear(dom, [H - m.b, m.t]).nice();
+    const nx = Math.max(3, Math.min(6, Math.floor((W - m.l - m.r) / 70)));
+    svg.append("g").selectAll("line").data(y.ticks(6)).join("line").attr("x1", m.l).attr("x2", W - m.r).attr("y1", y).attr("y2", y)
+      .attr("stroke", "var(--cds-chart-grid)");
+    const gx = svg.append("g").attr("transform", `translate(0,${H - m.b})`).call(d3.axisBottom(x).ticks(nx).tickFormat(x.tickFormat(nx)).tickSizeOuter(0));
+    const gy = svg.append("g").attr("transform", `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(6).tickFormat(y.tickFormat(6)).tickSizeOuter(0));
+    [gx, gy].forEach((g) => { g.attr("font-size", null).attr("font-family", null); g.selectAll("text").attr("fill", "var(--color-fg-muted)").style("font-size", "11px");
+      g.selectAll("line,path").attr("stroke", "var(--cds-chart-axis)"); });
+    svg.append("text").attr("x", (m.l + W - m.r) / 2).attr("y", H - 6).attr("text-anchor", "middle").attr("fill", "var(--color-fg-muted)").style("font-size", "11px").text("FLUXNET2015");
+    svg.append("text").attr("transform", `translate(12,${(m.t + H - m.b) / 2}) rotate(-90)`).attr("text-anchor", "middle").attr("fill", "var(--color-fg-muted)").style("font-size", "11px").text("Shuttle");
+    const d0 = Math.max(x.domain()[0], y.domain()[0]), d1 = Math.min(x.domain()[1], y.domain()[1]);
+    svg.append("line").attr("x1", x(d0)).attr("y1", y(d0)).attr("x2", x(d1)).attr("y2", y(d1)).attr("stroke", "var(--cds-chart-reference)").attr("stroke-dasharray", "4 4");
+    const far = (r) => isFinite(r.rel_bias) && Math.abs(r.rel_bias) > 0.2;
+    const pts = svg.append("g").selectAll("circle").data(rows).join("circle").attr("cx", (r) => x(r.mean_ref)).attr("cy", (r) => y(r.mean_shuttle))
+      .attr("r", 4).attr("fill", (r) => (far(r) ? crit : dash.colors[0])).attr("fill-opacity", 0.8);
+    const lbl = svg.append("g");
+    rows.filter(far).sort((a, b) => Math.abs(b.rel_bias) - Math.abs(a.rel_bias)).slice(0, 4).forEach((r) => {
+      const tx = lbl.append("text").attr("x", x(r.mean_ref) + 6).attr("y", y(r.mean_shuttle) - 6).attr("fill", "var(--color-fg-muted)").style("font-size", "11px").text(r.site);
+      if (x(r.mean_ref) + 6 + tx.node().getComputedTextLength() > W - m.r) tx.attr("x", x(r.mean_ref) - 6).attr("text-anchor", "end");
+    });
+    const tip = document.createElement("div"); tip.className = "tip"; tip.hidden = true; box.appendChild(tip);
+    const del = d3.Delaunay.from(rows, (r) => x(r.mean_ref), (r) => y(r.mean_shuttle));
+    const hl = svg.append("circle").attr("r", 6).attr("fill", "none").attr("stroke", "var(--color-fg)").attr("stroke-width", 1.5).style("display", "none");
+    svg.on("pointermove", (ev) => {
+      const [px, py] = d3.pointer(ev);
+      const i = del.find(px, py), r = rows[i];
+      if (Math.hypot(px - x(r.mean_ref), py - y(r.mean_shuttle)) > 30) { tip.hidden = true; hl.style("display", "none"); return; }
+      hl.style("display", null).attr("cx", x(r.mean_ref)).attr("cy", y(r.mean_shuttle));
+      tip.textContent = "";
+      const h = document.createElement("div"); h.className = "h"; h.textContent = `${r.site}, ${r.years}`; tip.appendChild(h);
+      [["FLUXNET2015", fmt.v(r.mean_ref)], ["Shuttle", fmt.v(r.mean_shuttle)], ["Rel. bias", fmt.rel(r.rel_bias)], ["r", fmt.r(r.r)], ["NSE", fmt.nse(r.nse)]].forEach(([k, v]) => {
+        const d = document.createElement("div"); d.textContent = `${k}: ${v}`; tip.appendChild(d); });
+      tip.hidden = false;
+      const bw = box.clientWidth, sc = bw / W;
+      let left = x(r.mean_ref) * sc + 12, top = y(r.mean_shuttle) * sc - 10;
+      if (left + tip.offsetWidth > bw) left = x(r.mean_ref) * sc - tip.offsetWidth - 12;
+      tip.style.left = Math.max(0, left) + "px"; tip.style.top = Math.max(0, top) + "px";
+    }).on("pointerleave", () => { tip.hidden = true; hl.style("display", "none"); });
+  }
+
+  function drawIssues(P, L, G) {
+    if (P) {
+      markSort("precip-table", PDEF);
+      fillTable("precip-table", sortRows(P, "precip-table", PDEF), [
+        { k: "site", cls: "l" }, { k: "P_ERA_mm_per_year", f: fmt.mm }, { k: "fluxnet2015_P_mm_per_year", f: fmt.mm },
+        { k: "shuttle_P_mm_per_year_common", f: fmt.mm }, { k: "ratio", f: fmt.ratio, flag: (v) => (isFinite(v) && v > 1.5 ? "bad" : "") },
+      ], (r) => r.site);
+    }
+    if (L) {
+      markSort("lag-table", LDEF);
+      fillTable("lag-table", sortRows(L, "lag-table", LDEF), [
+        { k: "site", cls: "l" }, { k: "variable", cls: "l" }, { k: "best_lag_h", f: fmt.lag }, { k: "r_lag0", f: fmt.r },
+      ], (r) => r.id);
+    }
+    if (G) {
+      markSort("gap-table", GDEF);
+      fillTable("gap-table", sortRows(G.filter((r) => r.status === "no overlap"), "gap-table", GDEF), [
+        { k: "site", cls: "l" }, { k: "reso", cls: "l" }, { k: "shuttle_years", cls: "l" }, { k: "data_hub", cls: "l sec" },
+      ], (r) => r.id);
+    }
+  }
+
+  function draw() {
+    const v = dash.data("variables"), s = dash.data("site_variable"), p = dash.data("era5_precip"), l = dash.data("hourly_lags"), g = dash.data("site_status");
+    document.querySelectorAll(".dash-skeleton").forEach((el) => {
+      const src = el.dataset.source; const st = dash.data(src).status;
+      if (st === "ok" || st === "error") el.classList.remove("dash-skeleton");
+    });
+    const ov = dash.data("overview"), pm = dash.data("precip_max");
+    document.querySelectorAll('[data-source="overview"]').forEach((el) => {
+      const row = ov.status === "ok" ? ov.data[0] : null;
+      el.textContent = row ? cnt(row[el.dataset.field]) : "—";
+    });
+    document.querySelectorAll('[data-source="precip_max"]').forEach((el) => {
+      el.textContent = pm.status === "ok" && pm.data[0] ? f2(pm.data[0].ratio) : "—";
+    });
+    if (v.status === "ok") {
+      const V = typed(v.data);
+      document.querySelectorAll('#takeaway [data-source="variables"]').forEach((el) => {
+        const id = el.dataset.where.slice(3); const row = V.find((r) => r.id === id);
+        el.textContent = row ? fmt.r(row[el.dataset.field]) : "—";
+      });
+      drawVarSelect(V); drawVars(V);
+    } else {
+      failRow("var-table", 13, v.status);
+      document.querySelectorAll('#takeaway [data-source="variables"]').forEach((el) => { el.textContent = "—"; });
+    }
+    if (s.status === "ok") drawSites(typed(s.data));
+    else {
+      failRow("site-table", 12, s.status); $("#scatter").textContent = "";
+      if (s.status === "error") { const d = document.createElement("div"); d.className = "fail"; d.textContent = "Failed to load"; $("#scatter").appendChild(d); }
+    }
+    if (p.status === "ok") drawIssues(typed(p.data), null, null); else failRow("precip-table", 5, p.status);
+    if (l.status === "ok") drawIssues(null, typed(l.data), null); else failRow("lag-table", 4, l.status);
+    if (g.status === "ok") drawIssues(null, null, typed(g.data)); else failRow("gap-table", 4, g.status);
+    if (!drawn && v.status === "ok") {
+      drawn = true;
+      const named = document.getElementById(location.hash.slice(1));
+      if (named && named.id === "variables") { showPage("variables"); return; }
+      if (named) { named.scrollIntoView(); dash.setLink(named.id); }
+    }
+    drawVarPage();
+  }
+
+  // Pages
+  function showPage(id) {
+    ["overview", "variables"].forEach((p) => {
+      document.getElementById(p).hidden = p !== id;
+      document.getElementById("tab-" + p).setAttribute("aria-selected", p === id);
+    });
+    dash.setLink(id);
+    draw();
+  }
+  $("#tab-overview").addEventListener("click", () => showPage("overview"));
+  $("#tab-variables").addEventListener("click", () => showPage("variables"));
+
+  // Variables page
+  const vp = { reso: "daily", site: "", kind: "", view: "monthly", month: 0 };
+  const parseMonth = (m) => { const [y, mo] = String(m).split("-").map(Number); return new Date(Date.UTC(y, mo - 1, 15)); };
+  const monthFmt = d3.utcFormat("%b %Y");
+  function setVpReso(reso) {
+    vp.reso = reso;
+    $("#vp-daily").setAttribute("aria-pressed", reso === "daily");
+    $("#vp-hourly").setAttribute("aria-pressed", reso === "hourly");
+    draw();
+  }
+  function pickSite(site) {
+    vp.site = site;
+    $("#vp-site").value = site;
+    draw();
+    document.getElementById("variables").scrollIntoView();
+  }
+  $("#vp-daily").addEventListener("click", () => setVpReso("daily"));
+  $("#vp-hourly").addEventListener("click", () => setVpReso("hourly"));
+  $("#vp-site").addEventListener("change", (e) => pickSite(e.target.value));
+  $("#vp-kind").addEventListener("change", (e) => { vp.kind = e.target.value; draw(); });
+  $("#vp-back").addEventListener("click", () => pickSite(""));
+  function setView(view) {
+    vp.view = view;
+    ["daily", "monthly", "diurnal"].forEach((k) => $(`#vp-v-${k}`).setAttribute("aria-pressed", k === view));
+    draw();
+  }
+  ["daily", "monthly", "diurnal"].forEach((k) => $(`#vp-v-${k}`).addEventListener("click", () => setView(k)));
+  $("#vp-month").addEventListener("change", (e) => { vp.month = Number(e.target.value); draw(); });
+
+  function legendInto(el, items) {
+    el.textContent = "";
+    // An item with a line style draws a short line instead of a dot.
+    items.forEach(([t, c, line]) => {
+      const s = document.createElement("span"); const i = document.createElement("i");
+      if (line) i.style.cssText = `width:1.4rem;height:0;border-radius:0;border-top:2px ${line} ${c}`;
+      else i.style.background = c;
+      s.append(i, document.createTextNode(t)); el.appendChild(s);
+    });
+  }
+  function axisStyle(g) {
+    g.attr("font-size", null).attr("font-family", null);
+    g.selectAll("text").attr("fill", "var(--color-fg-muted)").style("font-size", "10px");
+    g.selectAll("line,path").attr("stroke", "var(--cds-chart-axis)");
+  }
+  function leftMargin(svg, scale, ticks, fmtf) {
+    const probe = svg.append("g").style("font-size", "10px");
+    let w = 0;
+    scale.ticks(ticks).forEach((t) => { const tx = probe.append("text").text(fmtf(t)); w = Math.max(w, tx.node().getComputedTextLength()); });
+    probe.remove();
+    return Math.ceil(w) + 10;
+  }
+  function panel(grid, variable, unit) {
+    const card = document.createElement("div"); card.className = "mini"; card.id = "vp-" + variable;
+    const h = document.createElement("h3"); const n = document.createElement("span"); n.textContent = variable;
+    const u = document.createElement("span"); u.className = "u"; u.textContent = unit || ""; h.append(n, u);
+    const st = document.createElement("div"); st.className = "stats";
+    const box = document.createElement("div"); box.className = "box";
+    card.append(h, st, box); grid.appendChild(card);
+    return { card, st, box };
+  }
+  function statMark(st, label, source, field, where, text) {
+    const s = document.createElement("span");
+    s.dataset.source = source; s.dataset.field = field; s.dataset.where = where; s.textContent = text;
+    st.append(document.createTextNode(label), s, document.createTextNode("  "));
+  }
+  function attachTip(box, svg, W, H, find) {
+    const tip = document.createElement("div"); tip.className = "tip"; tip.hidden = true; box.appendChild(tip);
+    svg.on("pointermove", (ev) => {
+      const [px, py] = d3.pointer(ev);
+      const hit = find(px, py);
+      if (!hit) { tip.hidden = true; return; }
+      tip.textContent = "";
+      const hd = document.createElement("div"); hd.className = "h"; hd.textContent = hit.head; tip.appendChild(hd);
+      hit.lines.forEach(([c, t]) => {
+        const d = document.createElement("div");
+        if (c) { const i = document.createElement("i"); i.style.cssText = `display:inline-block;width:.5rem;height:.5rem;border-radius:50%;margin-right:.35rem;background:${c}`; d.appendChild(i); }
+        d.appendChild(document.createTextNode(t)); tip.appendChild(d);
+      });
+      tip.hidden = false;
+      const bw = box.clientWidth, sc = bw / W;
+      let left = hit.x * sc + 12, top = hit.y * sc - 10;
+      if (left + tip.offsetWidth > bw) left = hit.x * sc - tip.offsetWidth - 12;
+      tip.style.left = Math.max(0, left) + "px"; tip.style.top = Math.max(0, Math.min(top, box.clientHeight - tip.offsetHeight)) + "px";
+    }).on("pointerleave", () => { tip.hidden = true; });
+  }
+
+  function miniScatter(box, rows) {
+    const W = Math.max(220, box.clientWidth || 260), H = 190;
+    const ext = d3.extent(rows.flatMap((r) => [r.mean_ref, r.mean_shuttle]));
+    const pad = (ext[1] - ext[0]) * 0.06 || Math.abs(ext[0]) * 0.05 || 1;
+    const dom = [ext[0] - pad, ext[1] + pad];
+    const svg = d3.select(box).append("svg").attr("width", "100%").attr("viewBox", `0 0 ${W} ${H}`);
+    const y0 = d3.scaleLinear(dom, [H, 0]).nice();
+    const tf = y0.tickFormat(4);
+    const m = { t: 6, r: 8, b: 22, l: leftMargin(svg, y0, 4, tf) };
+    const x = d3.scaleLinear(dom, [m.l, W - m.r]).nice(), y = d3.scaleLinear(dom, [H - m.b, m.t]).nice();
+    svg.append("g").selectAll("line").data(y.ticks(4)).join("line").attr("x1", m.l).attr("x2", W - m.r).attr("y1", y).attr("y2", y).attr("stroke", "var(--cds-chart-grid)");
+    axisStyle(svg.append("g").attr("transform", `translate(0,${H - m.b})`).call(d3.axisBottom(x).ticks(3).tickFormat(x.tickFormat(3)).tickSizeOuter(0)));
+    axisStyle(svg.append("g").attr("transform", `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(4).tickFormat(y.tickFormat(4)).tickSizeOuter(0)));
+    const d0 = Math.max(x.domain()[0], y.domain()[0]), d1 = Math.min(x.domain()[1], y.domain()[1]);
+    svg.append("line").attr("x1", x(d0)).attr("y1", y(d0)).attr("x2", x(d1)).attr("y2", y(d1)).attr("stroke", "var(--cds-chart-reference)").attr("stroke-dasharray", "4 4");
+    const crit = "var(--cds-chart-status-critical)";
+    const far = (r) => isFinite(r.rel_bias) && Math.abs(r.rel_bias) > 0.2;
+    svg.append("g").selectAll("circle").data(rows).join("circle").attr("class", "pt").attr("cx", (r) => x(r.mean_ref)).attr("cy", (r) => y(r.mean_shuttle))
+      .attr("r", 3).attr("fill", (r) => (far(r) ? crit : dash.colors[0])).attr("fill-opacity", 0.75);
+    const del = d3.Delaunay.from(rows, (r) => x(r.mean_ref), (r) => y(r.mean_shuttle));
+    const near = (px, py) => { const r = rows[del.find(px, py)]; return Math.hypot(px - x(r.mean_ref), py - y(r.mean_shuttle)) <= 20 ? r : null; };
+    attachTip(box, svg, W, H, (px, py) => {
+      const r = near(px, py); if (!r) return null;
+      return { x: x(r.mean_ref), y: y(r.mean_shuttle), head: `${r.site}, ${r.years}`,
+        lines: [[null, `FLUXNET2015 ${fmt.v(r.mean_ref)}`], [null, `Shuttle ${fmt.v(r.mean_shuttle)}`], [null, `r ${fmt.r(r.r)}, NSE ${fmt.nse(r.nse)}, rel. bias ${fmt.rel(r.rel_bias)}`], [null, "Click for its time series"]] };
+    });
+    svg.on("click", (ev) => { const [px, py] = d3.pointer(ev); const r = near(px, py); if (r) pickSite(r.site); });
+  }
+
+  // pts: [{t, a, b}] with t a Date, or an hour of the day when hourly is true
+  function miniSeries(box, pts, hourly, headFmt) {
+    pts = pts.filter((p) => isFinite(p.a) || isFinite(p.b));
+    if (!pts.length) return false;
+    const W = Math.max(220, box.clientWidth || 260), H = 190;
+    const svg = d3.select(box).append("svg").attr("width", "100%").attr("viewBox", `0 0 ${W} ${H}`);
+    const ext = d3.extent(pts.flatMap((p) => [p.a, p.b]).filter(isFinite));
+    const y0 = d3.scaleLinear(ext[0] === ext[1] ? [ext[0] - 1, ext[1] + 1] : ext, [H, 0]).nice();
+    const tf = y0.tickFormat(4);
+    const m = { t: 6, r: 8, b: 22, l: leftMargin(svg, y0, 4, tf) };
+    const x = hourly ? d3.scaleLinear([0, 23], [m.l, W - m.r]) : d3.scaleUtc(d3.extent(pts, (p) => p.t), [m.l, W - m.r]);
+    const y = y0.copy().range([H - m.b, m.t]);
+    svg.append("g").selectAll("line").data(y.ticks(4)).join("line").attr("x1", m.l).attr("x2", W - m.r).attr("y1", y).attr("y2", y).attr("stroke", "var(--cds-chart-grid)");
+    let xaxis;
+    if (hourly) xaxis = d3.axisBottom(x).tickValues([0, 6, 12, 18, 23]).tickFormat((h) => `${h}h`);
+    else {
+      const span = (x.domain()[1] - x.domain()[0]) / (365.25 * 864e5);
+      const xt = span > 6 ? d3.utcYear.every(Math.ceil(span / 4)) : span > 1.5 ? d3.utcYear.every(1) : d3.utcMonth.every(4);
+      xaxis = d3.axisBottom(x).ticks(xt).tickFormat(span > 1.5 ? d3.utcFormat("%Y") : d3.utcFormat("%b %y"));
+    }
+    axisStyle(svg.append("g").attr("transform", `translate(0,${H - m.b})`).call(xaxis.tickSizeOuter(0)));
+    axisStyle(svg.append("g").attr("transform", `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(4).tickFormat(tf).tickSizeOuter(0)));
+    const cRef = dash.colors[1], cSh = dash.colors[0];
+    const dense = pts.length > 400;
+    // The shuttle line is drawn on top and dashed, so FLUXNET2015 shows through it.
+    [["a", cRef, null], ["b", cSh, dense ? "3 2" : "5 3"]].forEach(([k, c, dash]) => {
+      svg.append("path").datum(pts).attr("fill", "none").attr("stroke", c).attr("stroke-width", dense ? 1 : 1.6)
+        .attr("stroke-opacity", dense ? 0.85 : 1).attr("stroke-linejoin", "round").attr("stroke-linecap", dash ? "butt" : "round")
+        .attr("stroke-dasharray", dash)
+        .attr("d", d3.line().defined((p) => isFinite(p[k])).x((p) => x(p.t)).y((p) => y(p[k])));
+    });
+    const rule = svg.append("line").attr("y1", m.t).attr("y2", H - m.b).attr("stroke", "var(--cds-chart-axis)").style("display", "none");
+    const bis = d3.bisector((p) => p.t).center;
+    attachTip(box, svg, W, H, (px) => {
+      if (px < m.l || px > W - m.r) { rule.style("display", "none"); return null; }
+      const p = pts[bis(pts, x.invert(px))];
+      rule.style("display", null).attr("x1", x(p.t)).attr("x2", x(p.t));
+      return { x: x(p.t), y: y(isFinite(p.b) ? p.b : p.a), head: headFmt(p.t), lines: [[cRef, `FLUXNET2015 ${fmt.v(p.a)}`], [cSh, `Shuttle ${fmt.v(p.b)}`]] };
+    });
+    svg.on("pointerleave.rule", () => rule.style("display", "none"));
+    return true;
+  }
+
+  const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const parseDay = (d) => new Date(String(d) + "T00:00:00Z");
+  const dayFmt = d3.utcFormat("%-d %b %Y");
+  // Points of one variable of a site in the chosen view
+  function seriesPoints(rows, variable) {
+    const ra = `${variable}__ref`, rb = `${variable}__shuttle`;
+    if (vp.view === "monthly") return rows.map((r) => ({ t: parseMonth(r.month), a: num(r[ra]), b: num(r[rb]) }));
+    if (vp.view === "daily") return rows.map((r) => ({ t: parseDay(r.date), a: num(r[ra]), b: num(r[rb]) }));
+    const sel = vp.month ? rows.filter((r) => Number(r.month) === vp.month) : rows;
+    const by = d3.group(sel, (r) => Number(r.hour));
+    return d3.range(24).filter((h) => by.has(h)).map((h) => {
+      const g = by.get(h);
+      return { t: h, a: d3.mean(g, (r) => num(r[ra])), b: d3.mean(g, (r) => num(r[rb])) };
+    });
+  }
+  const VIEW_NOTE = {
+    daily: "Daily values on days both products have. r, NSE and relative bias are from the daily comparison.",
+    monthly: "Monthly means of the daily values on days both products have, for months with at least 10 such days. r, NSE and relative bias are from the daily comparison.",
+    diurnal: "Mean cycle over the day of the hourly values both products have, by calendar month, hours with at least 10 paired values. All months is the mean of the monthly cycles. r, NSE and relative bias are from the hourly comparison.",
+  };
+
+  function vpVariables(V, reso) {
+    return V.filter((r) => r.reso === reso && (!vp.kind || r.kind === vp.kind))
+      .sort((a, b) => (KIND_ORDER[a.kind] - KIND_ORDER[b.kind]) || a.variable.localeCompare(b.variable));
+  }
+
+  function drawVarPage() {
+    if (document.getElementById("variables").hidden) return;
+    const v = dash.data("variables"), s = dash.data("site_variable"), ix = dash.data("series_index");
+    const grid = $("#vp-grid");
+    grid.textContent = "";
+    if (v.status !== "ok" || s.status !== "ok" || ix.status !== "ok") {
+      grid.removeAttribute("data-source");
+      if ([v, s, ix].some((d) => d.status === "error")) { const d = document.createElement("div"); d.className = "fail"; d.textContent = "Failed to load"; grid.appendChild(d); }
+      return;
+    }
+    const V = typed(v.data), S = typed(s.data), IX = ix.data;
+    const sel = $("#vp-site");
+    if (sel.options.length <= 1) IX.forEach((r) => sel.appendChild(new Option(r.site, r.site)));    sel.value = vp.site;
+    $("#vp-back").hidden = !vp.site;
+    $("#vp-reso").hidden = !!vp.site;
+    $("#vp-view").hidden = !vp.site;
+    $("#vp-month-wrap").hidden = !vp.site || vp.view !== "diurnal";
+    if (!vp.site) {
+      $("#vp-title").textContent = `Site means, every variable, ${vp.reso}`;
+      $("#vp-note").textContent = "Each point is one site: its mean over the paired time steps, shuttle against FLUXNET2015, with the 1:1 line. Click a point or pick a site to see its time series.";
+      legendInto($("#vp-legend"), [["Within 20%", dash.colors[0]], ["Differs by more than 20%", "var(--cds-chart-status-critical)"]]);
+      vpVariables(V, vp.reso).forEach((vr) => {
+        const rows = S.filter((r) => r.reso === vp.reso && r.variable === vr.variable && isFinite(r.mean_ref) && isFinite(r.mean_shuttle));
+        if (!rows.length) return;
+        const p = panel(grid, vr.variable, rows[0].units);
+        p.box.dataset.source = "site_variable";
+        statMark(p.st, `${vr.n_sites} sites, across-site r `, "variables", "across_r", `id=${vr.id}`, fmt.r(vr.across_r));
+        statMark(p.st, "median r ", "variables", "within_r_median", `id=${vr.id}`, fmt.r(vr.within_r_median));
+        statMark(p.st, "NSE ", "variables", "nse_median", `id=${vr.id}`, fmt.nse(vr.nse_median));
+        miniScatter(p.box, rows);
+      });
+      return;
+    }
+    const entry = IX.find((r) => r.site === vp.site);
+    const st = dash.data("site_status");
+    const info = st.status === "ok" ? st.data.find((r) => r.site === vp.site && r.reso === "daily") : null;
+    const label = { daily: "daily", monthly: "monthly", diurnal: "sub-daily" }[vp.view];
+    const mlabel = vp.view === "diurnal" ? `, ${vp.month ? MONTHS[vp.month - 1] : "all months"}` : "";
+    $("#vp-title").textContent = `${vp.site}, ${label} time series${mlabel}` + (info && info.data_hub ? `, ${info.data_hub}, ${info.igbp}` : "");
+    $("#vp-note").textContent = VIEW_NOTE[vp.view];
+    legendInto($("#vp-legend"), [["FLUXNET2015", dash.colors[1], "solid"], ["Shuttle", dash.colors[0], "dashed"]]);
+    const file = entry ? entry[`${vp.view}_file`] : "";
+    if (!file) {
+      const d = document.createElement("p"); d.className = "note"; d.textContent = `No ${label} series for ${vp.site}: the products share no ${vp.view === "diurnal" ? "hourly" : "daily"} time steps.`;
+      grid.appendChild(d); return;
+    }
+    const c = dash.data(file);
+    if (c.status !== "ok") {
+      if (c.status === "error") { const d = document.createElement("div"); d.className = "fail"; d.textContent = "Failed to load"; grid.appendChild(d); }
+      else { const d = document.createElement("div"); d.className = "mini dash-skeleton"; d.style.minHeight = "240px"; grid.appendChild(d); }
+      return;
+    }
+    const key = vp.view === "daily" ? "date" : "month";
+    const rows = c.data.filter((r) => r.site === vp.site);
+    if (vp.view !== "diurnal") rows.sort((a, b) => String(a[key]).localeCompare(String(b[key])));
+    const statReso = vp.view === "diurnal" ? "hourly" : "daily";
+    const headFmt = vp.view === "diurnal" ? (h) => `${String(h).padStart(2, "0")}:00` : vp.view === "daily" ? dayFmt : monthFmt;
+    let shown = 0;
+    vpVariables(V, statReso).forEach((vr) => {
+      if (!(`${vr.variable}__ref` in (rows[0] || {}))) return;
+      const sr = S.find((r) => r.reso === statReso && r.variable === vr.variable && r.site === vp.site);
+      if (!sr) return;
+      const p = panel(grid, vr.variable, sr.units);
+      p.box.dataset.source = file;
+      statMark(p.st, "r ", "site_variable", "r", `id=${sr.id}`, fmt.r(sr.r));
+      statMark(p.st, "NSE ", "site_variable", "nse", `id=${sr.id}`, fmt.nse(sr.nse));
+      statMark(p.st, "rel. bias ", "site_variable", "rel_bias", `id=${sr.id}`, fmt.rel(sr.rel_bias));
+      if (!miniSeries(p.box, seriesPoints(rows, vr.variable), vp.view === "diurnal", headFmt)) p.card.remove();
+      else shown++;
+    });
+    if (!shown) {
+      const d = document.createElement("p"); d.className = "note";
+      d.textContent = vp.view === "daily" ? "Daily series cover the flux and meteo variables; pick Monthly for QC and uncertainty." : "No variables in this group for this view.";
+      grid.appendChild(d);
+    }
+  }
+
+  setReso(state.reso);
+  dash.onData(draw);
+})();
+</script>

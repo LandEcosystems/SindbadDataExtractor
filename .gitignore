@@ -16,6 +16,7 @@
 !/utils/
 !/sinproc_installer/
 !/configuration/
+!/validation/
 
 /extractors/__pycache__
 /utils/__pycache__
