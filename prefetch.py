@@ -26,6 +26,9 @@ than footprint_utils.COORD_TOL_DEG, which the extraction would use with a warnin
 Rows cached before the coordinates were stored with them cannot be compared and are
 counted as without stored coordinates.
 
+Providers whose cache needs several sources per site, such as era5_API, define
+complete_sites(cache, info), which --check uses to count the cached sites.
+
 --cache-dir moves the folder that holds the caches of the datasets to another folder,
 for example to prefetch on a local computer and copy the caches to the cluster
 afterwards. The folder replaced is the common folder of the cache_path of all
@@ -46,7 +49,8 @@ from utils.shared_utils import dataset_json_path  # noqa: E402
 import extractors.footprint_utils as fu  # noqa: E402
 
 # Paths of a dataset json that point into the cache folder.
-PATH_KEYS = ["cache_path", "peak_dir", "work_dir", "tiles_path"]
+PATH_KEYS = ["cache_path", "peak_dir", "work_dir", "tiles_path", "code_dir",
+             "shuttle_cache_path"]
 
 
 def site_table(args, main):
@@ -80,14 +84,20 @@ def move_cache_dir(infos, cache_dir):
                 info[key] = os.path.join(cache_dir, os.path.relpath(path, root))
 
 
-def check(name, info, sites, lats, lons):
-    """Print the sites of the list that the cache of a dataset lacks or misplaces."""
+def check(name, info, sites, lats, lons, provider=None):
+    """
+    Print the sites of the list that the cache of a dataset lacks or misplaces. A
+    provider with complete_sites(cache, info) decides which sites count as cached.
+    """
     path = info["cache_path"]
     cache = fu.read_cache(path)
     if not os.path.exists(path):
         print(f"{name}: no cache at {path}, all {len(sites)} sites missing")
         return
-    have = {s.lower() for s in cache["site"].astype(str)}
+    if hasattr(provider, "complete_sites"):
+        have = provider.complete_sites(cache, info)
+    else:
+        have = {s.lower() for s in cache["site"].astype(str)}
     missing = [s for s in sites if s.lower() not in have]
     moved, unknown = [], 0
     for site, lat, lon in zip(sites, lats, lons):
@@ -146,10 +156,16 @@ def main():
         if not info.get("cache_path"):
             print(f"{name} reads a local source and has nothing to prefetch")
             continue
+        try:
+            provider = importlib.import_module("extractors." + info["extractor"])
+        except ImportError as e:
+            if not args.check:
+                raise
+            print(f"{name}: extractor {info['extractor']} cannot be imported here, {e}")
+            provider = None
         if args.check:
-            check(name, info, sites, lats, lons)
+            check(name, info, sites, lats, lons, provider)
             continue
-        provider = importlib.import_module("extractors." + info["extractor"])
         if not hasattr(provider, "prefetch"):
             print(f"{name}: extractor {info['extractor']} has no prefetch")
             continue

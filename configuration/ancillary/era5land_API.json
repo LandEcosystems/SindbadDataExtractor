@@ -1,0 +1,42 @@
+{
+    "extractor": "era5_API",
+    "var_suffix": "ERA5Land",
+    "cache_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/prefetch/era5land_API/index_era5land.csv",
+    "citation": "Munoz-Sabater, J. et al. (2021): ERA5-Land: a state-of-the-art global reanalysis dataset for land applications. Earth Syst. Sci. Data 13, 4349-4383, DOI:10.5194/essd-13-4349-2021",
+    "sources": {
+        "cds": {
+            "dataset": "reanalysis-era5-land-timeseries, Copernicus Climate Data Store",
+            "id": "reanalysis-era5-land-timeseries",
+            "request_variables": [
+                "2m_temperature",
+                "2m_dewpoint_temperature",
+                "surface_solar_radiation_downwards",
+                "total_precipitation",
+                "snowfall"
+            ],
+            "variables": [
+                "t2m",
+                "d2m",
+                "ssrd",
+                "tp",
+                "sf"
+            ],
+            "start_date": "1950-01-01",
+            "end_date": "",
+            "max_jobs": 3
+        },
+        "edh": {
+            "dataset": "ERA5-Land, Earth Data Hub era5-land-v0",
+            "url": "https://data.earthdatahub.destine.eu/era5/era5-land-v0.zarr",
+            "variables": [
+                "ssr",
+                "str"
+            ],
+            "accumulated": true,
+            "land_only": true,
+            "n_workers": 2
+        }
+    },
+    "sel_variables": "all",
+    "variables": {}
+}

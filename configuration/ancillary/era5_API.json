@@ -1,0 +1,34 @@
+{
+    "extractor": "era5_API",
+    "var_suffix": "ERA5",
+    "cache_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/prefetch/era5_API/index_era5.csv",
+    "citation": "Hersbach, H. et al. (2020): The ERA5 global reanalysis. Q. J. R. Meteorol. Soc. 146, 1999-2049, DOI:10.1002/qj.3803",
+    "sources": {
+        "earthmover": {
+            "dataset": "ERA5 single levels, Earthmover Icechunk earthmover-public/era5",
+            "repo": "earthmover-public/era5",
+            "group": "single/temporal",
+            "variables": [
+                "t2m",
+                "d2m",
+                "ssrd",
+                "tp",
+                "sf",
+                "ssr"
+            ],
+            "n_workers": 4
+        },
+        "edh": {
+            "dataset": "ERA5 single levels, Earth Data Hub era5-single-levels-atmosphere-v0",
+            "url": "https://data.earthdatahub.destine.eu/era5/era5-single-levels-atmosphere-v0.zarr",
+            "variables": [
+                "str"
+            ],
+            "accumulated": false,
+            "land_only": false,
+            "n_workers": 2
+        }
+    },
+    "sel_variables": "all",
+    "variables": {}
+}
