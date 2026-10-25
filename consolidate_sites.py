@@ -6,7 +6,8 @@ FLUXNET style identifiers, coordinates, PFT and the networks that hold the site.
 
 usage:
     python consolidate_sites.py <input csv> <output csv> [--pft-csv csv]
-                                [--countries zip]
+                                [--countries zip] [--shuttle]
+                                [--shuttle-dir dir] [--shuttle-snapshot csv]
 
 The input has one row per site and network, with the columns Site_ID, Lat, Lon, UTC,
 PFT and one in_<network> column of 0 or 1 per network. The identifiers are of three
@@ -56,6 +57,15 @@ PFT, such as TBD, are skipped. --pft-overrides names a csv with the columns Site
 PFT and reason, whose PFT replaces that of the networks and of the fallback csv, for
 sites that were checked by hand. PFT_source says whether the PFT of a site comes from
 the networks, the fallback csv or the overrides.
+
+--shuttle adds a row of the network in_OneFluxShuttle for every site the FLUXNET
+Shuttle lists in AmeriFlux, ICOS and TERN, with its coordinates and IGBP class as
+PFT. The listing is the newest snapshot in --shuttle-dir when it is less than a day
+old, and is made again with the fluxnet-shuttle package otherwise, which keeps it in
+that folder, the cache folder of the shuttle_obs prefetch. --shuttle-snapshot names a
+listing to use instead. A listed site that is already in the input merges with its
+rows as any other network does, so the shuttle only adds sites and the network flag.
+The shuttle gives no UTC offset, which then comes from the time zone.
 """
 import argparse
 import os
@@ -74,6 +84,9 @@ PFT_PRIORITY = ["in_OneFluxShuttle"] + [n for n in SOURCE_PRIORITY
                                         if n != "in_OneFluxShuttle"]
 COUNTRIES = os.path.expanduser("~/research/RnD/data/sindbad_ancillary_data/reference/"
                                "ne_10m_admin_0_map_units.zip")
+SHUTTLE_DIR = os.path.expanduser("~/research/RnD/data/sindbad_ancillary_data/prefetch/"
+                                 "fluxnet_shuttle")
+SHUTTLE_NETWORK = "in_OneFluxShuttle"
 FLUXNET_ID = re.compile(r"^[A-Z]{2}-[A-Za-z0-9]{3}$")
 SAPFLUXNET_ID = re.compile(r"^[A-Z]{3}(_[A-Za-z0-9]+)+$")
 # Codes of FLUXNET identifiers that are not the ISO code of their country.
@@ -163,6 +176,52 @@ def standard_utc_offsets(lats, lons):
         offsets.append(min(datetime.datetime(year, m, 15, 12, tzinfo=zone).utcoffset()
                            .total_seconds() / 3600 for m in (1, 7)))
     return zones, offsets
+
+
+def shuttle_listing(shuttle_dir=SHUTTLE_DIR, snapshot_path=""):
+    """
+    Path of the FLUXNET Shuttle listing: snapshot_path when given, else the snapshot
+    of shuttle_dir, made again when it is older than a day.
+    """
+    if snapshot_path:
+        return snapshot_path
+    from fluxnet_shuttle.shuttle import listall
+    from extractors.fluxnet_shuttle import snapshot
+    os.makedirs(shuttle_dir, exist_ok=True)
+    return snapshot({"cache_path": os.path.join(shuttle_dir, "index.csv")}, listall)
+
+
+def shuttle_rows(listing_path, columns):
+    """
+    Rows in the layout of the input for every site of a shuttle listing, flagged in
+    SHUTTLE_NETWORK, with the columns of the input and the newest product of a site
+    when it is listed more than once.
+    """
+    snap = pd.read_csv(listing_path)
+    snap = snap.sort_values("last_year").drop_duplicates("site_id", keep="last")
+    rows = pd.DataFrame({"Site_ID": snap["site_id"].astype(str).str.strip(),
+                         "Lat": snap["location_lat"], "Lon": snap["location_long"],
+                         "UTC": np.nan, "PFT": snap["igbp"]})
+    for c in columns:
+        if c.startswith("in_"):
+            rows[c] = int(c == SHUTTLE_NETWORK)
+    if SHUTTLE_NETWORK not in rows:
+        rows[SHUTTLE_NETWORK] = 1
+    hubs = snap["data_hub"].value_counts().to_dict()
+    print(f"{len(rows)} shuttle sites from {listing_path}: {hubs}")
+    return rows
+
+
+def add_shuttle(df, listing_path):
+    """The input with the rows of the shuttle listing, reporting the new sites."""
+    rows = shuttle_rows(listing_path, df.columns)
+    known = set(df["Site_ID"].astype(str).str.strip().str.upper())
+    new = rows[~rows["Site_ID"].str.upper().isin(known)]
+    print(f"{len(new)} shuttle sites are not in the input: " + " ".join(new["Site_ID"]))
+    # Shuttle identifiers keep the case of the input, as US-xYE.
+    case = {s.upper(): s for s in df["Site_ID"].astype(str).str.strip()}
+    rows["Site_ID"] = rows["Site_ID"].map(lambda s: case.get(s.upper(), s))
+    return pd.concat([df, rows], ignore_index=True)
 
 
 def consolidate_sites(df, countries_path=COUNTRIES, priority=SOURCE_PRIORITY,
@@ -304,9 +363,15 @@ def main():
     p.add_argument("--fallback-pft", default="")
     p.add_argument("--pft-overrides", default="")
     p.add_argument("--countries", default=COUNTRIES)
+    p.add_argument("--shuttle", action="store_true")
+    p.add_argument("--shuttle-dir", default=SHUTTLE_DIR)
+    p.add_argument("--shuttle-snapshot", default="")
     args = p.parse_args()
 
-    sites = consolidate_sites(pd.read_csv(args.input), args.countries)
+    df = pd.read_csv(args.input)
+    if args.shuttle or args.shuttle_snapshot:
+        df = add_shuttle(df, shuttle_listing(args.shuttle_dir, args.shuttle_snapshot))
+    sites = consolidate_sites(df, args.countries)
     report(sites)
     sites.to_csv(args.output, index=False)
     print(f"written {args.output}")
