@@ -1,0 +1,120 @@
+{
+    "extractor": "jung_C2F",
+    "var_suffix": "jung_C2F",
+    "cache_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/prefetch/jung_C2F/index_jung_C2F_loose.csv",
+    "shuttle_cache_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/prefetch/fluxnet_shuttle/index_fluxnet_shuttle.csv",
+    "code_dir": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/prefetch/jung_C2F/code/c2f_fluxnet-v1.0",
+    "code_version": "c2f_fluxnet v1.0, DOI:10.5281/zenodo.10593332",
+    "citation": "Jung, M., Nelson, J., Migliavacca, M., El-Madany, T., Papale, D., Reichstein, M., Walther, S., and Wutzler, T.: Technical note: Flagging inconsistencies in flux tower data, Biogeosciences, 21, 1827-1846, https://doi.org/10.5194/bg-21-1827-2024, 2024. Nelson, J., Wutzler, T., and Jung, M.: c2f_fluxnet (v1.0), Zenodo [code], https://doi.org/10.5281/zenodo.10593332, 2024.",
+    "strictness": "loose",
+    "seed": 42,
+    "n_jobs_rf": 1,
+    "n_workers": 8,
+    "nee_variant": "USTAR50",
+    "base_info": {
+        "partitioning": "",
+        "variableUnit": "adimensional",
+        "bounds": [
+            0,
+            1
+        ],
+        "sourceVariableName": "",
+        "sourceVariableUnit": "adimensional",
+        "source2sindbadUnit": 1,
+        "isCategorical": true,
+        "nameShort": "",
+        "nameLong": "",
+        "spaceTimeType": "normal",
+        "sourceDataProductName": "FLUXNET-Shuttle-C2F",
+        "QC": "",
+        "RANDUNC": "",
+        "weightVar": "",
+        "DaySum": false,
+        "DayMin": false,
+        "DayMax": false,
+        "wDayMean": false,
+        "DayTime": false,
+        "isEnergy": false,
+        "isWater": false,
+        "isCarbon": false,
+        "skipUnitcheck": false,
+        "publication": "Jung et al. 2024, DOI:10.5194/bg-21-1827-2024; code c2f_fluxnet v1.0, DOI:10.5281/zenodo.10593332",
+        "data_path": "",
+        "description": "C2F consistency flags of daily data computed from the FLUXNET Shuttle data of the site: 1 consistent, 0 inconsistent."
+    },
+    "sel_variables": "all",
+    "variables": {
+        "GPP_QC_NT": {
+            "partitioning": "NT",
+            "sourceVariableName": "GPP_NT_C2F_Flag",
+            "nameShort": "GPP_QC",
+            "nameLong": "C2F consistency flag for Gross Primary Production - nighttime partitioning"
+        },
+        "GPP_QC_DT": {
+            "partitioning": "DT",
+            "sourceVariableName": "GPP_DT_C2F_Flag",
+            "nameShort": "GPP_QC",
+            "nameLong": "C2F consistency flag for Gross Primary Production - daytime partitioning"
+        },
+        "RECO_QC_NT": {
+            "partitioning": "NT",
+            "sourceVariableName": "RECO_NT_C2F_Flag",
+            "nameShort": "RECO_QC",
+            "nameLong": "C2F consistency flag for Ecosystem Respiration - nighttime partitioning"
+        },
+        "RECO_QC_DT": {
+            "partitioning": "DT",
+            "sourceVariableName": "RECO_DT_C2F_Flag",
+            "nameShort": "RECO_QC",
+            "nameLong": "C2F consistency flag for Ecosystem Respiration - daytime partitioning"
+        },
+        "NEE_QC": {
+            "partitioning": "",
+            "sourceVariableName": "NEE_C2F_Flag",
+            "nameShort": "NEE_QC",
+            "nameLong": "C2F consistency flag for Net Ecosystem Exchange"
+        },
+        "LE_QC": {
+            "partitioning": "",
+            "sourceVariableName": "LE_C2F_Flag",
+            "nameShort": "LE_QC",
+            "nameLong": "C2F consistency flag for Latent Heat Flux"
+        },
+        "H_QC": {
+            "partitioning": "",
+            "sourceVariableName": "H_C2F_Flag",
+            "nameShort": "H_QC",
+            "nameLong": "C2F consistency flag for Sensible Heat Flux"
+        },
+        "NETRAD_QC": {
+            "partitioning": "",
+            "sourceVariableName": "NETRAD_C2F_Flag",
+            "nameShort": "NETRAD_QC",
+            "nameLong": "C2F consistency flag for Net Radiation"
+        },
+        "SW_IN_QC": {
+            "partitioning": "",
+            "sourceVariableName": "SW_IN_C2F_Flag",
+            "nameShort": "SW_IN_QC",
+            "nameLong": "C2F consistency flag for Incoming Shortwave Radiation"
+        },
+        "PPFD_IN_QC": {
+            "partitioning": "",
+            "sourceVariableName": "PPFD_IN_C2F_Flag",
+            "nameShort": "PPFD_IN_QC",
+            "nameLong": "C2F consistency flag for Incoming Photosynthetic Photon Flux Density"
+        },
+        "TA_QC": {
+            "partitioning": "",
+            "sourceVariableName": "TA_C2F_Flag",
+            "nameShort": "TA_QC",
+            "nameLong": "C2F consistency flag for Air Temperature"
+        },
+        "VPD_QC": {
+            "partitioning": "",
+            "sourceVariableName": "VPD_C2F_Flag",
+            "nameShort": "VPD_QC",
+            "nameLong": "C2F consistency flag for Vapour Pressure Deficit"
+        }
+    }
+}
