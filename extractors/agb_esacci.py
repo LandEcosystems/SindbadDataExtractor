@@ -12,7 +12,8 @@ ha-1.
 
 Each value goes on the last time step of its year. The components are
     cci: the CCI value.
-    insitu: all rows of insitu_AGB.csv for the site, site IDs matched without case.
+    insitu: all rows of the insitu_path csv for the site, site IDs matched without
+        case.
     merged: insitu at sites with any in-situ value in the time range, else cci. Sites
         are not mixed between sources.
     merged_PFT: merged with every value set to agb_fixed at sites whose PFT is in
@@ -111,7 +112,7 @@ def components(rows, info):
 
 
 def insitu_series(path, site):
-    """In-situ AGB per year of the site from insitu_AGB.csv, in gC m-2."""
+    """In-situ AGB per year of the site from the insitu_path csv, in gC m-2."""
     df = pd.read_csv(path)
     df = df[df["Site_ID"].str.lower() == site.lower()]
     df = df[df["insitu_AGB"] > 0]

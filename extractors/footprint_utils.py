@@ -13,13 +13,23 @@ the source is local and is read on every call.
 
 A provider module defines fetch_site(site, lat, lon, info) returning a list of cache
 rows, components(rows, info) returning {component: {year: value}}, and optionally
-prefetch(sites, lats, lons, info, **kwargs) for a faster batch download.
+prefetch(sites, lats, lons, info, **kwargs) for a faster batch download. A provider
+whose in-situ data are not vegetation fractions defines merge_insitu(comps, info,
+site, targets, placement, full) returning {variable: {year: value}}.
 
 Every cache row records in fetched_utc when it was fetched. The output variables of
 the extractors that use these tools carry the fetch time as access_date, the cache
 they were read from as cache_path, and fetched_at_runtime, which is yes when the
 source was read during the run instead of from a cache. Variables merged with in-situ
-data also carry the csv files the merge read, as insitu_path and pft_path.
+data also carry the csv files the merge read, as insitu_path, tree_insitu_path and
+pft_path.
+
+The in-situ fractions come from FLUXNET_veg_frac.csv at insitu_path, or, when the
+json sets tree_insitu_path, from the consolidated csvs with vegFrac at insitu_path
+and treeFrac at tree_insitu_path, both in percent. At a site without an in-situ
+value where the product has no vegetation fraction in any year, the merged variables
+take the components of the first footprint dataset in rs_fill of the json that has
+one, and carry its key as filled_from.
 """
 import fcntl
 import os
@@ -303,6 +313,19 @@ def site_pft(pft_path, site):
     return str(sel.values[0]).strip() if len(sel) else None
 
 
+def site_value(path, site, column):
+    """
+    Value of column for the site from a csv with a Site_ID column, matched without
+    case, or NaN. Several rows of a site are averaged.
+    """
+    if not path or not os.path.exists(path):
+        return np.nan
+    df = pd.read_csv(path, encoding="utf-8-sig")
+    sel = df.loc[df["Site_ID"].str.lower() == site.lower(), column].astype(float)
+    sel = sel[np.isfinite(sel)]
+    return float(sel.mean()) if len(sel) else np.nan
+
+
 def class_legend(names, pfts):
     """
     CF flag attributes of a class variable from {code: name} and {code: BADM PFT}.
@@ -329,31 +352,60 @@ def badm_by_year(classes_by_year, to_badm):
     return out
 
 
-def fill_sources(config, keys, site, lat, lon):
+def dataset_provider(config, key):
     """
-    BADM PFT by year of the site from the PFT datasets keys of config, as a list of
-    (key, {year: PFT}) in the order of keys. A dataset that is not selected in the
-    run is read from its json in config_dir_path or ancillary_config_dir_path. Each
-    provider gives its PFTs through badm_series(rows).
+    Info and provider module of the dataset key of config, or None and None. A
+    dataset that is not selected in the run is read from its json in config_dir_path
+    or ancillary_config_dir_path.
     """
     import importlib
     import json
+    info = config["dataset"].get(key)
+    if isinstance(info, str):
+        from utils.shared_utils import dataset_json_path
+        path = dataset_json_path(config.get("config_dir_path", ""), info,
+                                 config.get("ancillary_config_dir_path", ""))
+        with open(path) as f:
+            info = json.load(f)
+    if not info:
+        logger.warning(f"fill dataset {key} is not in the main json")
+        return None, None
+    return info, importlib.import_module(f"extractors.{info['extractor']}")
+
+
+def fill_sources(config, keys, site, lat, lon):
+    """
+    BADM PFT by year of the site from the PFT datasets keys of config, as a list of
+    (key, {year: PFT}) in the order of keys. Each provider gives its PFTs through
+    badm_series(rows).
+    """
     out = []
     for key in keys:
-        info = config["dataset"].get(key)
-        if isinstance(info, str):
-            from utils.shared_utils import dataset_json_path
-            path = dataset_json_path(config.get("config_dir_path", ""), info,
-                                     config.get("ancillary_config_dir_path", ""))
-            with open(path) as f:
-                info = json.load(f)
-        if not info:
-            logger.warning(f"PFT fill dataset {key} is not in the main json")
+        info, prov = dataset_provider(config, key)
+        if prov is None:
             continue
-        prov = importlib.import_module(f"extractors.{info['extractor']}")
         rows = rows_for_site(prov, info, site, lat, lon)
         out.append((key, prov.badm_series(rows) if len(rows) else {}))
     return out
+
+
+def fill_components(comps, config, keys, site, lat, lon):
+    """
+    Components of the first footprint dataset in keys of config with a vegetation
+    fraction, for a site where comps has none in any year, or comps otherwise. The
+    second value names the dataset used, or is None.
+    """
+    if any(np.isfinite(v) for v in comps.get("veg", {}).values()):
+        return comps, None
+    for key in keys:
+        info, prov = dataset_provider(config, key)
+        if prov is None:
+            continue
+        rows = rows_for_site(prov, info, site, lat, lon)
+        fill = prov.components(rows, info) if len(rows) else {}
+        if any(np.isfinite(v) for v in fill.get("veg", {}).values()):
+            return fill, key
+    return comps, None
 
 
 def resolve_pft(year, sources):
@@ -429,6 +481,17 @@ def insitu_fractions(veg_path, site, pft, tree_pfts, woody_pfts=None):
     out["tree"] = over if pft in tree_pfts else 0.0
     out["woody"] = over if pft in woody_pfts else 0.0
     return out
+
+
+def consolidated_fractions(veg_path, tree_path, site):
+    """
+    In-situ vegetation and tree fraction of the site from the consolidated csvs,
+    with Site_ID and vegFrac or treeFrac in percent, or NaN. Woody is the tree
+    fraction.
+    """
+    tree = site_value(tree_path, site, "treeFrac") / 100
+    return {"veg": site_value(veg_path, site, "vegFrac") / 100, "tree": tree,
+            "woody": tree}
 
 
 def collapse(series, placement):
@@ -531,13 +594,29 @@ def extract_footprint(provider, dataset, site_info, config):
         if kind:
             comp = bxtr.vars[v]["component"]
             targets[v] = (comp, comp if kind is True else kind)
-    merged = {}
+    merged, filled_from = {}, None
     if targets:
-        pft = site_pft(info.get("pft_path", ""), bxtr.site)
-        ins = insitu_fractions(info.get("insitu_path", ""), bxtr.site, pft,
-                               info.get("tree_pfts", []), info.get("woody_pfts"))
-        full = 1 / bxtr.vars[next(iter(targets))].get("source2sindbadUnit", 1)
-        merged = merge_insitu(comps, ins, targets, placement, full)
+        full =1 / bxtr.vars[next(iter(targets))].get("source2sindbadUnit", 1)
+    if targets and hasattr(provider, "merge_insitu"):
+        # Products other than the vegetation fractions merge with their own in-situ
+        # csv through merge_insitu(comps, info, site, targets, placement, full).
+        merged = provider.merge_insitu(comps, info, bxtr.site, targets, placement, full)
+    elif targets:
+        if info.get("tree_insitu_path"):
+            ins = consolidated_fractions(info.get("insitu_path", ""),
+                                         info["tree_insitu_path"], bxtr.site)
+        else:
+            pft = site_pft(info.get("pft_path", ""), bxtr.site)
+            ins = insitu_fractions(info.get("insitu_path", ""), bxtr.site, pft,
+                                   info.get("tree_pfts", []), info.get("woody_pfts"))
+        # Only the merged variables take the fill, so the product variables stay
+        # the product alone.
+        fill_comps = comps
+        if not np.isfinite(ins["veg"]):
+            fill_comps, filled_from = fill_components(
+                comps, config, info.get("rs_fill", []), bxtr.site, bxtr.lat,
+                bxtr.lon)
+        merged = merge_insitu(fill_comps, ins, targets, placement, full)
 
     src_data = []
     for tar_name in bxtr.vars_list:
@@ -554,7 +633,11 @@ def extract_footprint(provider, dataset, site_info, config):
         bxtr.log_var_end(data, tar_name, None)
         src_data.append(data)
     src_dataset = with_fetch_attrs(bxtr.merge_and_format(src_data), rows, info)
-    src_dataset = with_insitu_paths(src_dataset, merged, info)
+    src_dataset = with_insitu_paths(src_dataset, merged, info,
+                                    ("insitu_path", "tree_insitu_path", "pft_path"))
+    if filled_from:
+        for v in merged:
+            src_dataset[v].attrs["filled_from"] = filled_from
     if len(rows) and hasattr(provider, "site_attrs"):
         src_dataset = src_dataset.assign_attrs(**provider.site_attrs(rows, info))
     return src_dataset

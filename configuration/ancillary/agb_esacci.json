@@ -18,7 +18,7 @@
         2017
     ],
     "time_placement": "year_end",
-    "insitu_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/insitu_AGB.csv",
+    "insitu_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/agb_De2026_consolidated.csv",
     "pft_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/PFT_consolidated.csv",
     "pft_fixed": [
         "GRA",
@@ -73,7 +73,7 @@
             "nameLong": "Above-ground biomass, in situ where available else ESA CCI v7.0",
             "component": "merged",
             "sourceDataProductName": "FLUXNET BADM and ESA CCI Biomass AGB v7.0",
-            "description": "insitu_AGB.csv at sites with any in-situ value, otherwise the ESA CCI value. Sites are not mixed between sources."
+            "description": "agb_De2026_consolidated.csv at sites with any in-situ value, otherwise the ESA CCI value. Sites are not mixed between sources."
         },
         "agb_merged_PFT": {
             "sourceVariableName": "merged_AGB",

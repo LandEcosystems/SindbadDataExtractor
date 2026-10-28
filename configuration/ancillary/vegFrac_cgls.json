@@ -8,7 +8,8 @@
         2015
     ],
     "time_placement": "constant",
-    "insitu_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/FLUXNET_veg_frac.csv",
+    "insitu_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/vegFrac_De2026_consolidated.csv",
+    "tree_insitu_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/treeFrac_De2026_consolidated.csv",
     "pft_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/PFT_consolidated.csv",
     "tree_pfts": [
         "ENF",
@@ -18,6 +19,9 @@
         "MF",
         "SAV",
         "WSA"
+    ],
+    "rs_fill": [
+        "vf_worldcover"
     ],
     "base_info": {
         "partitioning": "",
@@ -96,8 +100,8 @@
             "nameLong": "Tree fraction, in situ where available else Copernicus LC100 collection 3",
             "component": "tree",
             "merge_insitu": true,
-            "sourceDataProductName": "FLUXNET_veg_frac.csv and Copernicus LC100 collection 3",
-            "description": "FLUXNET_veg_frac.csv frac_overstory for forest and savanna PFTs and 0 for other PFTs in the csv, otherwise the product tree fraction, capped at the merged vegetation fraction"
+            "sourceDataProductName": "vegFrac_De2026_consolidated.csv, treeFrac_De2026_consolidated.csv and Copernicus LC100 collection 3",
+            "description": "treeFrac_De2026_consolidated.csv / 100 at sites with an in-situ vegetation fraction, otherwise the product tree fraction, or the WorldCover 2021 tree fraction where the product has no data, capped at the merged vegetation fraction"
         },
         "vegFrac_merged": {
             "sourceVariableName": "veg",
@@ -105,8 +109,8 @@
             "nameLong": "Vegetation fraction, in situ where available else Copernicus LC100 collection 3",
             "component": "veg",
             "merge_insitu": true,
-            "sourceDataProductName": "FLUXNET_veg_frac.csv and Copernicus LC100 collection 3",
-            "description": "FLUXNET_veg_frac.csv as 1 - frac_soil, or overstory + understory without soil, averaged over rows of a site, otherwise the product vegetation fraction"
+            "sourceDataProductName": "vegFrac_De2026_consolidated.csv, treeFrac_De2026_consolidated.csv and Copernicus LC100 collection 3",
+            "description": "vegFrac_De2026_consolidated.csv / 100 where the site has a value, otherwise the product vegetation fraction, or the WorldCover 2021 vegetation fraction where the product has no data"
         }
     }
 }

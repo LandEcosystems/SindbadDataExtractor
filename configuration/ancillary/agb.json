@@ -15,7 +15,7 @@
         "nameShort": "",
         "nameLong": "",
         "spaceTimeType": "normal",
-        "sourceDataProductName": "FLUXNET BADM",
+        "sourceDataProductName": "agb_De2026_consolidated.csv",
         "QC": "",
         "RANDUNC": "",
         "weightVar": "",
@@ -30,7 +30,7 @@
         "skipUnitcheck": false,
         "publication": "",
         "data_path": "",
-        "description": "in-situ aboveground biomass of FLUXNET BADM"
+        "description": "in-situ aboveground biomass from FLUXNET BADM and site PIs, consolidated in agb_De2026_consolidated.csv"
     },
     "sel_variables": "all",
     "variables": {
@@ -44,9 +44,9 @@
             "sourceVariableUnit": "gC m-2",
             "nameShort": "AG_BIOMASS_TT_insitu",
             "nameLong": "Above-ground biomass from in-situ measurements",
-            "sourceDataProductName": "FLUXNET BADM",
+            "sourceDataProductName": "agb_De2026_consolidated.csv",
             "publication": "https://fluxnet.org/badm-data-product/",
-            "data_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/insitu_AGB.csv"
+            "data_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/agb_De2026_consolidated.csv"
         }
     }
 }

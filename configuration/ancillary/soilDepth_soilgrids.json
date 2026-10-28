@@ -9,6 +9,12 @@
     ],
     "time_placement": "constant",
     "source_path": "/Net/Groups/BGI/work_3/sindbad/data/soilgrids/BDTICM_M_250m_ll.tif",
+    "insitu_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/soilDepth_Shan2026_consolidated.csv",
+    "insitu_column": "soilDepth",
+    "clip_m": [
+        0.01,
+        49.99
+    ],
     "base_info": {
         "partitioning": "",
         "variableUnit": "m",
@@ -49,6 +55,15 @@
             "nameShort": "soil_depth",
             "nameLong": "Depth to bedrock, median within 1 km",
             "component": "depth"
+        },
+        "soilDepth_merged": {
+            "sourceVariableName": "BDTICM_M",
+            "nameShort": "soil_depth_soilgrids_merged",
+            "nameLong": "Depth to bedrock, in situ where available else SoilGrids250m median within 1 km",
+            "component": "depth",
+            "merge_insitu": true,
+            "sourceDataProductName": "soilDepth_Shan2026_consolidated.csv and SoilGrids250m BDTICM_M",
+            "description": "soilDepth_Shan2026_consolidated.csv where the site has a value, otherwise the SoilGrids median depth to bedrock clipped to 0.01 to 49.99 m, so that depths at or below 0 become 0.01 m and depths at or above 50 m become 49.99 m. The in-situ depth is not clipped."
         }
     }
 }

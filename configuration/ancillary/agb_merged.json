@@ -66,7 +66,7 @@
             "nameLong": "Above-ground biomass from in-situ measurements",
             "sourceDataProductName": "FLUXNET BADM",
             "publication": "https://fluxnet.org/badm-data-product/",
-            "data_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/insitu_AGB.csv"
+            "data_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/agb_De2026_consolidated.csv"
         },
         "agb_merged": {
             "variableUnit": "gC m-2",
@@ -80,7 +80,7 @@
             "nameLong": "merged above-ground biomass",
             "sourceDataProductName": "FLUXNET BADM and globBiomass",
             "publication": "https://fluxnet.org/badm-data-product/; https://globbiomass.org/DOI:10.5194/essd-2020-148",
-            "data_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/insitu_AGB.csv"
+            "data_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/agb_De2026_consolidated.csv"
         },
         "agb_merged_PFT": {
             "variableUnit": "gC m-2",

@@ -167,7 +167,29 @@ class BasexTractor:
             transforms,
             partitioning=self.vars[tar_name]["partitioning"],
         )
+        if "_merged" in tar_name:
+            self.warn_merged_nan(data, tar_name)
         return
+
+    def warn_merged_nan(self, data, tar_name):
+        """
+        Loud warning when a merged variable has any NaN at the site, with the
+        fraction of time steps that are NaN, since merged variables are meant to
+        have a value everywhere.
+        """
+        da = data[tar_name] if tar_name in data else data
+        vals = np.asarray(da.to_array() if hasattr(da, "to_array") else da, float)
+        n_nan = int(np.isnan(vals).sum())
+        if n_nan == 0:
+            return
+        frac = n_nan / vals.size
+        bar = "!" * 85
+        msg = (f"\n{bar}\n!!! NaN IN MERGED VARIABLE: {self.dataset} {tar_name} at "
+               f"{self.site}\n!!! NaN fraction {frac:.4f} ({n_nan} of {vals.size} "
+               f"values)\n!!! Check the in-situ csv and the product cache for this "
+               f"site.\n{bar}")
+        logger.warning(msg)
+        print(f"{msg}\n", flush=True)
 
     def log_var_start(self, tar_name):
         shut.log_and_print(

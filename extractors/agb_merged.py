@@ -146,6 +146,8 @@ def extract(dataset, site_info, config):
 
     # only include the merged variables in this extractor to avoid confusion with agb.py. Otherwise, one could just do src_data_dict.values() and include everything
     src_dataset = bxtr.merge_and_format([src_data_dict['agb_merged_PFT'], src_data_dict['agb_merged']])
+    for v in ('agb_merged_PFT', 'agb_merged'):
+        bxtr.warn_merged_nan(src_data_dict[v], v)
     return src_dataset
 
 
