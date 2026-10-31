@@ -29,7 +29,7 @@
         "isCarbon": false,
         "skipUnitcheck": false,
         "publication": "",
-        "data_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/vegFrac_De2026_consolidated.csv",
+        "data_path": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/insitu/vegFrac_De2026_consolidated.csv",
         "description": "in-situ vegetation fraction of the consolidated compilation of De 2026, constant over time"
     },
     "sel_variables": "all",
@@ -38,7 +38,7 @@
             "sourceVariableName": "vegFrac",
             "nameShort": "vegetation_fraction_insitu",
             "nameLong": "Vegetation fraction from in-situ site information",
-            "data_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/vegFrac_De2026_consolidated.csv"
+            "data_path": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/insitu/vegFrac_De2026_consolidated.csv"
         }
     }
 }

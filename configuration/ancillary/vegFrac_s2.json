@@ -1,15 +1,15 @@
 {
     "extractor": "vegfrac_s2",
     "var_suffix": "s2",
-    "cache_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/prefetch/s2_fvc_2019_1km_sites_v2.csv",
+    "cache_path": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/prefetch/s2_fvc_2019_1km_sites_v2.csv",
     "fetch_missing": false,
     "n_workers": 8,
     "years": [
         2019
     ],
     "time_placement": "constant",
-    "insitu_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/FLUXNET_veg_frac.csv",
-    "pft_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/PFT_consolidated.csv",
+    "insitu_path": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/insitu/FLUXNET_veg_frac.csv",
+    "pft_path": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/insitu/PFT_consolidated.csv",
     "tree_pfts": [
         "ENF",
         "EBF",
@@ -20,7 +20,7 @@
         "WSA"
     ],
     "max_cloud": 30,
-    "peak_dir": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/prefetch/s2_peak_ndvi_2019",
+    "peak_dir": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/prefetch/s2_peak_ndvi_2019",
     "base_info": {
         "partitioning": "",
         "variableUnit": "adimensional",

@@ -1,16 +1,16 @@
 {
     "extractor": "vegfrac_cgls",
     "var_suffix": "cgls",
-    "cache_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/prefetch/cgls_lc100_v3_1km_sites.csv",
+    "cache_path": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/prefetch/cgls_lc100_v3_1km_sites.csv",
     "fetch_missing": false,
     "n_workers": 2,
     "years": [
         2015
     ],
     "time_placement": "constant",
-    "insitu_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/vegFrac_De2026_consolidated.csv",
-    "tree_insitu_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/treeFrac_De2026_consolidated.csv",
-    "pft_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/PFT_consolidated.csv",
+    "insitu_path": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/insitu/vegFrac_De2026_consolidated.csv",
+    "tree_insitu_path": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/insitu/treeFrac_De2026_consolidated.csv",
+    "pft_path": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/insitu/PFT_consolidated.csv",
     "tree_pfts": [
         "ENF",
         "EBF",

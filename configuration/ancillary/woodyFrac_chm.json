@@ -1,15 +1,15 @@
 {
     "extractor": "woodyfrac_chm",
     "var_suffix": "chm",
-    "cache_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/prefetch/meta_chm_1km_sites.csv",
+    "cache_path": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/prefetch/meta_chm_1km_sites.csv",
     "fetch_missing": false,
     "n_workers": 8,
     "years": [
         2019
     ],
     "time_placement": "constant",
-    "insitu_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/FLUXNET_veg_frac.csv",
-    "pft_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/PFT_consolidated.csv",
+    "insitu_path": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/insitu/FLUXNET_veg_frac.csv",
+    "pft_path": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/insitu/PFT_consolidated.csv",
     "tree_pfts": [
         "ENF",
         "EBF",
@@ -30,7 +30,7 @@
         "OSH",
         "CSH"
     ],
-    "tiles_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/prefetch/meta_chm_tiles.geojson",
+    "tiles_path": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/prefetch/meta_chm_tiles.geojson",
     "base_info": {
         "partitioning": "",
         "variableUnit": "adimensional",

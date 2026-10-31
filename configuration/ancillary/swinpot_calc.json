@@ -1,7 +1,7 @@
 {
     "extractor": "swinpot_calc",
     "var_suffix": "calc",
-    "sites_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/sites_consolidated.csv",
+    "sites_path": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/insitu/sites_consolidated.csv",
     "base_info": {
         "partitioning": "",
         "variableUnit": "",

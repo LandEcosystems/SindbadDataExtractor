@@ -1,7 +1,7 @@
 {
     "extractor": "pft_cgls",
     "var_suffix": "cgls",
-    "cache_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/prefetch/pft_cgls_lc100_v3_100m_sites.csv",
+    "cache_path": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/prefetch/pft_cgls_lc100_v3_100m_sites.csv",
     "fetch_missing": false,
     "n_workers": 2,
     "years": [
@@ -12,7 +12,7 @@
         2019
     ],
     "time_placement": "annual_extend",
-    "pft_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/PFT_consolidated.csv",
+    "pft_path": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/insitu/PFT_consolidated.csv",
     "rs_fill": [
         "pft"
     ],

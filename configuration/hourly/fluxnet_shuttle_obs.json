@@ -1,7 +1,7 @@
 {
     "extractor": "fluxnet_shuttle",
     "var_suffix": "shuttle",
-    "cache_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/prefetch/fluxnet_shuttle/index_fluxnet_shuttle.csv",
+    "cache_path": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/prefetch/fluxnet_shuttle/index_fluxnet_shuttle.csv",
     "nee_variant": "USTAR50",
     "n_workers": 10,
     "base_info": {

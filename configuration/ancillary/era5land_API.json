@@ -1,7 +1,7 @@
 {
     "extractor": "era5_API",
     "var_suffix": "ERA5Land",
-    "cache_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/prefetch/era5land_API/index_era5land.csv",
+    "cache_path": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/prefetch/era5land_API/index_era5land.csv",
     "citation": "Munoz-Sabater, J. et al. (2021): ERA5-Land: a state-of-the-art global reanalysis dataset for land applications. Earth Syst. Sci. Data 13, 4349-4383, DOI:10.5194/essd-13-4349-2021",
     "sources": {
         "cds": {

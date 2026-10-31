@@ -46,7 +46,7 @@
             "nameLong": "Above-ground biomass from in-situ measurements",
             "sourceDataProductName": "agb_De2026_consolidated.csv",
             "publication": "https://fluxnet.org/badm-data-product/",
-            "data_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/agb_De2026_consolidated.csv"
+            "data_path": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/insitu/agb_De2026_consolidated.csv"
         }
     }
 }

@@ -1,15 +1,15 @@
 {
     "extractor": "vegfrac_modis",
     "var_suffix": "modis",
-    "cache_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/prefetch/modis_vcf_2010/site_means.csv",
+    "cache_path": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/prefetch/modis_vcf_2010/site_means.csv",
     "fetch_missing": false,
     "n_workers": 4,
     "years": [
         2010
     ],
     "time_placement": "constant",
-    "insitu_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/FLUXNET_veg_frac.csv",
-    "pft_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/PFT_consolidated.csv",
+    "insitu_path": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/insitu/FLUXNET_veg_frac.csv",
+    "pft_path": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/insitu/PFT_consolidated.csv",
     "tree_pfts": [
         "ENF",
         "EBF",
@@ -19,7 +19,7 @@
         "SAV",
         "WSA"
     ],
-    "work_dir": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/prefetch/modis_vcf_2010",
+    "work_dir": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/prefetch/modis_vcf_2010",
     "base_info": {
         "partitioning": "",
         "variableUnit": "adimensional",

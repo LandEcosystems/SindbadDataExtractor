@@ -9,7 +9,7 @@
     ],
     "time_placement": "constant",
     "source_path": "/Net/Groups/BGI/work_3/sindbad/data/soilgrids/BDTICM_M_250m_ll.tif",
-    "insitu_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/soilDepth_Shan2026_consolidated.csv",
+    "insitu_path": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/insitu/soilDepth_Shan2026_consolidated.csv",
     "insitu_column": "soilDepth",
     "clip_m": [
         0.01,

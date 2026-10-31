@@ -1,7 +1,7 @@
 {
     "extractor": "era5_API",
     "var_suffix": "ERA5",
-    "cache_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/prefetch/era5_API/index_era5.csv",
+    "cache_path": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/prefetch/era5_API/index_era5.csv",
     "citation": "Hersbach, H. et al. (2020): The ERA5 global reanalysis. Q. J. R. Meteorol. Soc. 146, 1999-2049, DOI:10.1002/qj.3803",
     "sources": {
         "earthmover": {

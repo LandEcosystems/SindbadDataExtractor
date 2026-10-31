@@ -1,9 +1,9 @@
 {
     "extractor": "jung_C2F",
     "var_suffix": "jung_C2F",
-    "cache_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/prefetch/jung_C2F/index_jung_C2F_loose.csv",
-    "shuttle_cache_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/prefetch/fluxnet_shuttle/index_fluxnet_shuttle.csv",
-    "code_dir": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/prefetch/jung_C2F/code/c2f_fluxnet-v1.0",
+    "cache_path": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/prefetch/jung_C2F/index_jung_C2F_loose.csv",
+    "shuttle_cache_path": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/prefetch/fluxnet_shuttle/index_fluxnet_shuttle.csv",
+    "code_dir": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/prefetch/jung_C2F/code/c2f_fluxnet-v1.0",
     "code_version": "c2f_fluxnet v1.0, DOI:10.5281/zenodo.10593332",
     "citation": "Jung, M., Nelson, J., Migliavacca, M., El-Madany, T., Papale, D., Reichstein, M., Walther, S., and Wutzler, T.: Technical note: Flagging inconsistencies in flux tower data, Biogeosciences, 21, 1827-1846, https://doi.org/10.5194/bg-21-1827-2024, 2024. Nelson, J., Wutzler, T., and Jung, M.: c2f_fluxnet (v1.0), Zenodo [code], https://doi.org/10.5281/zenodo.10593332, 2024.",
     "strictness": "loose",

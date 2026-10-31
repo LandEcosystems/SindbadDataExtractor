@@ -1,15 +1,15 @@
 {
     "extractor": "vegfrac_s2_sl2p",
     "var_suffix": "s2sl2p",
-    "cache_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/prefetch/s2_sl2p_fcover_2019_1km_sites.csv",
+    "cache_path": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/prefetch/s2_sl2p_fcover_2019_1km_sites.csv",
     "fetch_missing": false,
     "n_workers": 8,
     "years": [
         2019
     ],
     "time_placement": "constant",
-    "insitu_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/FLUXNET_veg_frac.csv",
-    "pft_path": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/insitu/PFT_consolidated.csv",
+    "insitu_path": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/insitu/FLUXNET_veg_frac.csv",
+    "pft_path": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/insitu/PFT_consolidated.csv",
     "tree_pfts": [
         "ENF",
         "EBF",
@@ -20,7 +20,7 @@
         "WSA"
     ],
     "max_cloud": 30,
-    "peak_dir": "/Net/Groups/BGI/scratch/skoirala/sindbad_ancillary_data/prefetch/s2_sl2p_fcover_2019_peak",
+    "peak_dir": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/prefetch/s2_sl2p_fcover_2019_peak",
     "base_info": {
         "partitioning": "",
         "variableUnit": "adimensional",
