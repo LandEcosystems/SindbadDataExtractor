@@ -1,0 +1,169 @@
+{
+    "extractor": "sitefile_nc",
+    "var_suffix": "",
+    "source_dir": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/legacy/fluxnetBGI2021_siteCube-v0.03_iter-5/fluxnetBGI2021.LTL07.HR/data/hourly",
+    "rename": {},
+    "base_info": {
+        "partitioning": "",
+        "variableUnit": "",
+        "bounds": [],
+        "sourceVariableName": "",
+        "sourceVariableUnit": "",
+        "source2sindbadUnit": 1,
+        "isCategorical": false,
+        "nameShort": "",
+        "nameLong": "",
+        "spaceTimeType": "normal",
+        "sourceDataProductName": "FLUXNET",
+        "QC": "",
+        "RANDUNC": "",
+        "weightVar": "",
+        "DaySum": false,
+        "DayMin": false,
+        "DayMax": false,
+        "wDayMean": false,
+        "DayTime": false,
+        "isEnergy": false,
+        "isWater": false,
+        "isCarbon": false,
+        "skipUnitcheck": false,
+        "publication": "https://fluxnet.fluxdata.org; DOI:10.1071/BT07151, DOI:10.1175/1520-0477(2001)082<2415:FANTTS>2.3.CO;2",
+        "data_path": "",
+        "description": "Eddy tower meteorological measurements. LaThuile 2007 release, read from the fluxnetBGI2021 site cube v0.03 iter-5 extractions"
+    },
+    "sel_variables": "all",
+    "variables": {
+        "TA": {
+            "variableUnit": "deg C",
+            "bounds": [
+                -80,
+                60
+            ],
+            "sourceVariableName": "TA",
+            "sourceVariableUnit": "deg C",
+            "nameShort": "TA",
+            "nameLong": "air temperature - gapfilled using MDS method",
+            "QC": "QC"
+        },
+        "P": {
+            "variableUnit": "mm",
+            "bounds": [
+                0,
+                150
+            ],
+            "sourceVariableName": "P",
+            "sourceVariableUnit": "mm h-1",
+            "nameShort": "P",
+            "nameLong": "precipitation",
+            "QC": "QC",
+            "isWater": true,
+            "skipUnitcheck": true
+        },
+        "VPD": {
+            "variableUnit": "Pa",
+            "bounds": [
+                0,
+                5000
+            ],
+            "sourceVariableName": "VPD",
+            "sourceVariableUnit": "hPa",
+            "source2sindbadUnit": 100,
+            "nameShort": "VPD",
+            "nameLong": "vapor pressure deficit",
+            "QC": "QC"
+        },
+        "PA": {
+            "variableUnit": "Pa",
+            "bounds": [
+                50000,
+                100000
+            ],
+            "sourceVariableName": "PA",
+            "sourceVariableUnit": "kPa",
+            "source2sindbadUnit": 1000,
+            "nameShort": "atmospheric pressure",
+            "nameLong": "atmospheric pressure",
+            "QC": "QC"
+        },
+        "LW_IN": {
+            "variableUnit": "MJ m-2",
+            "bounds": [
+                0,
+                100
+            ],
+            "sourceVariableName": "LW_IN",
+            "sourceVariableUnit": "W m-2",
+            "nameShort": "LW_IN",
+            "nameLong": "longwave radiation - incoming",
+            "QC": "SW_IN_QC",
+            "isEnergy": true,
+            "skipUnitcheck": true
+        },
+        "SW_IN": {
+            "variableUnit": "MJ m-2",
+            "bounds": [
+                0,
+                100
+            ],
+            "sourceVariableName": "SW_IN",
+            "sourceVariableUnit": "W m-2",
+            "nameShort": "SW_IN",
+            "nameLong": "shortwave radiation - incoming",
+            "QC": "QC",
+            "isEnergy": true,
+            "skipUnitcheck": true
+        },
+        "PPFD_IN": {
+            "variableUnit": "\u00b5molPhoton m-2 s-1",
+            "bounds": [
+                -50,
+                50
+            ],
+            "sourceVariableName": "PPFD_IN",
+            "sourceVariableUnit": "\u00b5molPhoton m-2 s-1",
+            "nameShort": "PPFD",
+            "nameLong": "Photosynthetic photon flux density - incoming",
+            "QC": "SW_IN_QC",
+            "isCarbon": true,
+            "skipUnitcheck": true
+        },
+        "NETRAD": {
+            "variableUnit": "MJ m-2",
+            "bounds": [
+                -50,
+                50
+            ],
+            "sourceVariableName": "NETRAD",
+            "sourceVariableUnit": "W m-2",
+            "nameShort": "NETRAD",
+            "nameLong": "net radiation",
+            "QC": "QC",
+            "isEnergy": true,
+            "skipUnitcheck": true
+        },
+        "WS": {
+            "variableUnit": "m s-1",
+            "bounds": [
+                0,
+                100
+            ],
+            "sourceVariableName": "WS",
+            "sourceVariableUnit": "m s-1",
+            "nameShort": "Wind_speed",
+            "nameLong": "wind speed",
+            "QC": "QC"
+        },
+        "RH": {
+            "variableUnit": "%",
+            "bounds": [
+                0,
+                100
+            ],
+            "sourceVariableName": "RH",
+            "sourceVariableUnit": "%",
+            "nameShort": "Relative Humidity",
+            "nameLong": "relative humidity of air",
+            "QC": "VPD_QC"
+        }
+    }
+}
