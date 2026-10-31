@@ -96,6 +96,15 @@ sbatch run_site.sh DE-Hai --collections Shuttle      # only the Shuttle cubes
 sbatch --cpus-per-task=32 run_site.sh @sites_01.txt  # a list of sites, 32 at once
 ```
 
+`slurm_scripts/` submits one `run_site.py` job per site within a share of the free
+cpus and memory, 75% by default, refilled by a watcher in tmux, as described in
+`slurm_scripts/README_SLURM.md`.
+
+```
+./slurm_scripts/run_sites.sh --dry-run               # what would be submitted
+./slurm_scripts/run_sites.sh                         # the sites of slurm_scripts/env.sh
+```
+
 # Contact:
 
 Sujan Koirala <skoirala@bgc-jena.mpg.de> (on the tool and data), Nuno Carvalhais <ncarvalhais@bgc-jena.mpg.de> (on the data)

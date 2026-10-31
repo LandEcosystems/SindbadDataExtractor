@@ -11,15 +11,18 @@ for those sites only, in their order:
     4. the cubes of the sites, with run_extraction.py for those sites only
 
 usage:
-    python run_site.py <site[,site...] | @file> [--collections Shuttle,LaThuile2007]
-                       [--freqs daily] [--workers n] [--force] [--dry-run]
-                       [--catalog json]
+    python run_site.py <site[,site...] | @file | all> [--collections Shuttle]
+                       [--freqs daily] [--workers n] [--force] [--no-prefetch]
+                       [--list] [--dry-run] [--catalog json]
 
-A file given as @file lists sites, one or more per line. By default every cube
-whose registry flag a site has, at every frequency. The cliffin cubes needed by the
+A file given as @file lists sites, one or more per line, and all stands for every
+site of the registry in a cube of the collections. --list prints the sites that
+have a cube, one per line, and runs nothing; slurm_scripts/ submits a job per site
+from it. By default every cube whose registry flag a site has, at every frequency. The cliffin cubes needed by the
 PyCLIFF products always come along. --workers runs that many sites at once within
-each product and cube. Each command is printed before it runs, and --dry-run only
-prints them.
+each product and cube. --no-prefetch leaves missing forcing missing, for jobs of
+single sites when the forcing was prefetched for all sites at once. Each command is
+printed before it runs, and --dry-run only prints them.
 
 Nothing here writes the markers of the Snakefile, STAGED and assembled.txt. A
 later Snakemake run therefore still stages and assembles every product and cube,
@@ -64,7 +67,7 @@ def with_flag(sites, flag, reg):
     try:
         have = set(sites_reg.sites_with(flag, reg))
     except KeyError as e:
-        print(f"skipped: {e}", flush=True)
+        print(f"skipped: {e}", file=sys.stderr, flush=True)
         return []
     return [s for s in sites if s in have]
 
@@ -137,7 +140,7 @@ def run(cmd, dry):
 def main():
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("sites", help="comma separated sites, or @file with one per line")
+    p.add_argument("sites", help="comma separated sites, @file with one per line, or all")
     p.add_argument("--collections", default="",
                    help="comma separated collections, such as Shuttle; default all")
     p.add_argument("--freqs", default="", help="daily, hourly or both; default both")
@@ -145,18 +148,26 @@ def main():
                    help="sites at once within each product and cube")
     p.add_argument("--catalog", default=pl.CATALOG)
     p.add_argument("--force", action="store_true", help="stage the sites again")
+    p.add_argument("--no-prefetch", action="store_true",
+                   help="do not prefetch missing CLIFF forcing")
+    p.add_argument("--list", action="store_true",
+                   help="print the sites that have a cube and run nothing")
     p.add_argument("--dry-run", action="store_true", help="print the commands only")
     a = p.parse_args()
 
     cat = pl.load_catalog(a.catalog)
     reg = sites_reg.load_registry(cat["registry"])
-    sites = read_sites(a.sites)
+    sites = list(reg.index) if a.sites == "all" else read_sites(a.sites)
     unknown = [s for s in sites if s not in reg.index]
     if unknown:
         sys.exit(f"{unknown} are not in the registry {cat['registry']}")
     collections = [c for c in a.collections.split(",") if c]
     freqs = [f for f in a.freqs.split(",") if f]
     jobs = cube_jobs(cat, reg, sites, collections, freqs)
+    if a.list:
+        have = {s for job in jobs for s in job[4]}
+        print("\n".join(s for s in sites if s in have))
+        return
     if not jobs:
         sys.exit(f"{sites} are in no cube of {collections or 'any collection'}")
     print(f"{len(sites)} sites; cubes " + ", ".join(
@@ -178,6 +189,10 @@ def main():
         todo = [s for s in sites if any(is_missing(info, v, s) for v in variables(info))]
         if not todo:
             print(f"{key}: pixel files of every site are there", flush=True)
+            continue
+        if a.no_prefetch:
+            print(f"{key}: no pixel files of {todo}, their PyCLIFF products will be "
+                  f"missing; prefetch them with prefetch_array.sh", flush=True)
             continue
         site_csv = os.path.join(cat["store"], "_runs", "run_site",
                                 f"{key}_{os.getpid()}.csv")
