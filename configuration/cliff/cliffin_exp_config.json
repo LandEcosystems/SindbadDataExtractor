@@ -12,7 +12,7 @@
     "end_date": "2025-12-31",
     "temporal_resolution": "",
     "FLUXNET_version": "",
-    "config_dir_path": "/Net/Groups/BGI/scratch/skoirala/SindbadSiteExtractor/configuration/cliff/",
+    "config_dir_path": "./",
 
     "resample_output": [""],
     "allow_extraction_errors": false,
