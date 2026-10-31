@@ -24,7 +24,7 @@
 
 dataset=$1
 shift
-python=${PYTHON:-/Net/Groups/BGI/scratch/skoirala/sksrc/miniforge3/envs/sinproc008/bin/python}
+python=${PYTHON:-/Net/Groups/BGI/work_3/sindbad/site_cubes/tools/env/bin/python}
 registry=${REGISTRY:-/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/insitu/sites_consolidated.csv}
 n_tasks=${SLURM_ARRAY_TASK_COUNT:-$SLURM_ARRAY_TASK_MAX}
 

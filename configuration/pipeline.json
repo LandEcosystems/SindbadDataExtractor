@@ -35,8 +35,8 @@
     },
     "path_map": {},
     "envs": {
-        "main": "/Net/Groups/BGI/scratch/skoirala/sksrc/miniforge3/envs/sinproc008/bin/python",
-        "prefetch": "/Net/Groups/BGI/scratch/skoirala/sksrc/miniforge3/envs/sinproc-prefetch/bin/python"
+        "main": "/Net/Groups/BGI/work_3/sindbad/site_cubes/tools/env/bin/python",
+        "prefetch": "/Net/Groups/BGI/work_3/sindbad/site_cubes/tools/env/bin/python"
     },
     "base_configs": {
         "daily": {

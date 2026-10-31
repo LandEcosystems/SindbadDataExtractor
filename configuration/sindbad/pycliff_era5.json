@@ -5,7 +5,7 @@
     "site_input": "",
     "db": "ERA5.e1",
     "pix_dir": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/prefetch/cliff_forcing/ERA5.e1",
-    "pycliff_python": "/Net/Groups/BGI/scratch/skoirala/envs/pycliff/bin/python",
+    "pycliff_python": "/Net/Groups/BGI/work_3/sindbad/site_cubes/tools/env/bin/python",
     "pycliff_dir": "/Net/Groups/BGI/work_3/sindbad/site_cubes/tools/PyCLIFF",
     "pycliff_out": "/Net/Groups/BGI/work_3/sindbad/site_cubes/input/pycliff",
     "sites_csv": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/insitu/sites_consolidated.csv",

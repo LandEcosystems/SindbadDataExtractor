@@ -5,7 +5,7 @@
     "db": "ERA5.e1",
     "cache_path": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/prefetch/cliff_forcing/ERA5.e1",
     "pbase": "/Net/Groups/data_BGC/era5/e1/0d25_hourly",
-    "pycliff_python": "/Net/Groups/BGI/scratch/skoirala/envs/pycliff/bin/python",
+    "pycliff_python": "/Net/Groups/BGI/work_3/sindbad/site_cubes/tools/env/bin/python",
     "pycliff_dir": "/Net/Groups/BGI/work_3/sindbad/site_cubes/tools/PyCLIFF",
     "pycliff_out": "/Net/Groups/BGI/work_3/sindbad/site_cubes/input/pycliff",
     "start_year": 1950,
