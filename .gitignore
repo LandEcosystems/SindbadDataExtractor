@@ -20,6 +20,7 @@
 !/validation/
 !/profiles/
 !/site_cubes/
+!/slurm_scripts/
 
 /extractors/__pycache__
 /utils/__pycache__
