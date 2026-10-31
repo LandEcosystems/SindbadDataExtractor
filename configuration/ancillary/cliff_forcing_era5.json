@@ -1,0 +1,26 @@
+{
+    "extractor": "cliff_forcing",
+    "_about": "Forcing of the CLIFF gap filling, prefetch only. pycliff_era5.json reads it through pix_dir and db, which must equal cache_path and db here.",
+    "source": "pycliff_extract",
+    "db": "ERA5.e1",
+    "cache_path": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/prefetch/cliff_forcing/ERA5.e1",
+    "pbase": "/Net/Groups/data_BGC/era5/e1/0d25_hourly",
+    "pycliff_python": "/Net/Groups/BGI/scratch/skoirala/envs/pycliff/bin/python",
+    "pycliff_dir": "/Net/Groups/BGI/scratch/skoirala/toolDev/PyCLIFF",
+    "pycliff_out": "/Net/Groups/BGI/work_3/sindbad/site_cubes/input/pycliff",
+    "start_year": 1950,
+    "end_year": 2025,
+    "n_pixels": 3,
+    "n_workers": 8,
+    "variables": [
+        "t2m",
+        "q",
+        "tp",
+        "ssrd",
+        "ssr",
+        "strd",
+        "ws10",
+        "rH",
+        "sp"
+    ]
+}

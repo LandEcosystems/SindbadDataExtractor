@@ -25,9 +25,10 @@
         }
     },
     "sel_datasets": [
-        "all"
+        "bgi_FLUXCOM"
     ],
     "dataset": {
-        "bgi_FLUXCOM": "cliffin_fluxcom.json"
+        "bgi_FLUXCOM": "cliffin_fluxcom.json",
+        "cliffin_shuttle": "cliffin_shuttle.json"
     }
 }

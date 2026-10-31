@@ -1,0 +1,303 @@
+{
+    "extractor": "pycliff_site",
+    "var_suffix": "",
+    "fn": "",
+    "site_input": "",
+    "db": "ERA5.e1",
+    "pix_dir": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/prefetch/cliff_forcing/ERA5.e1",
+    "pycliff_python": "/Net/Groups/BGI/scratch/skoirala/envs/pycliff/bin/python",
+    "pycliff_dir": "/Net/Groups/BGI/scratch/skoirala/toolDev/PyCLIFF",
+    "pycliff_out": "/Net/Groups/BGI/work_3/sindbad/site_cubes/input/pycliff",
+    "sites_csv": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/insitu/sites_consolidated.csv",
+    "seed": 42,
+    "units": "si",
+    "time_mode": "lst",
+    "methods": "",
+    "min_tower_days": 365,
+    "base_info": {
+        "partitioning": "",
+        "variableUnit": "",
+        "bounds": [],
+        "sourceVariableName": "",
+        "sourceVariableUnit": "",
+        "source2sindbadUnit": 1,
+        "isCategorical": false,
+        "nameShort": "",
+        "nameLong": "",
+        "spaceTimeType": "normal",
+        "sourceDataProductName": "PyCLIFF-ERA5",
+        "QC": "",
+        "RANDUNC": "",
+        "weightVar": "",
+        "DaySum": false,
+        "DayMin": false,
+        "DayMax": false,
+        "wDayMean": false,
+        "DayTime": false,
+        "isEnergy": false,
+        "isWater": false,
+        "isCarbon": false,
+        "skipUnitcheck": false,
+        "publication": "PyCLIFF, https://github.com/LandEcosystems/PyCLIFF; CLIFF downscaling of ERA5 to eddy covariance towers",
+        "data_path": "",
+        "description": "Tower meteorology gap filled by CLIFF: PyCLIFF downscales the forcing db to the tower, run per site while the source is staged"
+    },
+    "sel_variables": "all",
+    "variables": {
+        "TA_ERA5_gfld": {
+            "variableUnit": "deg C",
+            "sourceVariableUnit": "deg C",
+            "bounds": [
+                -60,
+                60
+            ],
+            "nameShort": "TA",
+            "isEnergy": false,
+            "isWater": false,
+            "sourceVariableName": "TA_F",
+            "QC": "TA_F_QC",
+            "nameLong": "air temperature, tower where QC >= 0.85, else ERA5 downscaled by PyCLIFF"
+        },
+        "TA_ERA5_SD": {
+            "variableUnit": "deg C",
+            "sourceVariableUnit": "deg C",
+            "bounds": [
+                -60,
+                60
+            ],
+            "nameShort": "TA",
+            "isEnergy": false,
+            "isWater": false,
+            "sourceVariableName": "TA_SD",
+            "nameLong": "spread of the PyCLIFF methods for air temperature"
+        },
+        "VPD_ERA5_gfld": {
+            "variableUnit": "Pa",
+            "sourceVariableUnit": "Pa",
+            "bounds": [
+                0,
+                10000
+            ],
+            "nameShort": "VPD",
+            "isEnergy": false,
+            "isWater": false,
+            "sourceVariableName": "VPD_F",
+            "QC": "VPD_F_QC",
+            "nameLong": "vapour pressure deficit, tower where QC >= 0.85, else ERA5 downscaled by PyCLIFF"
+        },
+        "VPD_ERA5_SD": {
+            "variableUnit": "Pa",
+            "sourceVariableUnit": "Pa",
+            "bounds": [
+                0,
+                10000
+            ],
+            "nameShort": "VPD",
+            "isEnergy": false,
+            "isWater": false,
+            "sourceVariableName": "VPD_SD",
+            "nameLong": "spread of the PyCLIFF methods for vapour pressure deficit"
+        },
+        "P_ERA5_gfld": {
+            "variableUnit": "mm",
+            "sourceVariableUnit": "mm",
+            "bounds": [
+                0,
+                500
+            ],
+            "nameShort": "P",
+            "isEnergy": false,
+            "isWater": true,
+            "sourceVariableName": "P_F",
+            "QC": "P_F_QC",
+            "nameLong": "precipitation, tower where QC >= 0.85, else ERA5 downscaled by PyCLIFF"
+        },
+        "P_ERA5_SD": {
+            "variableUnit": "mm",
+            "sourceVariableUnit": "mm",
+            "bounds": [
+                0,
+                500
+            ],
+            "nameShort": "P",
+            "isEnergy": false,
+            "isWater": true,
+            "sourceVariableName": "P_SD",
+            "nameLong": "spread of the PyCLIFF methods for precipitation"
+        },
+        "SW_IN_ERA5_gfld": {
+            "variableUnit": "MJ m-2",
+            "sourceVariableUnit": "MJ m-2",
+            "bounds": [
+                0,
+                50
+            ],
+            "nameShort": "SW_IN",
+            "isEnergy": true,
+            "isWater": false,
+            "sourceVariableName": "SW_IN_F",
+            "QC": "SW_IN_F_QC",
+            "nameLong": "incoming shortwave radiation, tower where QC >= 0.85, else ERA5 downscaled by PyCLIFF"
+        },
+        "SW_IN_ERA5_SD": {
+            "variableUnit": "MJ m-2",
+            "sourceVariableUnit": "MJ m-2",
+            "bounds": [
+                0,
+                50
+            ],
+            "nameShort": "SW_IN",
+            "isEnergy": true,
+            "isWater": false,
+            "sourceVariableName": "SW_IN_SD",
+            "nameLong": "spread of the PyCLIFF methods for incoming shortwave radiation"
+        },
+        "LW_IN_ERA5_gfld": {
+            "variableUnit": "MJ m-2",
+            "sourceVariableUnit": "MJ m-2",
+            "bounds": [
+                0,
+                50
+            ],
+            "nameShort": "LW_IN",
+            "isEnergy": true,
+            "isWater": false,
+            "sourceVariableName": "LW_IN_F",
+            "QC": "LW_IN_F_QC",
+            "nameLong": "incoming longwave radiation, tower where QC >= 0.85, else ERA5 downscaled by PyCLIFF"
+        },
+        "LW_IN_ERA5_SD": {
+            "variableUnit": "MJ m-2",
+            "sourceVariableUnit": "MJ m-2",
+            "bounds": [
+                0,
+                50
+            ],
+            "nameShort": "LW_IN",
+            "isEnergy": true,
+            "isWater": false,
+            "sourceVariableName": "LW_IN_SD",
+            "nameLong": "spread of the PyCLIFF methods for incoming longwave radiation"
+        },
+        "NETRAD_ERA5_gfld": {
+            "variableUnit": "MJ m-2",
+            "sourceVariableUnit": "MJ m-2",
+            "bounds": [
+                -20,
+                40
+            ],
+            "nameShort": "NETRAD",
+            "isEnergy": true,
+            "isWater": false,
+            "sourceVariableName": "NETRAD_F",
+            "QC": "NETRAD_F_QC",
+            "nameLong": "net radiation, tower where QC >= 0.85, else ERA5 downscaled by PyCLIFF"
+        },
+        "NETRAD_ERA5_SD": {
+            "variableUnit": "MJ m-2",
+            "sourceVariableUnit": "MJ m-2",
+            "bounds": [
+                -20,
+                40
+            ],
+            "nameShort": "NETRAD",
+            "isEnergy": true,
+            "isWater": false,
+            "sourceVariableName": "NETRAD_SD",
+            "nameLong": "spread of the PyCLIFF methods for net radiation"
+        },
+        "WS_ERA5_gfld": {
+            "variableUnit": "m s-1",
+            "sourceVariableUnit": "m s-1",
+            "bounds": [
+                0,
+                50
+            ],
+            "nameShort": "WS",
+            "isEnergy": false,
+            "isWater": false,
+            "sourceVariableName": "WS_F",
+            "QC": "WS_F_QC",
+            "nameLong": "wind speed, tower where QC >= 0.85, else ERA5 downscaled by PyCLIFF"
+        },
+        "WS_ERA5_SD": {
+            "variableUnit": "m s-1",
+            "sourceVariableUnit": "m s-1",
+            "bounds": [
+                0,
+                50
+            ],
+            "nameShort": "WS",
+            "isEnergy": false,
+            "isWater": false,
+            "sourceVariableName": "WS_SD",
+            "nameLong": "spread of the PyCLIFF methods for wind speed"
+        },
+        "RH_ERA5_gfld": {
+            "variableUnit": "%",
+            "sourceVariableUnit": "%",
+            "bounds": [
+                0,
+                100
+            ],
+            "nameShort": "RH",
+            "isEnergy": false,
+            "isWater": false,
+            "sourceVariableName": "RH_F",
+            "QC": "RH_F_QC",
+            "nameLong": "relative humidity, tower where QC >= 0.85, else ERA5 downscaled by PyCLIFF"
+        },
+        "RH_ERA5_SD": {
+            "variableUnit": "%",
+            "sourceVariableUnit": "%",
+            "bounds": [
+                0,
+                100
+            ],
+            "nameShort": "RH",
+            "isEnergy": false,
+            "isWater": false,
+            "sourceVariableName": "RH_SD",
+            "nameLong": "spread of the PyCLIFF methods for relative humidity"
+        },
+        "PA_ERA5_gfld": {
+            "variableUnit": "Pa",
+            "sourceVariableUnit": "Pa",
+            "bounds": [
+                40000,
+                110000
+            ],
+            "nameShort": "PA",
+            "isEnergy": false,
+            "isWater": false,
+            "sourceVariableName": "PA_F",
+            "QC": "PA_F_QC",
+            "nameLong": "air pressure, tower where QC >= 0.85, else ERA5 downscaled by PyCLIFF"
+        },
+        "PA_ERA5_SD": {
+            "variableUnit": "Pa",
+            "sourceVariableUnit": "Pa",
+            "bounds": [
+                40000,
+                110000
+            ],
+            "nameShort": "PA",
+            "isEnergy": false,
+            "isWater": false,
+            "sourceVariableName": "PA_SD",
+            "nameLong": "spread of the PyCLIFF methods for air pressure"
+        },
+        "PET_ERA5": {
+            "variableUnit": "mm",
+            "sourceVariableUnit": "mm",
+            "bounds": [
+                0,
+                50
+            ],
+            "sourceVariableName": "PET",
+            "nameShort": "PET",
+            "isWater": true,
+            "nameLong": "Priestley-Taylor potential evapotranspiration of PyCLIFF"
+        }
+    }
+}
