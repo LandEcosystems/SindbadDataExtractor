@@ -13,7 +13,8 @@
     "store": {
         "path": "/Net/Groups/BGI/work_3/sindbad/site_cubes/input/store",
         "products": {
-            "pycliff_era5": "pycliff_era5.{FLUXNET_version}"
+            "pycliff_era5": "pycliff_era5.{FLUXNET_version}",
+            "pycliff_crujra": "pycliff_crujra.{FLUXNET_version}"
         }
     },
     "sel_datasets": [
@@ -48,6 +49,7 @@
         "atmCO2",
         "agb",
         "swinpot_calc",
-        "pycliff_era5"
+        "pycliff_era5",
+        "pycliff_crujra"
     ]
 }

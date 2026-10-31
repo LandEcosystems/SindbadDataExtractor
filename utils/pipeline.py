@@ -73,14 +73,16 @@ def pycliff_sources(cat):
 def pycliff_products(cat):
     """
     Products <dataset>.<source> that run CLIFF per site for every dataset of the
-    pycliff block, one per forcing, and every source.
+    pycliff block, one per forcing, and every source. freqs of the block limits a
+    dataset to some frequencies, as a forcing on 6 hour steps to daily.
     """
     pc = cat.get("pycliff")
     if not pc:
         return {}
+    freqs = pc.get("freqs", {})
     return {f"{d}.{s}": {
         "dataset": d, "mode": "pycliff", "sites": src["flag"],
-        "freqs": ["daily", "hourly"], "env": "main",
+        "freqs": freqs.get(d, ["daily", "hourly"]), "env": "main",
         "dataset_overrides": {"fn": s, "site_input": src["site_input"],
                               "sites_csv": cat["registry"]}}
         for d in pc.get("datasets", []) for s, src in pycliff_sources(cat).items()}

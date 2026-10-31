@@ -17,7 +17,10 @@ source of the json says where the values come from:
         and the checkout pycliff_dir, reads the monthly files below pbase once per
         variable for all missing sites, so the forcing is ERA5 of the cluster by
         default. Another gridded product with the same file layout only needs
-        another pbase.
+        another pbase. With pycliff_source, pycliff-extract reads that source of
+        PyCLIFF instead, from the store of the json, such as crujra from
+        trendy_met.zarr. Such a source keeps its own time step, 6 hours for
+        CRUJRA, and marks its files with it, so PyCLIFF never runs it finer.
     <module>:<function>: any other forcing, read by a function of this repository
         called as function(var, site, lat, lon, info). It returns the UTC times as
         datetime64, the values as an array of grid cells by times, and the latitude
@@ -118,7 +121,7 @@ def extract_with_pycliff(info, var, todo, workers):
     req_dir = os.path.join(info["cache_path"], "_requests")
     os.makedirs(req_dir, exist_ok=True)
     batch = os.path.join(req_dir, f"{var}.txt")
-    plev = PLEV.get(var)
+    plev = None if info.get("pycliff_source") else PLEV.get(var)
     with open(batch, "w") as f:
         for site, lat, lon in todo:
             line = (f" -x {lon} -y {lat} -n {info.get('n_pixels', 3)} "
@@ -126,11 +129,14 @@ def extract_with_pycliff(info, var, todo, workers):
             if plev is not None:
                 line += f" --plev={plev}"
             f.write(f"{line} {var} {pixel_path(info, var, site)}\n")
-    cmd = [info["pycliff_python"], "-m", "pycliff.extract.cli", "-b", batch,
-           "--pbase", info["pbase"], "--workers", str(workers), var]
-    # Sites with an earlier extraction only read the months after it.
-    if any(existing(info, var, s) for s, _, _ in todo):
-        cmd += ["--append-from", info["cache_path"]]
+    cmd = [info["pycliff_python"], "-m", "pycliff.extract.cli", "-b", batch, var]
+    if info.get("pycliff_source"):
+        cmd += ["--source", info["pycliff_source"], "--source-path", info["store"]]
+    else:
+        cmd += ["--pbase", info["pbase"], "--workers", str(workers)]
+        # Sites with an earlier extraction only read the months after it.
+        if any(existing(info, var, s) for s, _, _ in todo):
+            cmd += ["--append-from", info["cache_path"]]
     env = pycliff_env(info)
     t = time.time()
     run = subprocess.run(cmd, env=env, capture_output=True, text=True)

@@ -20,8 +20,14 @@
     "fluxcom_cube": "/Net/Groups/BGI/work_4/scratch/fluxcom/sitecube_proc/v0.07/site_cube/",
     "pycliff": {
         "datasets": [
-            "pycliff_era5"
+            "pycliff_era5",
+            "pycliff_crujra"
         ],
+        "freqs": {
+            "pycliff_crujra": [
+                "daily"
+            ]
+        },
         "sources": {
             "LaThuile2007": {
                 "flag": "in_LaThuile2007",

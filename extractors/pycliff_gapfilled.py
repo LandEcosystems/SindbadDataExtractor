@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Tower meteorology gap filled by PyCLIFF with ERA5, read from its per-site products
+Tower meteorology gap filled by PyCLIFF with a gridded forcing, ERA5 or CRUJRA, read
+from its per-site products
 <source_dir>/<fn>.<HR|DD>/<db>/<site>.<start>.<end>.nc. fn names the eddy covariance
 source whose tower data PyCLIFF filled, such as FLUXNET2015 or Shuttle, and HR or DD
 the hourly or the daily PyCLIFF run. pycliff_site.py runs PyCLIFF per site and reads
@@ -9,8 +10,9 @@ its product with this module.
 
 Each variable of the json reads the PyCLIFF variable of its sourceVariableName on
 the time dimension of the file:
-    <VAR>_F       the tower value where its QC is at least 0.85, else the fill
-    <VAR>_F_QC    hourly: 0 tower, 1 selected method, 2 nearest ERA5 pixel;
+    <VAR>_F       the tower value where its QC is at least qc_threshold of the
+                  json, 0.85 by default, else the fill
+    <VAR>_F_QC    hourly: 0 tower, 1 selected method, 2 nearest grid cell;
                   daily: the fraction of the day from the tower
     <VAR>_SD      the spread of the series across the PyCLIFF methods
     PET           Priestley-Taylor potential evapotranspiration
@@ -36,8 +38,8 @@ logger = logging.getLogger(__name__)
 
 # Suffixes of the PyCLIFF variables after the name of the site variable.
 SUFFIXES = ("_F_QC", "_F", "_DSC", "_SD")
-FLAG_MEANINGS = "tower_value_QC_ge_0.85 filled_by_the_selected_method " \
-    "filled_by_the_nearest_ERA5_pixel_RAW"
+FLAG_MEANINGS = "tower_value_QC_ge_{qc:g} filled_by_the_selected_method " \
+    "filled_by_the_nearest_grid_cell_RAW"
 
 
 def site_file(info, site, freq):
@@ -97,7 +99,8 @@ def extract(dataset, site_info, config):
                      "pycliff_method": methods.get(base_variable(name), "")}
             if name.endswith("_F_QC") and freq == "hourly":
                 attrs["flag_values"] = np.array([0., 1., 2.])
-                attrs["flag_meanings"] = FLAG_MEANINGS
+                attrs["flag_meanings"] = FLAG_MEANINGS.format(
+                    qc=info.get("qc_threshold", 0.85))
         elif src is not None:
             logger.warning(f"::MISSING:: {bxtr.site} has no {name} in {path} for "
                            f"{tar_name}. NaN values will be set.")

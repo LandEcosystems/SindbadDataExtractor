@@ -19,7 +19,8 @@
             "merged_qc": "merged_qc.{FLUXNET_version}",
             "jung_qc": "jung_qc.{FLUXNET_version}",
             "nelson_tea": "nelson_tea.{FLUXNET_version}",
-            "pycliff_era5": "pycliff_era5.{FLUXNET_version}"
+            "pycliff_era5": "pycliff_era5.{FLUXNET_version}",
+            "pycliff_crujra": "pycliff_crujra.{FLUXNET_version}"
         }
     },
     "sel_datasets": [
@@ -58,6 +59,7 @@
         "atmCO2",
         "agb",
         "swinpot_calc",
-        "pycliff_era5"
+        "pycliff_era5",
+        "pycliff_crujra"
     ]
 }

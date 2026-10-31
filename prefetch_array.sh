@@ -11,6 +11,7 @@
 #   sbatch --array=1-15 prefetch_array.sh lai_clms1km      # 1999 to 2013
 #   sbatch --array=1-40 prefetch_array.sh ndvi_landsat     # about 33 sites a task
 #   sbatch --array=1-9 prefetch_array.sh cliff_forcing_era5  # a variable each
+#   sbatch --array=1-10 prefetch_array.sh cliff_forcing_crujra  # a variable each
 #
 # Run it from the repository. The Copernicus products read the Copernicus Data Space
 # with the cdse profile of ~/.aws/credentials, and the first task to start lists the

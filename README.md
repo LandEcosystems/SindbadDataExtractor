@@ -51,13 +51,21 @@ Done once by hand, before Snakemake:
   once in the fluxcom environment.
 - LaThuile2007 is a read-only copy of the fluxnetBGI2021 site cube iter-5 files, read by
   `extractors/sitefile_nc.py`. Write a `SOURCE.md` next to the copy.
-- The forcing of the CLIFF gap filling, `cliff_forcing_era5`, is prefetched as well:
-  `prefetch_array.sh cliff_forcing_era5` runs `pycliff-extract` once per ERA5 variable
-  for all registry sites. Another forcing only needs another `cliff_forcing` json.
+- The forcings of the CLIFF gap filling, `cliff_forcing_era5` and
+  `cliff_forcing_crujra`, are prefetched as well: `prefetch_array.sh` runs
+  `pycliff-extract` once per variable for all registry sites. ERA5 comes from the
+  hourly files of the cluster, CRUJRA v4.10 from the 6 hourly `trendy_met.zarr` of
+  SINDBAD-TRENDY. Another forcing only needs another `cliff_forcing` json and a
+  source json in PyCLIFF.
 
-CLIFF then runs inside Snakemake: the product `pycliff_era5.<source>` runs PyCLIFF per
-site on the hourly tower meteorology of each eddy covariance source, and the cubes get
-the gap-filled meteorology as `<VAR>_ERA5_gfld`.
+CLIFF then runs inside Snakemake: the products `pycliff_era5.<source>` and
+`pycliff_crujra.<source>` run PyCLIFF per site on the hourly tower meteorology of each
+eddy covariance source, and the cubes get the gap-filled meteorology as
+`<VAR>_ERA5_gfld` and `<VAR>_CRUJRA_gfld`. No product is finer than its forcing:
+CRUJRA has 6 hour steps, so it fills the daily cubes only, and it has no air
+pressure, so it does not fill PA. `qc_threshold` of a pycliff json sets the QC from which a tower
+value, and a day as its fraction of good hours, counts as tower data: 0.85 by
+default, 0.75 for CRUJRA.
 
 ```
 snakemake -n                          # what is missing or stale

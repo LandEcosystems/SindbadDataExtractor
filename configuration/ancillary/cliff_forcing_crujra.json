@@ -1,0 +1,28 @@
+{
+    "extractor": "cliff_forcing",
+    "_about": "CRUJRA v4.10 with the TRENDY radiation as forcing of the CLIFF gap filling, prefetch only. pycliff-extract reads the nearest cells from the store with its source crujra, on 6 hour UTC steps, in the ERA5 names and units of PyCLIFF. pycliff_crujra.json reads it through pix_dir and db, which must equal cache_path and db here.",
+    "source": "pycliff_extract",
+    "pycliff_source": "crujra",
+    "store": "/Net/Groups/BGI/tscratch/skoirala/SINDBAD-TRENDY/data/global/trendy_met.zarr",
+    "db": "CRUJRA.v4.10",
+    "cache_path": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/prefetch/cliff_forcing/CRUJRA.v4.10",
+    "pycliff_python": "/Net/Groups/BGI/work_3/sindbad/site_cubes/tools/env/bin/python",
+    "pycliff_dir": "/Net/Groups/BGI/work_3/sindbad/site_cubes/tools/PyCLIFF",
+    "pycliff_out": "/Net/Groups/BGI/work_3/sindbad/site_cubes/input/pycliff",
+    "start_year": 1950,
+    "end_year": 2025,
+    "n_pixels": 3,
+    "n_workers": 1,
+    "variables": [
+        "t2m",
+        "tmax",
+        "tmin",
+        "tp",
+        "ssrd",
+        "strd",
+        "rn",
+        "vpd",
+        "ws10",
+        "rH"
+    ]
+}

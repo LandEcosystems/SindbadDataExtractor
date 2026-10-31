@@ -130,6 +130,7 @@ made ancillary_data/prefetch/clms_lai_300m
 made ancillary_data/prefetch/clms_lai_1km
 made ancillary_data/prefetch/landsat_ndvi
 made ancillary_data/prefetch/cliff_forcing/ERA5.e1
+made ancillary_data/prefetch/cliff_forcing/CRUJRA.v4.10
 made ancillary_data/insitu/site_lists
 made ancillary_data/insitu/sites_consolidated.csv
 made input/store

@@ -106,6 +106,7 @@ again, so this copy is its only source.
 | `prefetch/clms_ndvi_300m/`, `clms_ndvi_1km/`, `clms_lai_300m/`, `clms_lai_1km/` | `prefetch_array.sh`: Copernicus NDVI and LAI, one csv per year |
 | `prefetch/landsat_ndvi/` | `prefetch_array.sh`: Landsat NDVI, one csv per site |
 | `prefetch/cliff_forcing/ERA5.e1/` | `prefetch_array.sh`: ERA5 at the nearest grid cells of each site, the forcing of PyCLIFF |
+| `prefetch/cliff_forcing/CRUJRA.v4.10/` | `prefetch_array.sh`: CRUJRA at the nearest grid cells of each site, on 6 hour steps, the forcing of the daily PyCLIFF products |
 | `prefetch/gami_v2.1_1km_sites.csv` | the first extraction of the forest age map |
 
 ### input/ (written by the workflow)
@@ -132,4 +133,6 @@ WarmWinter2020 and CCBY.
 
 The workflow also reads, without copying them here, the global maps and series of
 `/Net/Groups/BGI/work_3/sindbad/data`, DataStructureMDI and BIOMASCAT, the ERA5 files
-of `/Net/Groups/data_BGC/era5/e1/0d25_hourly`, and the v0.07 fluxcom site cube.
+of `/Net/Groups/data_BGC/era5/e1/0d25_hourly`, the CRUJRA forcing in
+`/Net/Groups/BGI/tscratch/skoirala/SINDBAD-TRENDY/data/global/trendy_met.zarr`, and the
+v0.07 fluxcom site cube.

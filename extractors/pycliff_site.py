@@ -8,15 +8,17 @@ For a site with tower meteorology, extract runs pycliff-downscale for the site
 with the python of the PyCLIFF environment and the PyCLIFF checkout pycliff_dir first
 on PYTHONPATH, and then reads its gap-filled product with the reader of
 pycliff_gapfilled.py:
-    <VAR>_F       the tower value where its QC is at least 0.85, else the
-                  meteorology of the forcing downscaled by the selected method
+    <VAR>_F       the tower value where its QC is at least qc_threshold of the
+                  json, 0.85 by default, else the meteorology of the forcing
+                  downscaled by the selected method
     <VAR>_F_QC    hourly: 0 tower, 1 selected method, 2 nearest grid cell;
                   daily: the fraction of the day from the tower
 The tower data are the hourly CLIFF input file of the site, found with site_input
 of the json, a pattern with {site}. stage_product.py sets site_input and fn for
 each source from the pycliff block of the catalog, so that every source has its
-own product, pycliff_era5.<source>. A site whose file is missing, or whose TA or
-SW_IN has fewer than min_tower_days days with data, gets no product.
+own product per forcing, pycliff_era5.<source> or pycliff_crujra.<source>. A site
+whose file is missing, or whose TA or SW_IN has fewer than min_tower_days days with
+data, gets no product.
 
 The forcing is a cliff_forcing dataset, whose cache_path is pix_dir of the json and
 whose db names it, so that CLIFF runs with ERA5 or any other forcing written in the
@@ -26,11 +28,15 @@ methods of the json. The products are written below pycliff_out, which PyCLIFF t
 as PYCLIFF_OUT.
 
 PyCLIFF skips a site that is done with the same settings, but its check does not
-see changed input files. A marker per site and run in
-<pycliff_out>/sindbad_inputs/<fn>/<site>.txt therefore keeps the size and time of
-the tower file and the pixel files, and PyCLIFF runs with --force when they
-changed. A lock per site and run keeps parallel stage jobs from running the same
-fit twice.
+see changed input files. A marker per site, run and forcing in
+<pycliff_out>/sindbad_inputs/<fn>/<db>/<site>.txt therefore keeps the size and time
+of the tower file and the pixel files, and PyCLIFF runs with --force when they
+changed. A lock per marker keeps parallel stage jobs from running the same fit
+twice. forcing_variables of the json lists the pixel files of the forcing, the
+ERA5 variables by default.
+
+PyCLIFF refuses a resolution finer than the step of the forcing, so a forcing on
+6 hour steps such as CRUJRA only has a daily product.
 """
 import glob
 import json
@@ -75,7 +81,7 @@ def run_name(info, freq):
 
 def inputs(info, site, tower):
     """Tower file and pixel files of a site, with their size and time."""
-    paths = [tower] + [f for v in VARIABLES
+    paths = [tower] + [f for v in info.get("forcing_variables", VARIABLES)
                        for f in existing({"cache_path": info["pix_dir"]}, v, site)]
     return [(p, os.path.getsize(p), os.path.getmtime(p)) for p in paths]
 
@@ -89,11 +95,16 @@ def source_files(info, site, freq):
 def run_pycliff(info, site, tower, freq):
     """Fit and write the PyCLIFF product of a site unless it is current."""
     fn = run_name(info, freq)
-    marker = os.path.join(info["pycliff_out"], "sindbad_inputs", fn, f"{site}.txt")
+    marker = os.path.join(info["pycliff_out"], "sindbad_inputs", fn, info["db"],
+                          f"{site}.txt")
     os.makedirs(os.path.dirname(marker), exist_ok=True)
     stamp = json.dumps(inputs(info, site, tower))
+    # markers written before the forcing was part of the path; its pixel files
+    # are in the stamp, so another forcing never matches it
+    legacy = os.path.join(info["pycliff_out"], "sindbad_inputs", fn, f"{site}.txt")
     with fu.file_lock(marker):
-        changed = not os.path.exists(marker) or open(marker).read() != stamp
+        seen = marker if os.path.exists(marker) else legacy
+        changed = not os.path.exists(seen) or open(seen).read() != stamp
         cmd = [info["pycliff_python"], "-m", "pycliff.downscale.cli", site,
                "--site-file", tower, "--pix-dir", info["pix_dir"], "--fn-version", fn,
                "--db-id", info["db"], "--resolution", freq,
@@ -103,6 +114,8 @@ def run_pycliff(info, site, tower, freq):
                "--no-figures", "--no-analysis", "--force" if changed else "--skip-done"]
         if info.get("methods"):
             cmd += ["--methods", info["methods"]]
+        if info.get("qc_threshold") is not None:
+            cmd += ["--qc-threshold", str(info["qc_threshold"])]
         env = dict(pycliff_env(info), OMP_NUM_THREADS="1", OPENBLAS_NUM_THREADS="1",
                    MKL_NUM_THREADS="1")
         run = subprocess.run(cmd, env=env, capture_output=True, text=True)
@@ -135,7 +148,8 @@ def extract(dataset, site_info, config):
     ds = pg.extract(dataset, site_info, config)
     for v in ds.data_vars:
         ds[v].attrs.update({"pycliff_tower_file": tower, "pycliff_db": info["db"],
-                            "pycliff_forcing": info["pix_dir"]})
+                            "pycliff_forcing": info["pix_dir"],
+                            "pycliff_qc_threshold": info.get("qc_threshold", 0.85)})
     return ds
 
 
