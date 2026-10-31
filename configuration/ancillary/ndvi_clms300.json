@@ -1,0 +1,68 @@
+{
+    "extractor": "clms_dekad",
+    "var_suffix": "CLMS300",
+    "cache_path": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/prefetch/clms_ndvi_300m",
+    "n_workers": 8,
+    "layer": "NDVI",
+    "valid_range": [
+        -0.08,
+        0.92
+    ],
+    "series": [
+        {
+            "odata": "startswith(Name,'c_gls_NDVI300_') and contains(Name,'V3.0.1_cog')",
+            "first": "2014-01-01",
+            "last": "2030-12-31"
+        }
+    ],
+    "base_info": {
+        "partitioning": "",
+        "variableUnit": "adimensional",
+        "bounds": [
+            -1,
+            1
+        ],
+        "sourceVariableName": "",
+        "sourceVariableUnit": "adimensional",
+        "source2sindbadUnit": 1,
+        "isCategorical": false,
+        "nameShort": "",
+        "nameLong": "",
+        "spaceTimeType": "normal",
+        "sourceDataProductName": "Copernicus NDVI 300 m V3",
+        "QC": "",
+        "RANDUNC": "",
+        "weightVar": "",
+        "DaySum": false,
+        "DayMin": false,
+        "DayMax": false,
+        "wDayMean": false,
+        "DayTime": false,
+        "isEnergy": false,
+        "isWater": false,
+        "isCarbon": false,
+        "skipUnitcheck": false,
+        "publication": "https://land.copernicus.eu/en/products/vegetation/normalised-difference-vegetation-index-v3-0-300m",
+        "data_path": "/eodata/CLMS/bio-geophysical/vegetation_indices/ndvi_global_300m_10daily_v3",
+        "description": "Copernicus NDVI 300 m 10-daily V3, PROBA-V to mid 2020 and Sentinel-3 OLCI after, averaged over the grid cells with centres within 1 km great-circle distance of the site; every day of a dekad takes its value."
+    },
+    "sel_variables": "all",
+    "variables": {
+        "NDVI": {
+            "sourceVariableName": "NDVI",
+            "nameShort": "NDVI",
+            "nameLong": "normalized difference vegetation index, Copernicus 300 m"
+        },
+        "NDVI_QC": {
+            "sourceVariableName": "NDVI_QC",
+            "variableUnit": "adimensional",
+            "sourceVariableUnit": "adimensional",
+            "bounds": [
+                0,
+                1
+            ],
+            "nameShort": "NDVI_QC",
+            "nameLong": "fraction of the 300 m grid cells within 1 km that are valid"
+        }
+    }
+}

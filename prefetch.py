@@ -10,15 +10,20 @@ sites.
 
 usage:
     python prefetch.py <main json> [dataset ...] [--sites-csv csv] [--version v]
-                       [--workers n] [--step submit|status|process]
+                       [--workers n] [--step submit|status|process] [--part i/n]
 
 The datasets are keys of the dataset block of the main json, by default all datasets
 whose json sets cache_path. Their jsons are read from the folder of the main json,
 or from the ancillary folder next to it.
 Sites and coordinates come from --sites-csv with site, latitude and longitude columns
-when given, otherwise from the FLUXCOM site cube of --version, as in
-run_extraction.py. --step is only used by vf_modis, whose AppEEARS request is
-asynchronous.
+when given, otherwise from the site registry of the registry block of the main json,
+otherwise from the FLUXCOM site cube of --version, as in run_extraction.py. --step is
+only used by vf_modis, whose AppEEARS request is asynchronous.
+
+--part i/n, with i from 1 to n, fetches only part i of n of the work of the datasets
+whose prefetch takes a part, such as the years of clms_dekad or the sites of
+ndvi_landsat, so that the jobs of a cluster array share one cache without
+overlapping. prefetch_array.sh submits such an array.
 
 --check fetches nothing. It lists for each dataset the sites missing from its cache
 and the cached sites whose coordinates differ from those of the site list by more
@@ -37,6 +42,7 @@ to it, so a local copy needs the same layout.
 """
 import argparse
 import importlib
+import inspect
 import json
 import os
 import sys
@@ -54,8 +60,9 @@ PATH_KEYS = ["cache_path", "peak_dir", "work_dir", "tiles_path", "code_dir",
 
 
 def site_table(args, main):
-    if args.sites_csv:
-        df = pd.read_csv(args.sites_csv)
+    sites_csv = args.sites_csv or main.get("registry", {}).get("path", "")
+    if sites_csv:
+        df = pd.read_csv(sites_csv)
     else:
         import fluxcom.providers as prov
         from utils.workflow_extraction import get_site_info
@@ -87,9 +94,13 @@ def move_cache_dir(infos, cache_dir):
 def check(name, info, sites, lats, lons, provider=None):
     """
     Print the sites of the list that the cache of a dataset lacks or misplaces. A
-    provider with complete_sites(cache, info) decides which sites count as cached.
+    provider with complete_sites(cache, info) decides which sites count as cached,
+    and one with report(sites, lats, lons, info) prints the state of its own cache.
     """
     path = info["cache_path"]
+    if hasattr(provider, "report"):
+        provider.report(sites, lats, lons, info)
+        return
     cache = fu.read_cache(path)
     if not os.path.exists(path):
         print(f"{name}: no cache at {path}, all {len(sites)} sites missing")
@@ -139,6 +150,8 @@ def main():
                    help="only report the sites missing from each cache")
     p.add_argument("--cache-dir", default="",
                    help="folder that replaces the cache folder of the jsons")
+    p.add_argument("--part", default="",
+                   help="i/n: fetch only part i of n, for a cluster array")
     args = p.parse_args()
 
     main = json.load(open(args.main_json))
@@ -169,9 +182,15 @@ def main():
         if not hasattr(provider, "prefetch"):
             print(f"{name}: extractor {info['extractor']} has no prefetch")
             continue
+        kwargs = {"workers": args.workers, "step": args.step}
+        if args.part:
+            if "part" not in inspect.signature(provider.prefetch).parameters:
+                print(f"{name}: extractor {info['extractor']} cannot split its work "
+                      "into parts, skipped")
+                continue
+            kwargs["part"] = args.part
         print(f"--- {name} ({info['extractor']}) -> {info['cache_path']}", flush=True)
-        provider.prefetch(sites, lats, lons, info, workers=args.workers,
-                          step=args.step)
+        provider.prefetch(sites, lats, lons, info, **kwargs)
 
 
 if __name__ == '__main__':
