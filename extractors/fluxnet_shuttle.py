@@ -71,22 +71,45 @@ def cache_folder(info):
     return os.path.dirname(info["cache_path"])
 
 
+def snapshot_sites(path):
+    """Number of sites a listing holds, 0 for an empty or unreadable one."""
+    try:
+        return len(pd.read_csv(path, usecols=["site_id"]))
+    except (ValueError, pd.errors.EmptyDataError):
+        return 0
+
+
 def latest_snapshot(info):
+    """Newest listing of the cache folder that holds any site."""
     files = sorted(glob.glob(os.path.join(cache_folder(info),
                                           "fluxnet_shuttle_snapshot_*.csv")))
-    return files[-1] if files else ""
+    for path in reversed(files):
+        if snapshot_sites(path):
+            return path
+    return ""
 
 
 def snapshot(info, listall):
     """
     Listing of the data hubs, made again when the newest one in the cache folder is
-    older than snapshot_max_age_h of the json, 24 hours by default.
+    older than snapshot_max_age_h of the json, 24 hours by default. A new listing
+    without sites, as made without internet access, is removed, since it would look
+    current for a day, and the newest earlier listing is used instead.
     """
     path = latest_snapshot(info)
     max_age = info.get("snapshot_max_age_h", 24) * 3600
     if path and os.path.getmtime(path) > time.time() - max_age:
         return path
-    return listall(output_dir=cache_folder(info))
+    new = listall(output_dir=cache_folder(info))
+    if snapshot_sites(new):
+        return new
+    os.remove(new)
+    if path:
+        print(f"the new FLUXNET Shuttle listing is empty, so {path} is used; check "
+              "the internet access of this node", flush=True)
+        return path
+    raise RuntimeError("the FLUXNET Shuttle listing is empty and there is no earlier "
+                       "one; check the internet access of this node")
 
 
 def prefetch(sites, lats, lons, info, workers=None, **kwargs):

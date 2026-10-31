@@ -64,10 +64,10 @@ the networks, the fallback csv or the overrides.
 
 --shuttle adds a row of the network in_OneFluxShuttle for every site the FLUXNET
 Shuttle lists in AmeriFlux, ICOS and TERN, with its coordinates and IGBP class as
-PFT. The listing is the newest snapshot in --shuttle-dir when it is less than a day
-old, and is made again with the fluxnet-shuttle package otherwise, which keeps it in
-that folder, the cache folder of the shuttle_obs prefetch. --shuttle-snapshot names a
-listing to use instead. A listed site that is already in the input merges with its
+PFT. The listing is the newest snapshot in --shuttle-dir that holds any site, the
+listing that the shuttle_obs prefetch, whose cache folder it is, downloaded from. It is
+made with the fluxnet-shuttle package only when the folder has none, and a listing
+without sites stops the run. --shuttle-snapshot names a listing to use instead. A listed site that is already in the input merges with its
 rows as any other network does, so the shuttle only adds sites and the network flag.
 The shuttle gives no UTC offset, which then comes from the time zone.
 
@@ -145,7 +145,8 @@ def clean_name(name):
 
 
 def haversine_km(lat1, lon1, lat2, lon2):
-    lat1, lon1, lat2, lon2 = map(np.radians, (lat1, lon1, lat2, lon2))
+    lat1, lon1, lat2, lon2 = (np.radians(np.asarray(x, dtype=float))
+                              for x in (lat1, lon1, lat2, lon2))
     a = (np.sin((lat2 - lat1) / 2) ** 2
          + np.cos(lat1) * np.cos(lat2) * np.sin((lon2 - lon1) / 2) ** 2)
     return 2 * 6371.0 * np.arcsin(np.sqrt(a))
@@ -214,15 +215,21 @@ def standard_utc_offsets(lats, lons):
 
 def shuttle_listing(shuttle_dir=SHUTTLE_DIR, snapshot_path=""):
     """
-    Path of the FLUXNET Shuttle listing: snapshot_path when given, else the snapshot
-    of shuttle_dir, made again when it is older than a day.
+    Path of the FLUXNET Shuttle listing: snapshot_path when given, else the newest
+    listing of shuttle_dir with any site, the one the shuttle_obs prefetch downloaded
+    from. A listing is made only when the folder has none, since the registry should
+    not list sites whose data were never downloaded.
     """
     if snapshot_path:
         return snapshot_path
+    from extractors.fluxnet_shuttle import latest_snapshot, snapshot
+    info = {"cache_path": os.path.join(shuttle_dir, "index.csv")}
+    path = latest_snapshot(info)
+    if path:
+        return path
     from fluxnet_shuttle.shuttle import listall
-    from extractors.fluxnet_shuttle import snapshot
     os.makedirs(shuttle_dir, exist_ok=True)
-    return snapshot({"cache_path": os.path.join(shuttle_dir, "index.csv")}, listall)
+    return snapshot(info, listall)
 
 
 def shuttle_rows(listing_path, columns):
@@ -243,6 +250,8 @@ def shuttle_rows(listing_path, columns):
         rows[SHUTTLE_NETWORK] = 1
     hubs = snap["data_hub"].value_counts().to_dict()
     print(f"{len(rows)} shuttle sites from {listing_path}: {hubs}")
+    if not len(rows):
+        raise SystemExit(f"the shuttle listing {listing_path} holds no site")
     return rows
 
 
