@@ -111,20 +111,6 @@
             "isEnergy": true,
             "skipUnitcheck": true
         },
-        "SW_IN_POT": {
-            "variableUnit": "MJ m-2",
-            "bounds": [
-                0,
-                100
-            ],
-            "sourceVariableName": "SW_IN_POT",
-            "sourceVariableUnit": "W m-2",
-            "nameShort": "SW_IN_POT",
-            "nameLong": "shortwave radiation - incoming - potential",
-            "QC":  "QC",
-            "isEnergy": true,
-            "skipUnitcheck": true
-        },
         "PPFD_IN": {
             "variableUnit": "µmolPhoton m-2 s-1",
             "bounds": [
