@@ -8,6 +8,8 @@ usage:
     python consolidate_sites.py <input csv> <output csv> [--pft-csv csv]
                                 [--countries zip] [--shuttle]
                                 [--shuttle-dir dir] [--shuttle-snapshot csv]
+                                [--site-list NAME=csv ...] [--coord-overrides csv]
+                                [--previous csv]
 
 The input has one row per site and network, with the columns Site_ID, Lat, Lon, UTC,
 PFT and one in_<network> column of 0 or 1 per network. The identifiers are of three
@@ -25,8 +27,8 @@ keep overseas regions such as French Guiana apart from their country. A site out
 every polygon, such as on a coast, takes the nearest polygon, and country_km gives
 its distance to it.
 
-Rows of the same site are merged in the order of SOURCE_PRIORITY. Coordinates and
-UTC_input come from the first network in that order that has the site. When the coordinates of
+Rows of the same site are merged in the order of SOURCE_PRIORITY. Coordinates come
+from the first network in that order that has the site. When the coordinates of
 the rows differ, the first row whose coordinates lie in the country of the identifier
 is preferred, which drops rows with a wrong sign of latitude or longitude. PFT comes
 from the first network in the order of PFT_PRIORITY that gives one, so that the
@@ -43,7 +45,9 @@ UTC is the offset of local standard time from UTC in hours, which FLUXNET timest
 use. time_zone is the IANA time zone of the coordinates from timezonefinder, and its
 standard offset is the smaller of its offsets in January and July of the current
 year, which leaves out summer time also where the zone defines winter time as the
-exception, as in Ireland. UTC_input keeps the offset of the networks. UTC takes the
+exception, as in Ireland. UTC_input keeps the offset of the first network whose row
+lies within SPREAD_WARN_KM of the chosen coordinates, since a row at another place
+may be in another time zone. UTC takes the
 standard offset of the zone where UTC_input is missing or one hour ahead of it, which
 is summer time, and keeps UTC_input otherwise, so that offsets of zones that changed,
 such as Santarem before 2008, still match the period of the data. UTC_source says
@@ -66,6 +70,28 @@ that folder, the cache folder of the shuttle_obs prefetch. --shuttle-snapshot na
 listing to use instead. A listed site that is already in the input merges with its
 rows as any other network does, so the shuttle only adds sites and the network flag.
 The shuttle gives no UTC offset, which then comes from the time zone.
+
+--site-list NAME=csv adds the sites of one source of eddy covariance data as rows of
+the network in_NAME, such as a release of the FLUXCOM v0.07 site cube written by
+fluxcom_inventory.py or LaThuile2007 from the copied legacy site files. A list has
+the columns Site_ID, Lat, Lon and UTC, and may have PFT. The source lists and the
+shuttle listing replace input networks that were collected by hand and are wrong or
+out of date, as given in REPLACED: in_FLUXCOM by the FLUXCOM releases,
+in_SINDBAD_BRK5 by in_FLUXNET2015, in_SINDBAD_LTL07 by in_LaThuile2007, and the
+in_OneFluxShuttle of the input by the shuttle listing. An input network is dropped
+only when all of its replacements are given, so a run without the lists, or with
+only some of the FLUXCOM releases, keeps the old flags. An empty list counts as
+given. The rows of a dropped network still give coordinates, UTC and PFT after all
+others, and a site left without any network is removed and reported.
+
+The FLUXNET Shuttle is the maintained source, so its coordinates come first, then
+those of the FLUXCOM releases and of LaThuile2007, then those of the input networks.
+coord_source names the network the coordinates come from. --coord-overrides names a
+csv with the columns Site_ID, latitude, longitude and reason, whose coordinates
+replace those of the networks for sites that were checked by hand. --previous names
+an earlier output, by default the output file when it exists, and the report lists
+the sites whose coordinates moved more than MOVE_WARN_KM from it. Their footprint
+caches then need to be fetched again, which prefetch.py --check shows.
 """
 import argparse
 import os
@@ -75,18 +101,25 @@ import unicodedata
 import numpy as np
 import pandas as pd
 
-# Networks in the order their coordinates and UTC are preferred.
-SOURCE_PRIORITY = ["in_FLUXCOM", "in_FLUXCOM_Z", "in_SINDBAD_BRK5", "in_SINDBAD_LTL07",
-                   "in_OneFluxShuttle", "in_RU_FLUX", "in_SAPFLUXNET", "in_GeoTrees",
-                   "in_GeoTrees_candidates", "in_SOTR"]
+SHUTTLE_NETWORK = "in_OneFluxShuttle"
+# Releases of the FLUXCOM v0.07 site cube, each with a site list.
+V07_NETWORKS = ["in_FLUXNET2015", "in_AmeriFlux", "in_ICOS", "in_OzFLUX",
+                "in_ICOSDrought2018", "in_WarmWinter2020", "in_CCBY"]
+# Networks in the order their coordinates and UTC are preferred: the shuttle, the
+# frozen fluxcom releases and LaThuile2007, then the networks of the input csv.
+SOURCE_PRIORITY = ([SHUTTLE_NETWORK] + V07_NETWORKS + ["in_LaThuile2007"]
+                   + ["in_FLUXCOM", "in_FLUXCOM_Z", "in_SINDBAD_BRK5",
+                      "in_SINDBAD_LTL07", "in_RU_FLUX", "in_SAPFLUXNET", "in_GeoTrees",
+                      "in_GeoTrees_candidates", "in_SOTR"])
 # Networks in the order their PFT is preferred.
-PFT_PRIORITY = ["in_OneFluxShuttle"] + [n for n in SOURCE_PRIORITY
-                                        if n != "in_OneFluxShuttle"]
+PFT_PRIORITY = [SHUTTLE_NETWORK] + [n for n in SOURCE_PRIORITY if n != SHUTTLE_NETWORK]
+# Input networks that the source lists replace, with the networks that replace them.
+REPLACED = {"in_FLUXCOM": V07_NETWORKS, "in_SINDBAD_BRK5": ["in_FLUXNET2015"],
+            "in_SINDBAD_LTL07": ["in_LaThuile2007"], SHUTTLE_NETWORK: [SHUTTLE_NETWORK]}
 COUNTRIES = os.path.expanduser("~/research/RnD/data/sindbad_ancillary_data/reference/"
                                "ne_10m_admin_0_map_units.zip")
 SHUTTLE_DIR = os.path.expanduser("~/research/RnD/data/sindbad_ancillary_data/prefetch/"
                                  "fluxnet_shuttle")
-SHUTTLE_NETWORK = "in_OneFluxShuttle"
 FLUXNET_ID = re.compile(r"^[A-Z]{2}-[A-Za-z0-9]{3}$")
 SAPFLUXNET_ID = re.compile(r"^[A-Z]{3}(_[A-Za-z0-9]+)+$")
 # Codes of FLUXNET identifiers that are not the ISO code of their country.
@@ -94,6 +127,7 @@ ID_COUNTRY_ALIAS = {"UK": "GB"}
 # Distances above which a site is reported.
 SPREAD_WARN_KM = 1.0
 COUNTRY_WARN_KM = 10.0
+MOVE_WARN_KM = 0.1
 
 
 def id_style(site_id):
@@ -212,23 +246,68 @@ def shuttle_rows(listing_path, columns):
     return rows
 
 
-def add_shuttle(df, listing_path):
-    """The input with the rows of the shuttle listing, reporting the new sites."""
-    rows = shuttle_rows(listing_path, df.columns)
+def add_rows(df, rows, label):
+    """The input with the rows of a source added, reporting the new sites."""
     known = set(df["Site_ID"].astype(str).str.strip().str.upper())
     new = rows[~rows["Site_ID"].str.upper().isin(known)]
-    print(f"{len(new)} shuttle sites are not in the input: " + " ".join(new["Site_ID"]))
-    # Shuttle identifiers keep the case of the input, as US-xYE.
+    print(f"{len(new)} {label} sites are not in the input: " + " ".join(new["Site_ID"]))
+    # Identifiers of a source keep the case of the input, as US-xYE.
     case = {s.upper(): s for s in df["Site_ID"].astype(str).str.strip()}
+    rows = rows.copy()
     rows["Site_ID"] = rows["Site_ID"].map(lambda s: case.get(s.upper(), s))
     return pd.concat([df, rows], ignore_index=True)
 
 
+def add_shuttle(df, listing_path):
+    """The input with the rows of the shuttle listing, reporting the new sites."""
+    return add_rows(df, shuttle_rows(listing_path, df.columns), "shuttle")
+
+
+def parse_site_list(arg):
+    """Network and path of a --site-list NAME=csv argument."""
+    name, sep, path = arg.partition("=")
+    if not sep or not name or not path:
+        raise ValueError(f"--site-list takes NAME=csv, got {arg}")
+    return (name if name.startswith("in_") else f"in_{name}"), path
+
+
+def list_rows(path, network, columns):
+    """
+    Rows in the layout of the input for the sites of a source list, flagged in
+    network. The list has the columns Site_ID, Lat, Lon and UTC, and may have PFT.
+    """
+    lst = pd.read_csv(path)
+    rows = pd.DataFrame({"Site_ID": lst["Site_ID"].astype(str).str.strip(),
+                         "Lat": lst["Lat"].astype(float),
+                         "Lon": lst["Lon"].astype(float),
+                         "UTC": lst["UTC"].astype(float) if "UTC" in lst else np.nan,
+                         "PFT": lst["PFT"] if "PFT" in lst else np.nan})
+    for c in columns:
+        if c.startswith("in_"):
+            rows[c] = 0
+    rows[network] = 1
+    print(f"{len(rows)} sites of {network} from {path}")
+    return rows
+
+
+def drop_replaced(df, given):
+    """The input without the networks that the given sources replace."""
+    drop = [c for c, by in REPLACED.items() if c in df and set(by) <= set(given)]
+    kept = [c for c in REPLACED if c in df and c not in drop]
+    if drop:
+        print("input networks replaced by the source lists: " + ", ".join(drop))
+    if kept:
+        print("input networks kept, as no source list replaces them: " + ", ".join(kept))
+    return df.drop(columns=drop)
+
+
 def consolidate_sites(df, countries_path=COUNTRIES, priority=SOURCE_PRIORITY,
-                      pft_priority=PFT_PRIORITY):
+                      pft_priority=PFT_PRIORITY, overrides=None):
     """
     One row per site from a table with one row per site and network, as described in
-    the module docstring. Returns the consolidated table sorted by site.
+    the module docstring. overrides holds coordinates checked by hand, indexed by
+    site, with the columns latitude and longitude. Returns the consolidated table
+    sorted by site.
     """
     df = df.copy()
     df["Site_ID"] = df["Site_ID"].astype(str).str.strip()
@@ -265,12 +344,20 @@ def consolidate_sites(df, countries_path=COUNTRIES, priority=SOURCE_PRIORITY,
             id_country = g["country_xy"].iloc[0]
         inside = g[g["country_xy"] == id_country]
         top = inside.iloc[0] if len(inside) else g.iloc[0]
+        lat, lon = top["Lat"], top["Lon"]
+        coord_source = networks[top["rank"]] if top["rank"] < len(networks) else ""
+        if overrides is not None and sid in overrides.index:
+            lat = float(overrides.loc[sid, "latitude"])
+            lon = float(overrides.loc[sid, "longitude"])
+            coord_source = "override"
         by_pft = g.sort_values("pft_rank", kind="stable")["PFT"]
         pfts = list(dict.fromkeys(by_pft.dropna().astype(str)))
-        utc = g["UTC"].dropna()
-        spread = haversine_km(top["Lat"], top["Lon"], g["Lat"].values,
-                              g["Lon"].values).max()
-        row = {"site": sid, "latitude": top["Lat"], "longitude": top["Lon"],
+        dist_km = haversine_km(lat, lon, g["Lat"].values, g["Lon"].values)
+        spread = dist_km.max()
+        # Only rows at the chosen coordinates give the offset, as a row of another
+        # place may lie in another time zone.
+        utc = g["UTC"][dist_km <= SPREAD_WARN_KM].dropna()
+        row = {"site": sid, "latitude": lat, "longitude": lon,
                "UTC": np.nan, "UTC_input": utc.iloc[0] if len(utc) else np.nan,
                "UTC_source": "", "UTC_zone": np.nan, "time_zone": "",
                "PFT": pfts[0] if pfts else np.nan,
@@ -278,10 +365,18 @@ def consolidate_sites(df, countries_path=COUNTRIES, priority=SOURCE_PRIORITY,
                "country": top["country_xy"], "id_country": id_country,
                "country_km": top["country_km"], "id_style": style,
                "source_ID": ";".join(dict.fromkeys(g["Site_ID"])),
-               "n_rows": len(g), "coord_spread_km": round(float(spread), 3)}
+               "n_rows": len(g), "coord_spread_km": round(float(spread), 3),
+               "coord_source": coord_source}
         row.update({c: int(g[c].fillna(0).max()) for c in networks})
         rows.append(row)
     sites = pd.DataFrame(rows)
+    fixed = sites["coord_source"] == "override"
+    if fixed.any():
+        codes, dist, _ = country_codes(sites.loc[fixed, "latitude"].values,
+                                       sites.loc[fixed, "longitude"].values,
+                                       countries_path)
+        sites.loc[fixed, "country"] = codes
+        sites.loc[fixed, "country_km"] = dist
     sites["time_zone"], std = standard_utc_offsets(sites["latitude"],
                                                    sites["longitude"])
     std = pd.Series(std, index=sites.index)
@@ -299,6 +394,7 @@ def report(sites):
     """Print the sites whose rows or coordinates need a look."""
     print(f"{len(sites)} sites: "
           + ", ".join(f"{n} {k}" for k, n in sites["id_style"].value_counts().items()))
+    print("coordinates from: " + str(sites["coord_source"].value_counts().to_dict()))
     print(f"{sites['PFT'].isna().sum()} sites without PFT")
     print(f"{sites['UTC'].isna().sum()} sites without UTC, UTC_source: "
           + str(sites["UTC_source"].value_counts().to_dict()))
@@ -325,6 +421,44 @@ def report(sites):
           "polygons:")
     for r in far.itertuples():
         print(f"    {r.site}: {r.country_km} km from {r.country}")
+
+
+def drop_orphans(sites):
+    """The sites that keep a network, printing those left without any."""
+    flags = [c for c in sites if c.startswith("in_")]
+    orphan = sites[flags].sum(axis=1) == 0
+    if orphan.any():
+        print(f"{orphan.sum()} sites have no network left after the replaced networks "
+              "were dropped, and are removed: " + " ".join(sites.loc[orphan, "site"]))
+    return sites[~orphan].reset_index(drop=True)
+
+
+def moved_sites(sites, previous_path):
+    """
+    Print the sites whose coordinates moved more than MOVE_WARN_KM from those of an
+    earlier output or whose UTC changed, and the sites that are new or gone.
+    """
+    old = pd.read_csv(previous_path)[["site", "latitude", "longitude", "UTC"]]
+    both = sites.merge(old, on="site", suffixes=("", "_old"))
+    utc = both[both["UTC"] != both["UTC_old"]]
+    print(f"{len(utc)} sites changed their UTC from {previous_path}:")
+    for r in utc.itertuples():
+        print(f"    {r.site}: {r.UTC_old} to {r.UTC} ({r.UTC_source}, {r.time_zone})")
+    both["moved_km"] = np.round(haversine_km(both["latitude_old"], both["longitude_old"],
+                                             both["latitude"], both["longitude"]), 3)
+    moved = both[both["moved_km"] > MOVE_WARN_KM].sort_values("moved_km",
+                                                               ascending=False)
+    new = sorted(set(sites["site"]) - set(old["site"]))
+    gone = sorted(set(old["site"]) - set(sites["site"]))
+    print(f"compared with {previous_path}: {len(new)} new sites, {len(gone)} sites "
+          f"gone, {len(moved)} sites moved more than {MOVE_WARN_KM} km:")
+    for r in moved.itertuples():
+        print(f"    {r.site}: {r.moved_km} km, from {r.latitude_old}, "
+              f"{r.longitude_old} to {r.latitude}, {r.longitude} ({r.coord_source})")
+    if new:
+        print("    new: " + " ".join(new))
+    if gone:
+        print("    gone: " + " ".join(gone))
 
 
 def pft_table(sites, fallback_path="", overrides_path=""):
@@ -366,13 +500,34 @@ def main():
     p.add_argument("--shuttle", action="store_true")
     p.add_argument("--shuttle-dir", default=SHUTTLE_DIR)
     p.add_argument("--shuttle-snapshot", default="")
+    p.add_argument("--site-list", action="append", default=[],
+                   help="NAME=csv, the sites of a source as network in_NAME")
+    p.add_argument("--coord-overrides", default="")
+    p.add_argument("--previous", default="",
+                   help="earlier output to compare the coordinates with")
     args = p.parse_args()
 
     df = pd.read_csv(args.input)
-    if args.shuttle or args.shuttle_snapshot:
+    lists = dict(parse_site_list(s) for s in args.site_list)
+    shuttle = args.shuttle or args.shuttle_snapshot
+    df = drop_replaced(df, list(lists) + ([SHUTTLE_NETWORK] if shuttle else []))
+    if shuttle:
         df = add_shuttle(df, shuttle_listing(args.shuttle_dir, args.shuttle_snapshot))
-    sites = consolidate_sites(df, args.countries)
+    for network, path in lists.items():
+        df = add_rows(df, list_rows(path, network, df.columns), network)
+    overrides = None
+    if args.coord_overrides:
+        overrides = pd.read_csv(args.coord_overrides).dropna(
+            subset=["latitude", "longitude"])
+        overrides["Site_ID"] = overrides["Site_ID"].astype(str).str.strip()
+        overrides = overrides.set_index("Site_ID")
+        print(f"{len(overrides)} sites take their coordinates from "
+              f"{args.coord_overrides}: " + " ".join(overrides.index))
+    sites = drop_orphans(consolidate_sites(df, args.countries, overrides=overrides))
     report(sites)
+    previous = args.previous or (args.output if os.path.exists(args.output) else "")
+    if previous:
+        moved_sites(sites, previous)
     sites.to_csv(args.output, index=False)
     print(f"written {args.output}")
     if args.pft_csv:
