@@ -68,13 +68,18 @@ which a tower value, and a day as its fraction of good hours, counts as tower da
 0.85 by default, 0.75 for CRUJRA.
 
 ```
-module load proxy                     # internet access, passed on to the SLURM jobs
-snakemake -n                          # what is missing or stale
-snakemake --profile profiles/slurm    # run through SLURM
+./run_workflow.sh 50 -n               # what is missing or stale
+./run_workflow.sh 50                  # run through SLURM on half of 800 cpus
+TOTAL_CPUS=1200 ./run_workflow.sh 25  # a quarter of 1200 cpus
 ```
 
-The profile runs up to 50 jobs at once, and a stage job takes 20 cpus for 20 sites
-at a time, so `--jobs 40` keeps a run within 800 cpus.
+`run_workflow.sh` takes the percent of `TOTAL_CPUS`, 800 by default, that the running
+jobs may use together. It loads the proxy module for internet access and runs
+Snakemake with the SLURM profile and `--resources cpus=N`; stage and assemble jobs
+ask for their threads as cpus, and no job asks for more than N. A stage job runs up
+to 20 sites at once, so 50% of 800 cpus runs 20 stage jobs side by side. Snakemake
+runs on the node it is started from until the workflow ends, so start it in screen
+or tmux.
 
 `run_site.py` runs the same steps for some sites, to check them before a full run:
 their CLIFF forcing when missing, the cliffin cubes, every store product and every

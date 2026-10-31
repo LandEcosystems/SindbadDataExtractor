@@ -6,9 +6,12 @@ cluster-generic-submit-cmd: >-
   sbatch --parsable --partition=big --cpus-per-task={threads}
   --mem={resources.mem_mb}M --time={resources.runtime}
   --job-name=smk-{rule} --output=.snakemake/slurm_logs/{rule}-%j.out
-jobs: 50
+# run_workflow.sh limits the cpus of the running jobs with --resources cpus=N;
+# jobs only bounds the number of jobs on top of that
+jobs: 200
 latency-wait: 60
 rerun-incomplete: true
 default-resources:
   mem_mb: 32000
   runtime: 1440
+  cpus: 1

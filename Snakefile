@@ -7,6 +7,11 @@
 #   snakemake store                       stage every product, no cubes
 #   snakemake --config catalog=<json>     use another catalog, such as a copy with a
 #                                         path_map for a local run
+#   ./run_workflow.sh 50                  through SLURM with half of the cpus
+#
+# Stage and assemble jobs ask for their threads as the resource cpus, so
+# --resources cpus=N keeps the running jobs within N cpus together. cpus of the
+# config, or SINDBAD_MAX_CPUS, also caps the threads of a single job at N.
 #
 # Done once by hand, outside the workflow, and only read here:
 #   prefetch.py, which fills the caches of the prefetch products, the ERA5 forcing
@@ -31,6 +36,7 @@ sys.path.insert(0, workflow.basedir)
 import utils.pipeline as pl
 
 CATALOG = config.get("catalog", pl.CATALOG)
+MAX_CPUS = int(config.get("cpus", os.environ.get("SINDBAD_MAX_CPUS", 0)))
 CAT = pl.load_catalog(CATALOG)
 PY = CAT["envs"]
 STORE, CUBES = CAT["store"], CAT["cubes_dir"]
@@ -44,6 +50,11 @@ JOBS = {f"{run}.{coll}.{TAG[freq]}": (run, coll, freq, cube)
         for run, coll, freq, cube in pl.cube_jobs(CAT)}
 ZARRS = {f"{coll}_{freq}": job for job, (run, coll, freq, cube) in JOBS.items()
          if cube.get("zarr")}
+
+
+def cap(n):
+    """Threads of a job, at most MAX_CPUS when it is set."""
+    return max(1, min(n, MAX_CPUS)) if MAX_CPUS else n
 
 
 def staged(product, freq):
@@ -100,7 +111,7 @@ def assemble_args(wc):
 def assemble_threads(wc):
     run, coll, freq, cube = JOBS[wc.job]
     from utils.setup_config import get_inp_config
-    return int(get_inp_config(pl.recipe_path(cube, freq)).get("njobs_parallel", 1))
+    return cap(int(get_inp_config(pl.recipe_path(cube, freq)).get("njobs_parallel", 1)))
 
 
 wildcard_constraints:
@@ -182,7 +193,9 @@ rule stage:
         os.path.join(STORE, "{product}", "{freq}", "STAGED"),
     log:
         os.path.join(STORE, "_logs", "stage_{product}_{freq}.log"),
-    threads: 20
+    threads: cap(20)
+    resources:
+        cpus=lambda wc, threads: threads,
     params:
         py=lambda wc: PY[pl.product(CAT, wc.product).get("env", "main")],
     shell:
@@ -199,6 +212,8 @@ rule assemble:
     log:
         os.path.join(CUBES, "_logs", "assemble_{job}.log"),
     threads: assemble_threads
+    resources:
+        cpus=lambda wc, threads: threads,
     params:
         py=PY["main"],
         args=assemble_args,
