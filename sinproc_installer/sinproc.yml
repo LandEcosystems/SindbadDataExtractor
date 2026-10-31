@@ -1,10 +1,12 @@
-name: sinproc008
+name: sinproc
 channels:
   - conda-forge
   - nodefaults
   - bioconda
 dependencies:
+  # The versions that fluxcom is tested with, from its environment_313.yml.
   - python=3.13
+  - numpy=2.3
   - scipy=1.17
   - xarray=2025.12.0
   - pandas=3.0
@@ -19,23 +21,28 @@ dependencies:
   - jsonpickle=4.1.1
   - numba=0.63.1
   - scikit-learn=1.8.0
-  - cython=3.2.4
-  - xgboost=3.1.3
-  - jupyterlab=4.5.3
   - fasteners=0.19
-  - shap=0.50.0
-  - pytest=9.0.2
-  - pip=25.3
-  - pytorch=2.10.0=cpu_mkl_py313_h626f1c5_101
-  - lightning=2.6.0
-  - snakemake-minimal=9.16.3
+  - snakemake-minimal=9.27
+  - snakemake-executor-plugin-cluster-generic
+  # The remote products of prefetch.py.
+  - h5netcdf
+  - fsspec
+  - aiohttp
+  - requests
+  - rasterio
+  - shapely
+  - geopandas
+  - timezonefinder
+  - tqdm
+  # PyCLIFF.
+  - h5py
+  - joblib
+  - tabulate
+  - pyarrow
   - matplotlib
-  - rich
+  - pytest
+  - pip
   - pip:
     - loess==2.1.2
-    - marimo==0.19.6
+    - git+https://github.com/fluxnet/shuttle.git@028818791fef116db03e97f3f6b0aebdf1a89e90
     - git+https://github.com/epsilon-machine/missingpy.git@0b526a7314dc3cc47f708702765b7aed1b55d4ab
-    - tensorboard
-    - snakemake-executor-plugin-cluster-generic
-prefix: /Net/Groups/BGI/scratch/skoirala/SindbadSiteExtractor/sinproc_installer
-

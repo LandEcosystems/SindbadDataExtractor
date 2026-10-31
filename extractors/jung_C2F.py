@@ -5,11 +5,11 @@ Daily C2F consistency flags of Jung et al. 2024, Biogeosciences 21, 1827-1846,
 DOI:10.5194/bg-21-1827-2024, computed by prefetch.py from the FLUXNET Shuttle data of
 each site with the published code c2f_fluxnet v1.0, DOI:10.5281/zenodo.10593332.
 
-Prefetch runs in the conda env sinproc-prefetch of
-sinproc_installer/sinproc_prefetch.yml, with the unzipped code at code_dir of the
-json. load_c2f patches the code and missingpy at import, so that they run with
-numpy 2 and scikit-learn 1.8, which give slightly different random forests and hence
-a few different flags than the old versions the code was written for.
+Prefetch runs in the conda env of sinproc_installer/sinproc.yml, with the unzipped
+code at code_dir of the json. load_c2f patches the code and missingpy at import, so
+that they run with numpy 2 and scikit-learn 1.8, which give slightly different
+random forests and hence a few different flags than the old versions the code was
+written for.
 
 For every site of the site list with a zip in the index at
 shuttle_cache_path, the half hours of the zip are turned into the daily input that

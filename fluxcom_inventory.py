@@ -3,7 +3,7 @@
 """
 Inventory of the releases of the FLUXCOM v0.07 site cube and their site lists, the
 first step of the one-off freeze of the fluxcom datasets. It needs the fluxcom
-package, so it runs in the main environment of the cluster, sinproc008.
+package, which the environment of sinproc_installer/install_sinproc.sh has.
 
 usage:
     python fluxcom_inventory.py [--catalog json] [--releases R ...] [--probe n]
