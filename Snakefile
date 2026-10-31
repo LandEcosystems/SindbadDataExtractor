@@ -4,26 +4,26 @@
 #   snakemake -n                          list what is missing or stale
 #   snakemake --cores 20                  run on this node
 #   snakemake --profile profiles/slurm    run through SLURM
-#   snakemake store                       stage every product, no cubes
+#   snakemake store                       extract every product, no cubes
 #   snakemake --config catalog=<json>     use another catalog, such as a copy with a
 #                                         path_map for a local run
 #   ./run_workflow.sh 50                  through SLURM with half of the cpus
 #
-# Stage and assemble jobs ask for their threads as the resource cpus, so
+# Extract and assemble jobs ask for their threads as the resource cpus, so
 # --resources cpus=N keeps the running jobs within N cpus together. cpus of the
 # config, or SINDBAD_MAX_CPUS, also caps the threads of a single job at N.
 #
 # Done once by hand, outside the workflow, and only read here:
 #   prefetch.py, which fills the caches of the prefetch products, the ERA5 forcing
-#     of CLIFF among them. A stage job needs the cache of its product to exist, and
+#     of CLIFF among them. A extract job needs the cache of its product to exist, and
 #     adding registry sites needs prefetch.py again for the new sites.
 #   the read-only copy of the LaThuile2007 files, with its SOURCE.md.
 #
 # CLIFF runs inside the workflow: the product <dataset>.<source> of the pycliff block
 # of the catalog runs PyCLIFF per site on the hourly CLIFF input of the source, so
-# its stage job waits for the cliffin cube of the source and for the forcing.
+# its extract job waits for the cliffin cube of the source and for the forcing.
 #
-# Each stage job writes STAGED and each assemble job assembled.txt when it ends.
+# Each extract job writes EXTRACTED and each assemble job assembled.txt when it ends.
 # These markers, not MANIFEST.csv or the site files, are the outputs of the rules,
 # since Snakemake removes the outputs of a job before running it again and the
 # manifest holds the stage hashes that let a job skip unchanged sites.
@@ -57,8 +57,8 @@ def cap(n):
     return max(1, min(n, MAX_CPUS)) if MAX_CPUS else n
 
 
-def staged(product, freq):
-    return os.path.join(STORE, product, freq, "STAGED")
+def extracted(product, freq):
+    return os.path.join(STORE, product, freq, "EXTRACTED")
 
 
 def caches(entry, freq):
@@ -83,7 +83,7 @@ def cliff_input(entry):
     return ancient(folder)
 
 
-def stage_inputs(wc):
+def extract_inputs(wc):
     entry = pl.product(CAT, wc.product)
     ins = [REGISTRY_DONE]
     if entry.get("mode") != "legacy":
@@ -100,7 +100,7 @@ def stage_inputs(wc):
 def assemble_inputs(wc):
     run, coll, freq, cube = JOBS[wc.job]
     return [REGISTRY_DONE, pl.recipe_path(cube, freq)] + \
-        [staged(p, freq) for p in pl.recipe_products(cube, coll, freq)]
+        [extracted(p, freq) for p in pl.recipe_products(cube, coll, freq)]
 
 
 def assemble_args(wc):
@@ -129,7 +129,7 @@ rule all:
 
 rule store:
     input:
-        [staged(p, f) for p, e in CAT["products"].items() for f in e["freqs"]],
+        [extracted(p, f) for p, e in CAT["products"].items() for f in e["freqs"]],
 
 
 rule fluxcom_inventory:
@@ -186,20 +186,20 @@ rule registry:
         "{params.out} {params.options} {params.lists} > {log} 2>&1 && date > {output}"
 
 
-rule stage:
+rule extract:
     input:
-        stage_inputs,
+        extract_inputs,
     output:
-        os.path.join(STORE, "{product}", "{freq}", "STAGED"),
+        os.path.join(STORE, "{product}", "{freq}", "EXTRACTED"),
     log:
-        os.path.join(STORE, "_logs", "stage_{product}_{freq}.log"),
+        os.path.join(STORE, "_logs", "extract_{product}_{freq}.log"),
     threads: cap(20)
     resources:
         cpus=lambda wc, threads: threads,
     params:
         py=lambda wc: PY[pl.product(CAT, wc.product).get("env", "main")],
     shell:
-        "{params.py} {workflow.basedir}/stage_product.py {wildcards.product} "
+        "{params.py} {workflow.basedir}/extract_product.py {wildcards.product} "
         "{wildcards.freq} --catalog {CATALOG} --workers {threads} > {log} 2>&1 "
         "&& date > {output}"
 

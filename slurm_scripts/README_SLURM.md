@@ -1,7 +1,7 @@
 # Site jobs on SLURM
 
 Runs the workflow of the site cubes on the cluster, one site per job, with
-`run_site.py`. A job stages every store product of the site and builds its cubes, the
+`run_site.py`. A job extracts every store product of the site and builds its cubes, the
 cliffin cube that PyCLIFF reads first. It is the per-site alternative to running
 Snakemake with `run_workflow.sh`: the watcher keeps a share of the free cpus and
 memory busy, and a site that fails does not stop the others.
@@ -89,11 +89,11 @@ To retry failed sites, start the watcher again after it has finished.
 
 **Runs.** `SDX_RUN_NAME` names the output folder, the job names and the tmux session, so
 runs with different names go side by side without mixing. Jobs of different sites
-share the store safely: `stage_product.py` merges the manifest of a product under a
+share the store safely: `extract_product.py` merges the manifest of a product under a
 lock.
 
 **After the jobs.** Nothing here writes the markers of Snakemake. A later
-`run_workflow.sh` therefore still stages and assembles everything, skips the staged
+`run_workflow.sh` therefore still extracts and assembles everything, skips the
 sites whose stage hash is unchanged, and writes the zarr stores, which combine all
 sites of a cube.
 

@@ -3,10 +3,10 @@
 """
 The pipeline catalog, configuration/pipeline.json. It says where the registry, the
 store and the cubes live, which python runs each environment, which products the
-store holds and which cubes are assembled from them. stage_product.py and the
+store holds and which cubes are assembled from them. extract_product.py and the
 Snakefile read it through load_catalog.
 
-A product is one dataset of the main jsons staged per site, with its mode, the
+A product is one dataset of the main jsons extracted per site, with its mode, the
 registry flag of its sites, its temporal resolutions and its environment. The
 products of the FLUXCOM v0.07 releases are made from releases and release_datasets
 as <prefix>.<release>, for example bgi_FLUXCOM_obs.FLUXNET2015.

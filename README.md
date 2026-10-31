@@ -24,7 +24,7 @@ Data go through three layers, driven by Snakemake (`Snakefile`) and described in
    site with its coordinates, UTC offset, PFT and `in_<network>` flags. The flags of the
    eddy covariance sources come from site lists made from the sources themselves; the
    FLUXNET Shuttle comes first for coordinates and PFT.
-2. **Product store**: `stage_product.py <product> <freq>` runs the extractor of one dataset
+2. **Product store**: `extract_product.py <product> <freq>` runs the extractor of one dataset
    for its registry sites and writes `<store>/<product>/<freq>/<site>.nc` with a
    `MANIFEST.csv`. Unchanged sites are skipped. Only this layer reads sources.
 3. **Cubes**: `run_extraction.py` with a recipe of `configuration/cubes/` reads the store
@@ -47,7 +47,7 @@ Done once by hand, before Snakemake:
   and of Landsat (`ndvi_landsat`) are large, so `prefetch_array.sh` splits them over a
   SLURM array, for example `sbatch --array=1-40 prefetch_array.sh ndvi_landsat`.
 - The fluxcom package is legacy. `fluxcom_inventory.py` lists the releases of the
-  v0.07 site cube and writes their site lists. Snakemake then stages each release
+  v0.07 site cube and writes their site lists. Snakemake then extracts each release
   once in the fluxcom environment.
 - LaThuile2007 is a read-only copy of the fluxnetBGI2021 site cube iter-5 files, read by
   `extractors/sitefile_nc.py`. Write a `SOURCE.md` next to the copy.
@@ -78,8 +78,8 @@ TOTAL_CPUS=800 ./run_workflow.sh 50   # on 50% of a fixed pool of 800 cpus
 idle on the partition, `big` or `PARTITION`, when it starts, or of `TOTAL_CPUS` when
 that is set. The share stays fixed for the run. It loads the proxy module for
 internet access and runs Snakemake with the SLURM profile and `--resources cpus=N`;
-stage and assemble jobs ask for their threads as cpus, and no job asks for more than
-N. A stage job runs up to 20 sites at once, so 400 cpus run 20 stage jobs side by
+extract and assemble jobs ask for their threads as cpus, and no job asks for more than
+N. An extract job runs up to 20 sites at once, so 400 cpus run 20 extract jobs side by
 side. Snakemake runs on the node it is started from until the workflow ends, so
 start it in screen or tmux.
 

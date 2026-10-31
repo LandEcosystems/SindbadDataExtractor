@@ -113,7 +113,7 @@ again, so this copy is its only source.
 
 | Path | Content |
 |---|---|
-| `store/<product>/<daily\|hourly>/<site>.nc` | One file per product and site, with `MANIFEST.csv` and the `STAGED` marker |
+| `store/<product>/<daily\|hourly>/<site>.nc` | One file per product and site, with `MANIFEST.csv` and the `EXTRACTED` marker |
 | `store/_logs/`, `store/_markers/` | Logs and markers of the workflow jobs |
 | `pycliff/` | The PyCLIFF output root: gap-filled meteorology and fitted models per site |
 

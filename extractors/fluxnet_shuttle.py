@@ -339,7 +339,7 @@ def extract(dataset, site_info, config):
                  "citation": rec["citation"], "data_hub": rec["data_hub"],
                  "oneflux_version": rec["oneflux_version"],
                  "nee_variant": info.get("nee_variant", "USTAR50")}
-        # Coordinates of the site in the shuttle listing, which stage_product.py
+        # Coordinates of the site in the shuttle listing, which extract_product.py
         # compares with those of the site registry.
         if np.isfinite([rec["shuttle_latitude"], rec["shuttle_longitude"]]).all():
             attrs["source_latitude"] = float(rec["shuttle_latitude"])

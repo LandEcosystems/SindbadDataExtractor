@@ -425,7 +425,7 @@ def get_exp_configuration(exp_config_path,
                           overrides=None):
     """
     The full configuration of a run from the main json at exp_config_path. overrides
-    replaces keys of the main json, such as sel_datasets for staging one dataset, and
+    replaces keys of the main json, such as sel_datasets for extracting one dataset, and
     takes absolute paths. {FLUXNET_version} in the registry and store blocks is set
     to the version of the run.
     """

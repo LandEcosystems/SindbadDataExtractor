@@ -4,7 +4,7 @@
 #   ./run_workflow.sh                 75% of the idle cpus of the partition
 #   ./run_workflow.sh 50              50% of them
 #   ./run_workflow.sh 50 -n           a dry run
-#   ./run_workflow.sh 75 store        stage every product, no cubes
+#   ./run_workflow.sh 75 store        extract every product, no cubes
 #   TOTAL_CPUS=800 ./run_workflow.sh  75% of a fixed pool of 800 cpus
 #
 # The share is a percent of the cpus that sinfo reports idle on PARTITION, big by

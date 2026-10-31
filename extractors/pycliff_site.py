@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Tower meteorology of a site gap filled by CLIFF, run for each site of an eddy
-covariance source while the source is staged, with PyCLIFF left unchanged.
+covariance source while the source is extracted, with PyCLIFF left unchanged.
 
 For a site with tower meteorology, extract runs pycliff-downscale for the site
 with the python of the PyCLIFF environment and the PyCLIFF checkout pycliff_dir first
@@ -14,7 +14,7 @@ pycliff_gapfilled.py:
     <VAR>_F_QC    hourly: 0 tower, 1 selected method, 2 nearest grid cell;
                   daily: the fraction of the day from the tower
 The tower data are the hourly CLIFF input file of the site, found with site_input
-of the json, a pattern with {site}. stage_product.py sets site_input and fn for
+of the json, a pattern with {site}. extract_product.py sets site_input and fn for
 each source from the pycliff block of the catalog, so that every source has its
 own product per forcing, pycliff_era5.<source> or pycliff_crujra.<source>. A site
 whose file is missing, or whose TA or SW_IN has fewer than min_tower_days days with
@@ -31,7 +31,7 @@ PyCLIFF skips a site that is done with the same settings, but its check does not
 see changed input files. A marker per site, run and forcing in
 <pycliff_out>/sindbad_inputs/<fn>/<db>/<site>.txt therefore keeps the size and time
 of the tower file and the pixel files, and PyCLIFF runs with --force when they
-changed. A lock per marker keeps parallel stage jobs from running the same fit
+changed. A lock per marker keeps parallel extract jobs from running the same fit
 twice. forcing_variables of the json lists the pixel files of the forcing, the
 ERA5 variables by default.
 
@@ -87,7 +87,7 @@ def inputs(info, site, tower):
 
 
 def source_files(info, site, freq):
-    """Inputs of the fit, whose changes stage_product.py includes in its hash."""
+    """Inputs of the fit, whose changes extract_product.py includes in its hash."""
     tower = tower_file(info, site)
     return [p for p, _, _ in inputs(info, site, tower)] if tower else []
 

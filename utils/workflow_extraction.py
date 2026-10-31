@@ -367,7 +367,7 @@ def harmonize_data_attrs(site_info, data, _config, resampled=None):
             else:
                 nameLong = f"{var_info[var_]['nameLong']} from {sourceDataProductName}"
 
-            # A staged product keeps the source path it was staged from.
+            # An extracted product keeps the source path it was extracted from.
             src_path = data[var_].attrs.get('data_path', '')
             if not src_path:
                 src_path = _config["fluxcom_cube_path"]
@@ -595,7 +595,7 @@ def compile_site_data(site, exp_settings=None):
     last_disturbance_on = ''
     for extractor in exp_settings["sel_datasets"]:
         extractor_name = exp_settings["dataset"][extractor]["extractor"]
-        # With a store block, every dataset is read from the staged products.
+        # With a store block, every dataset is read from the extracted products.
         if exp_settings.get("store"):
             extractor_name = "store_reader"
         logging.info(

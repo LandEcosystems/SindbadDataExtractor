@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Stage one product of the pipeline catalog into the store: run the extractor of its
+Extract one product of the pipeline catalog into the store: run the extractor of its
 dataset for the registry sites that the product covers, and write one NetCDF per site
 to <store>/<product>/<freq>/<site>.nc with a MANIFEST.csv of the sites.
 
 usage:
-    python stage_product.py <product> <daily|hourly> [--catalog json] [--sites A,B]
+    python extract_product.py <product> <daily|hourly> [--catalog json] [--sites A,B]
                             [--workers n] [--force] [--path-map OLD=NEW ...]
 
 The configuration of the dataset comes from the main json of the base config of the
@@ -14,12 +14,12 @@ product, daily, hourly or cliff, with only that dataset selected. The products o
 the fluxcom site cube take the cube and FLUXNET_version of their catalog entry and
 need the fluxcom package; all others run without it.
 
-A site is staged again only when its stage hash changed. For legacy products, the
+A site is extracted again only when its stage hash changed. For legacy products, the
 fluxcom releases and the LaThuile2007 copy, which are frozen once,
 the hash covers the catalog entry, the dates and the coordinates of the site. For the
 other products it also covers the expanded variable information of the dataset and
 the source of its extractor and of utils.pipeline.SHARED_SOURCES, so that a changed
-json or extractor stages the product again. --force stages every site.
+json or extractor extracts the product again. --force extracts every site.
 
 Each file is written with zlib compression under a temporary name and renamed when
 complete. The attributes of the extractor are kept. Every variable gets
@@ -28,9 +28,13 @@ which the cube then keeps as the source path. The file gets stage_product,
 stage_hash, staged_utc and stage_git, and source_latitude and source_longitude when
 the source has coordinates of its own. The manifest records the status of every site,
 its time range and source_km, the distance of the source coordinates from those of
-the registry, and flags sites more than SOURCE_WARN_KM apart. A site whose staging
+the registry, and flags sites more than SOURCE_WARN_KM apart. A site whose extraction
 fails keeps its earlier file, marked stale in the manifest. The manifest is merged
 under a lock when it is written, so runs of different sites may run at once.
+
+The script was called stage_product.py before. The manifest column stage_hash and
+the file attributes stage_product, stage_hash and staged_utc keep that name, so the
+stores made before stay valid.
 """
 import argparse
 import datetime
@@ -77,9 +81,9 @@ def build_config(cat, name, entry, freq):
 
 def stage_hash(entry, config, info, freq):
     """
-    Hash of everything that changes the staged file of a site. An extractor with
+    Hash of everything that changes the extracted file of a site. An extractor with
     source_files(info, site, freq), such as the reader of the PyCLIFF products, adds
-    the size and time of the files it reads, so that a new run of the source stages
+    the size and time of the files it reads, so that a new run of the source extracts
     the site again.
     """
     parts = {"entry": entry, "freq": freq, "site": info,
@@ -167,8 +171,8 @@ def start_log(config, site):
     return handler
 
 
-def stage_site(job):
-    """Stage one site and return its manifest row."""
+def extract_site(job):
+    """Extract one site and return its manifest row."""
     site, info, h, config, name, entry, out_dir, git = job
     dataset = entry["dataset"]
     path = os.path.join(out_dir, f"{site}.nc")
@@ -205,7 +209,7 @@ def stage_site(job):
         first, last = time_range(data)
         row.update(status="ok", n_vars=len(data.data_vars), first=first, last=last)
     except Exception as e:
-        logging.exception(f"staging {name} failed for {site}")
+        logging.exception(f"extracting {name} failed for {site}")
         status = "stale" if os.path.exists(path) else "error"
         row.update(status=status, message=f"{type(e).__name__}: {e}")
     finally:
@@ -221,7 +225,7 @@ def main():
     p.add_argument("freq", choices=["daily", "hourly"])
     p.add_argument("--catalog", default=pl.CATALOG)
     p.add_argument("--sites", default="",
-                   help="comma separated sites, staged instead of all of the product")
+                   help="comma separated sites, extracted instead of all of the product")
     p.add_argument("--workers", type=int, default=0,
                    help="parallel sites, by default njobs_parallel of the main json")
     p.add_argument("--force", action="store_true")
@@ -233,7 +237,7 @@ def main():
     cat = pl.load_catalog(args.catalog, path_map)
     entry = pl.product(cat, args.product)
     if args.freq not in entry["freqs"]:
-        sys.exit(f"{args.product} is staged at {entry['freqs']}, not {args.freq}")
+        sys.exit(f"{args.product} is extracted at {entry['freqs']}, not {args.freq}")
     config = build_config(cat, args.product, entry, args.freq)
     reg = sites_reg.load_registry(cat["registry"])
     sites = sites_reg.sites_with(entry.get("sites", "all"), reg)
@@ -267,14 +271,14 @@ def main():
             continue
         jobs.append((site, info, h, config, args.product, entry, out_dir, git))
     print(f"{args.product} {args.freq}: {len(todo)} sites, {len(rows)} unchanged, "
-          f"{len(jobs)} to stage", flush=True)
+          f"{len(jobs)} to extract", flush=True)
 
     workers = args.workers or int(config.get("njobs_parallel", 1))
     if workers > 1 and len(jobs) > 1:
         with Pool(min(workers, len(jobs)), maxtasksperchild=1) as pool:
-            done = pool.map(stage_site, jobs, chunksize=1)
+            done = pool.map(extract_site, jobs, chunksize=1)
     else:
-        done = [stage_site(j) for j in jobs]
+        done = [extract_site(j) for j in jobs]
     for row in done:
         if row["status"] == "stale":
             # The earlier file stays, so its row stays too, with the failure noted.

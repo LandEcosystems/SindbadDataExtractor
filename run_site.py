@@ -7,7 +7,7 @@ for those sites only, in their order:
     1. the CLIFF forcing of the sites, prefetched where pixel files are missing
     2. the cliffin cubes, the hourly tower input of PyCLIFF, of the collections
        whose PyCLIFF products read a cube
-    3. every store product of every cube of the sites, with stage_product.py --sites
+    3. every store product of every cube of the sites, with extract_product.py --sites
     4. the cubes of the sites, with run_extraction.py for those sites only
 
 usage:
@@ -24,9 +24,9 @@ each product and cube. --no-prefetch leaves missing forcing missing, for jobs of
 single sites when the forcing was prefetched for all sites at once. Each command is
 printed before it runs, and --dry-run only prints them.
 
-Nothing here writes the markers of the Snakefile, STAGED and assembled.txt. A
-later Snakemake run therefore still stages and assembles every product and cube,
-and skips these sites in the store, whose stage hash is unchanged. stage_product.py
+Nothing here writes the markers of the Snakefile, EXTRACTED and assembled.txt. A
+later Snakemake run therefore still extracts and assembles every product and cube,
+and skips these sites in the store, whose stage hash is unchanged. extract_product.py
 merges its manifest under a lock, so jobs of different sites may run at once. The
 registry is read, never rebuilt; run Snakemake once, or its registry rule, for a
 new site. The zarr stores are left out, since they combine all sites of a cube.
@@ -147,7 +147,7 @@ def main():
     p.add_argument("--workers", type=int, default=1,
                    help="sites at once within each product and cube")
     p.add_argument("--catalog", default=pl.CATALOG)
-    p.add_argument("--force", action="store_true", help="stage the sites again")
+    p.add_argument("--force", action="store_true", help="extract the sites again")
     p.add_argument("--no-prefetch", action="store_true",
                    help="do not prefetch missing CLIFF forcing")
     p.add_argument("--list", action="store_true",
@@ -208,20 +208,20 @@ def main():
             failed.append(f"prefetch {key}")
 
     # 2-4. store products and cubes, the cliffin cubes first
-    staged = {}
+    extracted = {}
     for job in jobs:
         r, coll, freq, cube, job_sites = job
         for name, entry, here in products_of(cat, reg, job):
-            done = staged.setdefault((name, freq), set())
+            done = extracted.setdefault((name, freq), set())
             todo = [s for s in here if s not in done]
             if not todo:
                 continue
             done.update(todo)
-            cmd = [py[entry.get("env", "main")], "stage_product.py", name, freq,
+            cmd = [py[entry.get("env", "main")], "extract_product.py", name, freq,
                    "--catalog", a.catalog, "--sites", ",".join(todo),
                    "--workers", workers]
             if run(cmd + (["--force"] if a.force else []), a.dry_run):
-                failed.append(f"stage {name} {freq}")
+                failed.append(f"extract {name} {freq}")
         cmd = [py["main"], "run_extraction.py", pl.recipe_path(cube, freq), coll, freq,
                cat["cubes_dir"], cat["fluxcom_cube"], r, ",".join(job_sites)]
         if run(cmd, a.dry_run):

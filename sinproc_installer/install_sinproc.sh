@@ -1,5 +1,5 @@
 #!/bin/bash
-# The one conda environment of the site cubes: Snakemake, staging, the cubes, the
+# The one conda environment of the site cubes: Snakemake, extraction, the cubes, the
 # remote products of prefetch.py, fluxcom for the v0.07 releases and PyCLIFF.
 #
 #   ./install_sinproc.sh [prefix]

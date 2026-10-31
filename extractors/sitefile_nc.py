@@ -13,7 +13,7 @@ units attribute that differs from variableUnit is reported. The time series is s
 on the dates of the run, so years outside the file are NaN, and the latitude and
 longitude are those of the site registry. Every variable keeps the path of its file
 as legacy_file, the data_path of the file when it has one, and the coordinates of
-the file as source_latitude and source_longitude, which stage_product.py compares
+the file as source_latitude and source_longitude, which extract_product.py compares
 with the registry. A site without a file, or a variable missing from it, gives NaN
 with a ::MISSING:: warning.
 

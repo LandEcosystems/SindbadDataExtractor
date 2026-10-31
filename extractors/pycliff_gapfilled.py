@@ -51,7 +51,7 @@ def site_file(info, site, freq):
 
 
 def source_files(info, site, freq):
-    """Files read for a site, whose changes stage_product.py includes in its hash."""
+    """Files read for a site, whose changes extract_product.py includes in its hash."""
     path = site_file(info, site, freq)
     return [path] if path else []
 

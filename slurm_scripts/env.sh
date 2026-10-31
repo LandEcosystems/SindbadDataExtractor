@@ -14,7 +14,7 @@ export SDX_RUN_NAME="site_cubes"
 export SDX_SITES="all"                      # all, a list such as DE-Hai,IT-Lav, or @file
 export SDX_COLLECTIONS=""                   # such as Shuttle; empty for every collection
 export SDX_FREQS=""                         # daily or hourly; empty for both
-export SDX_OVERWRITE=0                      # 1 runs sites that are done again, staged anew
+export SDX_OVERWRITE=0                      # 1 runs sites that are done again, extracted anew
 
 # one job, one site
 export SDX_PARTITION="big"
