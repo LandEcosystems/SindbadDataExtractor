@@ -339,6 +339,11 @@ def extract(dataset, site_info, config):
                  "citation": rec["citation"], "data_hub": rec["data_hub"],
                  "oneflux_version": rec["oneflux_version"],
                  "nee_variant": info.get("nee_variant", "USTAR50")}
+        # Coordinates of the site in the shuttle listing, which stage_product.py
+        # compares with those of the site registry.
+        if np.isfinite([rec["shuttle_latitude"], rec["shuttle_longitude"]]).all():
+            attrs["source_latitude"] = float(rec["shuttle_latitude"])
+            attrs["source_longitude"] = float(rec["shuttle_longitude"])
         rows = fu.site_rows(fu.read_cache(info["cache_path"]), bxtr.site)
         for v in src_dataset.data_vars:
             src_dataset[v].attrs.update(attrs)

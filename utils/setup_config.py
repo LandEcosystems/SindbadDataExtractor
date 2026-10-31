@@ -151,7 +151,12 @@ def get_selected_list(sel, full):
                     x.strip()
                     for x in sel.split("except")[-1].strip().split(" ")
                 ]
-                return (list(set(olist) - set(remove_list)))
+                unknown = [x for x in remove_list if x and x not in olist]
+                if unknown:
+                    print(f"Warning: {unknown} after except in '{sel}' are not in "
+                          f"{olist} and are ignored.")
+                # Keep the order of the full list, so that runs are reproducible.
+                return [x for x in olist if x not in remove_list]
             elif "all" in sel_list:
                 return olist
             else:
@@ -364,10 +369,51 @@ def get_gapfill_settings(_config):
 
     return _config
 
+def deep_update(base, over):
+    """
+    Copy of the dict base with the values of over, merging nested dicts and replacing
+    every other value.
+    """
+    out = copy.deepcopy(base)
+    for k, v in over.items():
+        if isinstance(v, dict) and isinstance(out.get(k), dict):
+            out[k] = deep_update(out[k], v)
+        else:
+            out[k] = copy.deepcopy(v)
+    return out
+
+
+def fill_version(block, version):
+    """Copy of a config block with {FLUXNET_version} in its strings replaced."""
+    if isinstance(block, dict):
+        return {k: fill_version(v, version) for k, v in block.items()}
+    if isinstance(block, list):
+        return [fill_version(v, version) for v in block]
+    if isinstance(block, str):
+        return block.replace("{FLUXNET_version}", version)
+    return block
+
+
 def get_inp_config(exp_config_path):
+    """
+    The main json at exp_config_path. A json with an extends key holds only the
+    changes to the json it names, so that the cube recipes can share the main jsons.
+    The extends path and relative config folders are taken from the folder of the
+    json that holds them.
+    """
     with open(exp_config_path, 'r') as config_file:
         exp_config_rf = config_file.read()
     exp_config = json.loads(exp_config_rf)
+    here = os.path.dirname(os.path.abspath(exp_config_path))
+    for key in ("config_dir_path", "ancillary_config_dir_path"):
+        path = exp_config.get(key, "")
+        if path and not os.path.isabs(path):
+            exp_config[key] = os.path.normpath(os.path.join(here, path))
+    if "extends" in exp_config:
+        base_path = exp_config.pop("extends")
+        if not os.path.isabs(base_path):
+            base_path = os.path.join(here, base_path)
+        exp_config = deep_update(get_inp_config(base_path), exp_config)
     return exp_config
 
 
@@ -375,10 +421,19 @@ def get_exp_configuration(exp_config_path,
                           fn_version=None,
                           temporal_resolution=None,
                           output_dir_path=None,
-                          run_name="fluxnetBGI"):
+                          run_name="fluxnetBGI",
+                          overrides=None):
+    """
+    The full configuration of a run from the main json at exp_config_path. overrides
+    replaces keys of the main json, such as sel_datasets for staging one dataset, and
+    takes absolute paths. {FLUXNET_version} in the registry and store blocks is set
+    to the version of the run.
+    """
     # get input configuration
     print(fn_version, temporal_resolution, output_dir_path)
     exp_config_r = get_inp_config(exp_config_path)
+    if overrides:
+        exp_config_r = deep_update(exp_config_r, overrides)
 
     # replace version and time scale configs if passed
     if fn_version is not None:
@@ -388,6 +443,10 @@ def get_exp_configuration(exp_config_path,
     if output_dir_path is not None:
         exp_config_r["output_dir_path"] = output_dir_path
     exp_config_r["run_name"] = run_name
+    for key in ("registry", "store"):
+        if key in exp_config_r:
+            exp_config_r[key] = fill_version(exp_config_r[key],
+                                             exp_config_r["FLUXNET_version"])
     print(exp_config_r["FLUXNET_version"], exp_config_r["temporal_resolution"], exp_config_r["output_dir_path"])
     exp_config = copy.deepcopy(exp_config_r)
 

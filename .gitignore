@@ -9,6 +9,7 @@
 !/README.md
 !/run_experiment.py
 !/__init__.py
+!/Snakefile
 
 # Folders to not ignore (ignore every folder other than these)
 !/juicer/
@@ -17,12 +18,14 @@
 !/sinproc_installer/
 !/configuration/
 !/validation/
+!/profiles/
 
 /extractors/__pycache__
 /utils/__pycache__
 /sinproc_installer/__pycache__
 /sinproc_installer/fluxcom*
 /sinproc_installer/fluxcom
+/.snakemake
 
 # Folder to ignore
 # ./data

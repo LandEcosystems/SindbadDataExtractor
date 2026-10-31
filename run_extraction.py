@@ -14,6 +14,8 @@ import sys
 import os
 import utils.shared_utils as shut
 import utils.setup_config as set_conf
+# At module level, so that pool workers started by spawn also have it.
+from utils.workflow_extraction import compile_site_data
 sys.path.append(os.getcwd())
 
 def get_site_list(cubepath, version, use_site_list_from_file=False):
@@ -22,6 +24,11 @@ def get_site_list(cubepath, version, use_site_list_from_file=False):
     print(site_list_path)
     if os.path.exists(site_list_path) and use_site_list_from_file:
         site_list = [site.strip() for site in open(site_list_path).readlines()]
+    elif exp_config.get("registry"):
+        import utils.sites as sites
+        reg = sites.load_registry(exp_config["registry"]["path"])
+        site_list = sites.sites_with(exp_config["registry"].get("flag", "all"), reg)
+        np.savetxt(site_list_path, site_list, delimiter=",", fmt="%s")
     else:
         import fluxcom.providers as prov
         ep = prov.EddyProvider(version=version, cubepath=cubepath)
@@ -34,8 +41,9 @@ class DataCompiler:
         self.exp_settings = exp_settings
     def process(self, site):
         site_info = compile_site_data(site, self.exp_settings)
+        settings = self.exp_settings
         if isinstance(site_info, dict):
-            shut.save_json(os.path.join(exp_config['output_dir_path']['site_info'], f'{site}_info_{exp_config["FLUXNET_version"]}.json'), site_info)
+            shut.save_json(os.path.join(settings['output_dir_path']['site_info'], f'{site}_info_{settings["FLUXNET_version"]}.json'), site_info)
         return 'done'
 
 
@@ -122,7 +130,6 @@ if __name__ == '__main__':
             print(f'{exp_config["FLUXNET_version"]}: {sites}')
 
             exp_settings = {'exp_settings' : exp_config}
-            from utils.workflow_extraction import compile_site_data
             data_process_run = DataCompiler(**exp_settings)
             if  exp_config["njobs_parallel"] > 1:
                 p = Pool(exp_settings['exp_settings']['njobs_parallel'], maxtasksperchild=1)

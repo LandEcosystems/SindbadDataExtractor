@@ -14,6 +14,7 @@ import pandas as pd
 from datetime import datetime, timedelta, date
 import importlib
 import logging
+import re
 sys.path.append(os.path.join(os.getcwd(), '../'))
 import copy
 from extractors.cliff_gapfill import cliff_gapfill
@@ -21,7 +22,14 @@ import collections
 import utils.shared_utils as shut
 
 
-def get_site_info(site):
+def get_site_info(site, config=None):
+    """
+    Coordinates and UTC offset of a site, from the site registry when the config has
+    a registry block, otherwise from the fluxcom site cube.
+    """
+    if config is not None and config.get("registry"):
+        import utils.sites as sites
+        return sites.site_info(site, sites.load_registry(config["registry"]["path"]))
     import fluxcom as flx
     lat_lon_utc = flx.site_cube.site_cube_utils.get_site_lat_lon_utc(site=site)
     lat=lat_lon_utc[0]
@@ -264,12 +272,37 @@ def add_gapfill_settings(exp_settings,
     return _exp_settings
 
 
+def strip_suffixes(ds, suffixes):
+    """
+    ds with the variable suffixes of strip_suffix removed, as GPP_NT_shuttle to
+    GPP_NT and x_shuttle_merged to x_merged, so that cubes of different eddy
+    covariance sources share their variable names. A name that two variables would
+    share is an error.
+    """
+    if not suffixes:
+        return ds
+    names = {}
+    for v in ds.data_vars:
+        new = v
+        for sfx in suffixes:
+            new = re.sub(rf"_{re.escape(sfx)}(?=$|_merged)", "", new)
+        if new != v:
+            names[v] = new
+    targets = list(names.values())
+    clash = {n for n in targets if targets.count(n) > 1 or
+             (n in ds.data_vars and n not in names)}
+    if clash:
+        raise ValueError(f"strip_suffix {suffixes} gives names that clash: {sorted(clash)}")
+    return ds.rename(names)
+
+
 def write_netcdf(ds, exp_settings, site, resampled=None):
     if resampled is None:
         data_freq = exp_settings["temporal_resolution"]
         ds = add_date_variables(ds)
     else:
         data_freq = resampled
+    ds = strip_suffixes(ds, exp_settings.get("strip_suffix", []))
     ncdir = os.path.join(exp_settings['output_dir_path']['nc_file'], data_freq)
     os.makedirs(ncdir, exist_ok=True)
     ncfile_name = os.path.join(
@@ -334,9 +367,12 @@ def harmonize_data_attrs(site_info, data, _config, resampled=None):
             else:
                 nameLong = f"{var_info[var_]['nameLong']} from {sourceDataProductName}"
 
-            src_path = _config["fluxcom_cube_path"]
-            if 'data_path' in var_info[var_].keys():
-                src_path = var_info[var_]['data_path']
+            # A staged product keeps the source path it was staged from.
+            src_path = data[var_].attrs.get('data_path', '')
+            if not src_path:
+                src_path = _config["fluxcom_cube_path"]
+                if 'data_path' in var_info[var_].keys():
+                    src_path = var_info[var_]['data_path']
             attrs_dict = dict(
                 bounds=str([float(np.nanmin(data[var_])),
                             float(np.nanmax(data[var_]))]),
@@ -550,7 +586,7 @@ def compile_site_data(site, exp_settings=None):
     shut.log_and_print_sep()
     logging.info(f'Processing data for site {site}')
     #%% Get site information
-    site_info = get_site_info(site)
+    site_info = get_site_info(site, exp_settings)
 
     #%% get all data
     data_all = {}
@@ -559,6 +595,9 @@ def compile_site_data(site, exp_settings=None):
     last_disturbance_on = ''
     for extractor in exp_settings["sel_datasets"]:
         extractor_name = exp_settings["dataset"][extractor]["extractor"]
+        # With a store block, every dataset is read from the staged products.
+        if exp_settings.get("store"):
+            extractor_name = "store_reader"
         logging.info(
             f'Getting dataset| configuration: {extractor}, extractor: {extractor_name}, site: {site_info["site_ID"]}'
         )
@@ -587,7 +626,7 @@ def compile_site_data(site, exp_settings=None):
             data_all[extractor] = provided_data
             if (len(sitePFT) == 0) & ('PFT' in provided_data.attrs):
                 sitePFT = f"{provided_data.attrs['PFT']}"
-                PFTextractor = f"{extractor} using {extractor_name}"
+                PFTextractor = f"{extractor} using {exp_settings['dataset'][extractor]['extractor']}"
             if (len(last_disturbance_on) == 0) & ('last_disturbance_on'
                                                   in provided_data.attrs):
                 last_disturbance_on = f"{provided_data.attrs['last_disturbance_on']}"

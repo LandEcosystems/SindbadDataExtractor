@@ -37,7 +37,7 @@
             "qc_thres": 0.85
         }
     },
-    "sel_datasets": "all except cliff_crun cliff_cruj cliff_erai era5_API shuttle_obs shuttle_clim jung_C2F modis_MxD11A1 modis_MxDx1x1",
+    "sel_datasets": "all except cliff_crun cliff_cruj cliff_erai era5_API shuttle_obs shuttle_clim jung_C2F modis_MxD11A1 modis_MxDx1x1 ltl07_obs ltl07_clim pycliff_era5 cliff_forcing_era5",
     "sel_datasetsa": "bgi_FLUXCOM_obs",
     "sel_datasetst": "agb agb_merged",
     "dataset": {
@@ -66,6 +66,11 @@
         "wf_chm": "woodyFrac_chm.json",
         "vf_s2": "vegFrac_s2.json",
         "vf_s2sl2p": "vegFrac_s2sl2p.json",
+        "ndvi_clms300": "ndvi_clms300.json",
+        "ndvi_clms1km": "ndvi_clms1km.json",
+        "lai_clms300": "lai_clms300.json",
+        "lai_clms1km": "lai_clms1km.json",
+        "ndvi_landsat": "ndvi_landsat.json",
         "agb_esacci": "agb_esacci.json",
         "sd_soilgrids": "soilDepth_soilgrids.json",
         "sd_insitu": "soilDepth_insitu.json",
@@ -77,11 +82,14 @@
         "cliff_erai": "cliff_erai_csv.json",
         "cliff_crun": "cliff_cruncepv8_csv.json",
         "cliff_cruj": "cliff_crujrav2_2_csv.json",
-        "swinpot": "oneflux_swinpot_csv.json",
         "swinpot_calc": "swinpot_calc.json",
         "era5_API": "era5_API.json",
         "shuttle_obs": "fluxnet_shuttle_obs.json",
         "shuttle_clim": "fluxnet_shuttle_clim.json",
-        "jung_C2F": "jung_C2F.json"
+        "jung_C2F": "jung_C2F.json",
+        "ltl07_obs": "ltl07_obs.json",
+        "ltl07_clim": "ltl07_clim.json",
+        "pycliff_era5": "pycliff_era5.json",
+        "cliff_forcing_era5": "cliff_forcing_era5.json"
     }
 }

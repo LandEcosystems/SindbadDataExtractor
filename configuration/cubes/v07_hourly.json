@@ -1,0 +1,57 @@
+{
+    "extends": "../hourly/hourly_extraction_main.json",
+    "FLUXNET_version": "FLUXNET2015 AmeriFlux ICOS OzFLUX ICOSDrought2018 WarmWinter2020 CCBY",
+    "temporal_resolution": "hourly",
+    "config_dir_path": "../hourly/",
+    "ancillary_config_dir_path": "../ancillary/",
+    "allow_extraction_errors": false,
+    "sel_gapfills": "none",
+    "registry": {
+        "path": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/insitu/sites_consolidated.csv",
+        "flag": "in_{FLUXNET_version}"
+    },
+    "store": {
+        "path": "/Net/Groups/BGI/work_3/sindbad/site_cubes/input/store",
+        "products": {
+            "bgi_FLUXCOM_obs": "bgi_FLUXCOM_obs.{FLUXNET_version}",
+            "bgi_FLUXCOM_clim": "bgi_FLUXCOM_clim.{FLUXNET_version}",
+            "nelson_tea": "nelson_tea.{FLUXNET_version}",
+            "pycliff_era5": "pycliff_era5.{FLUXNET_version}"
+        }
+    },
+    "sel_datasets": [
+        "bgi_FLUXCOM_obs",
+        "bgi_FLUXCOM_clim",
+        "nelson_tea",
+        "soilgrids",
+        "pft_cgls",
+        "pft",
+        "pft_worldcover",
+        "vf_pft",
+        "vf_hilda",
+        "tf_hansen",
+        "vf_esacci",
+        "vf_cgls",
+        "vf_worldcover",
+        "vf_modis",
+        "vf_fcover",
+        "wf_chm",
+        "vf_s2",
+        "vf_s2sl2p",
+        "ndvi_clms300",
+        "ndvi_clms1km",
+        "lai_clms300",
+        "lai_clms1km",
+        "ndvi_landsat",
+        "agb_esacci",
+        "sd_soilgrids",
+        "sd_insitu",
+        "vf_insitu",
+        "tf_insitu",
+        "fa_gami",
+        "atmCO2",
+        "agb",
+        "swinpot_calc",
+        "pycliff_era5"
+    ]
+}

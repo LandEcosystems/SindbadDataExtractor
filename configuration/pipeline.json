@@ -1,0 +1,482 @@
+{
+    "registry": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/insitu/sites_consolidated.csv",
+    "site_lists": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/insitu/site_lists",
+    "site_input": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/all_sites_multi_with_ru_flux_and_oneflux.csv",
+    "consolidate": {
+        "pft_csv": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/insitu/PFT_consolidated.csv",
+        "fallback_pft": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/insitu/PFT.csv",
+        "pft_overrides": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/insitu/PFT_overrides.csv",
+        "coord_overrides": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/insitu/site_coords_overrides.csv",
+        "shuttle_dir": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/prefetch/fluxnet_shuttle",
+        "countries": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/reference/ne_10m_admin_0_map_units.zip"
+    },
+    "store": "/Net/Groups/BGI/work_3/sindbad/site_cubes/input/store",
+    "cubes_dir": "/Net/Groups/BGI/work_3/sindbad/site_cubes/output",
+    "legacy": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/legacy",
+    "ltl07": {
+        "daily": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/legacy/fluxnetBGI2021_siteCube-v0.03_iter-5/fluxnetBGI2021.LTL07.DD/data/daily",
+        "hourly": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/legacy/fluxnetBGI2021_siteCube-v0.03_iter-5/fluxnetBGI2021.LTL07.HR/data/hourly"
+    },
+    "fluxcom_cube": "/Net/Groups/BGI/work_4/scratch/fluxcom/sitecube_proc/v0.07/site_cube/",
+    "pycliff": {
+        "datasets": [
+            "pycliff_era5"
+        ],
+        "sources": {
+            "LaThuile2007": {
+                "flag": "in_LaThuile2007",
+                "site_input": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/legacy/fluxnetBGI2021_siteCube-v0.03_iter-5/fluxnetBGI2021.LTL07.HR/data/hourly/{site}.*.hourly.nc"
+            },
+            "Shuttle": {
+                "flag": "in_OneFluxShuttle",
+                "site_input": "/Net/Groups/BGI/work_3/sindbad/site_cubes/output/cliffin.Shuttle.HR/data/hourly/{site}.*.hourly.nc"
+            }
+        }
+    },
+    "path_map": {},
+    "envs": {
+        "main": "/Net/Groups/BGI/scratch/skoirala/sksrc/miniforge3/envs/sinproc008/bin/python",
+        "prefetch": "/Net/Groups/BGI/scratch/skoirala/sksrc/miniforge3/envs/sinproc-prefetch/bin/python"
+    },
+    "base_configs": {
+        "daily": {
+            "main": "configuration/sindbad/sindbad_extraction_main.json",
+            "config_dir": "configuration/sindbad",
+            "ancillary_dir": "configuration/ancillary"
+        },
+        "hourly": {
+            "main": "configuration/hourly/hourly_extraction_main.json",
+            "config_dir": "configuration/hourly",
+            "ancillary_dir": "configuration/ancillary"
+        },
+        "cliff": {
+            "main": "configuration/cliff/cliffin_exp_config.json",
+            "config_dir": "configuration/cliff",
+            "ancillary_dir": "configuration/ancillary"
+        }
+    },
+    "releases": [
+        "FLUXNET2015",
+        "AmeriFlux",
+        "ICOS",
+        "OzFLUX",
+        "ICOSDrought2018",
+        "WarmWinter2020",
+        "CCBY"
+    ],
+    "release_datasets": {
+        "bgi_FLUXCOM_obs": {
+            "freqs": [
+                "daily",
+                "hourly"
+            ]
+        },
+        "bgi_FLUXCOM_clim": {
+            "freqs": [
+                "daily",
+                "hourly"
+            ]
+        },
+        "bgi_FLUXCOM_surface": {
+            "freqs": [
+                "daily"
+            ]
+        },
+        "jung_qc": {
+            "freqs": [
+                "daily"
+            ]
+        },
+        "merged_qc": {
+            "freqs": [
+                "daily"
+            ]
+        },
+        "nelson_tea": {
+            "freqs": [
+                "daily",
+                "hourly"
+            ]
+        },
+        "cliffin": {
+            "dataset": "bgi_FLUXCOM",
+            "base": "cliff",
+            "freqs": [
+                "hourly"
+            ]
+        }
+    },
+    "products": {
+        "ltl07_obs": {
+            "mode": "legacy",
+            "sites": "in_LaThuile2007",
+            "freqs": [
+                "daily",
+                "hourly"
+            ],
+            "env": "main"
+        },
+        "ltl07_clim": {
+            "mode": "legacy",
+            "sites": "in_LaThuile2007",
+            "freqs": [
+                "daily",
+                "hourly"
+            ],
+            "env": "main"
+        },
+        "shuttle_obs": {
+            "mode": "prefetch",
+            "sites": "in_OneFluxShuttle",
+            "freqs": [
+                "daily",
+                "hourly"
+            ],
+            "env": "prefetch"
+        },
+        "shuttle_clim": {
+            "mode": "prefetch",
+            "sites": "in_OneFluxShuttle",
+            "freqs": [
+                "daily",
+                "hourly"
+            ],
+            "env": "prefetch"
+        },
+        "jung_C2F": {
+            "mode": "prefetch",
+            "sites": "in_OneFluxShuttle",
+            "freqs": [
+                "daily",
+                "hourly"
+            ],
+            "env": "prefetch"
+        },
+        "cliffin_shuttle": {
+            "mode": "prefetch",
+            "base": "cliff",
+            "sites": "in_OneFluxShuttle",
+            "freqs": [
+                "hourly"
+            ],
+            "env": "prefetch"
+        },
+        "soilgrids": {
+            "mode": "cluster",
+            "sites": "all",
+            "freqs": [
+                "daily",
+                "hourly"
+            ],
+            "env": "main"
+        },
+        "pft": {
+            "mode": "cluster",
+            "sites": "all",
+            "freqs": [
+                "daily",
+                "hourly"
+            ],
+            "env": "main"
+        },
+        "vf_pft": {
+            "mode": "cluster",
+            "sites": "all",
+            "freqs": [
+                "daily",
+                "hourly"
+            ],
+            "env": "main"
+        },
+        "vf_hilda": {
+            "mode": "cluster",
+            "sites": "all",
+            "freqs": [
+                "daily",
+                "hourly"
+            ],
+            "env": "main"
+        },
+        "tf_hansen": {
+            "mode": "cluster",
+            "sites": "all",
+            "freqs": [
+                "daily",
+                "hourly"
+            ],
+            "env": "main"
+        },
+        "sd_soilgrids": {
+            "mode": "cluster",
+            "sites": "all",
+            "freqs": [
+                "daily",
+                "hourly"
+            ],
+            "env": "main"
+        },
+        "fa_gami": {
+            "mode": "cluster",
+            "sites": "all",
+            "freqs": [
+                "daily",
+                "hourly"
+            ],
+            "env": "main"
+        },
+        "atmCO2": {
+            "mode": "cluster",
+            "sites": "all",
+            "freqs": [
+                "daily",
+                "hourly"
+            ],
+            "env": "main"
+        },
+        "pft_cgls": {
+            "mode": "prefetch",
+            "sites": "all",
+            "freqs": [
+                "daily",
+                "hourly"
+            ],
+            "env": "main"
+        },
+        "pft_worldcover": {
+            "mode": "prefetch",
+            "sites": "all",
+            "freqs": [
+                "daily",
+                "hourly"
+            ],
+            "env": "main"
+        },
+        "vf_esacci": {
+            "mode": "prefetch",
+            "sites": "all",
+            "freqs": [
+                "daily",
+                "hourly"
+            ],
+            "env": "main"
+        },
+        "vf_cgls": {
+            "mode": "prefetch",
+            "sites": "all",
+            "freqs": [
+                "daily",
+                "hourly"
+            ],
+            "env": "main"
+        },
+        "vf_worldcover": {
+            "mode": "prefetch",
+            "sites": "all",
+            "freqs": [
+                "daily",
+                "hourly"
+            ],
+            "env": "main"
+        },
+        "vf_modis": {
+            "mode": "prefetch",
+            "sites": "all",
+            "freqs": [
+                "daily",
+                "hourly"
+            ],
+            "env": "main"
+        },
+        "vf_fcover": {
+            "mode": "prefetch",
+            "sites": "all",
+            "freqs": [
+                "daily",
+                "hourly"
+            ],
+            "env": "main"
+        },
+        "wf_chm": {
+            "mode": "prefetch",
+            "sites": "all",
+            "freqs": [
+                "daily",
+                "hourly"
+            ],
+            "env": "main"
+        },
+        "vf_s2": {
+            "mode": "prefetch",
+            "sites": "all",
+            "freqs": [
+                "daily",
+                "hourly"
+            ],
+            "env": "main"
+        },
+        "vf_s2sl2p": {
+            "mode": "prefetch",
+            "sites": "all",
+            "freqs": [
+                "daily",
+                "hourly"
+            ],
+            "env": "main"
+        },
+        "ndvi_clms300": {
+            "mode": "prefetch",
+            "sites": "all",
+            "freqs": [
+                "daily",
+                "hourly"
+            ],
+            "env": "main"
+        },
+        "ndvi_clms1km": {
+            "mode": "prefetch",
+            "sites": "all",
+            "freqs": [
+                "daily",
+                "hourly"
+            ],
+            "env": "main"
+        },
+        "lai_clms300": {
+            "mode": "prefetch",
+            "sites": "all",
+            "freqs": [
+                "daily",
+                "hourly"
+            ],
+            "env": "main"
+        },
+        "lai_clms1km": {
+            "mode": "prefetch",
+            "sites": "all",
+            "freqs": [
+                "daily",
+                "hourly"
+            ],
+            "env": "main"
+        },
+        "ndvi_landsat": {
+            "mode": "prefetch",
+            "sites": "all",
+            "freqs": [
+                "daily",
+                "hourly"
+            ],
+            "env": "main"
+        },
+        "agb_esacci": {
+            "mode": "prefetch",
+            "sites": "all",
+            "freqs": [
+                "daily",
+                "hourly"
+            ],
+            "env": "main"
+        },
+        "sd_insitu": {
+            "mode": "insitu",
+            "sites": "all",
+            "freqs": [
+                "daily",
+                "hourly"
+            ],
+            "env": "main"
+        },
+        "vf_insitu": {
+            "mode": "insitu",
+            "sites": "all",
+            "freqs": [
+                "daily",
+                "hourly"
+            ],
+            "env": "main"
+        },
+        "tf_insitu": {
+            "mode": "insitu",
+            "sites": "all",
+            "freqs": [
+                "daily",
+                "hourly"
+            ],
+            "env": "main"
+        },
+        "agb": {
+            "mode": "insitu",
+            "sites": "all",
+            "freqs": [
+                "daily",
+                "hourly"
+            ],
+            "env": "main"
+        },
+        "swinpot_calc": {
+            "mode": "derived",
+            "sites": "all",
+            "freqs": [
+                "daily",
+                "hourly"
+            ],
+            "env": "main"
+        }
+    },
+    "cubes": [
+        {
+            "run": "sindbad",
+            "recipe": "configuration/cubes/v07_{freq}.json",
+            "collections": "releases",
+            "freqs": [
+                "daily",
+                "hourly"
+            ],
+            "zarr": true
+        },
+        {
+            "run": "sindbad",
+            "recipe": "configuration/cubes/LaThuile2007_{freq}.json",
+            "collections": [
+                "LaThuile2007"
+            ],
+            "freqs": [
+                "daily",
+                "hourly"
+            ],
+            "zarr": true
+        },
+        {
+            "run": "sindbad",
+            "recipe": "configuration/cubes/Shuttle_{freq}.json",
+            "collections": [
+                "Shuttle"
+            ],
+            "freqs": [
+                "daily",
+                "hourly"
+            ],
+            "zarr": true
+        },
+        {
+            "run": "cliffin",
+            "recipe": "configuration/cubes/cliffin_v07_{freq}.json",
+            "collections": "releases",
+            "freqs": [
+                "hourly"
+            ],
+            "zarr": false
+        },
+        {
+            "run": "cliffin",
+            "recipe": "configuration/cubes/cliffin_Shuttle_{freq}.json",
+            "collections": [
+                "Shuttle"
+            ],
+            "freqs": [
+                "hourly"
+            ],
+            "zarr": false
+        }
+    ]
+}

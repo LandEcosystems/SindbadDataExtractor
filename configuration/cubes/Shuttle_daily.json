@@ -1,0 +1,57 @@
+{
+    "extends": "../sindbad/sindbad_extraction_main.json",
+    "FLUXNET_version": "Shuttle",
+    "temporal_resolution": "daily",
+    "config_dir_path": "../sindbad/",
+    "ancillary_config_dir_path": "../ancillary/",
+    "allow_extraction_errors": false,
+    "sel_gapfills": "none",
+    "registry": {
+        "path": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/insitu/sites_consolidated.csv",
+        "flag": "in_OneFluxShuttle"
+    },
+    "store": {
+        "path": "/Net/Groups/BGI/work_3/sindbad/site_cubes/input/store",
+        "products": {
+            "pycliff_era5": "pycliff_era5.{FLUXNET_version}"
+        }
+    },
+    "strip_suffix": [
+        "shuttle"
+    ],
+    "sel_datasets": [
+        "shuttle_obs",
+        "shuttle_clim",
+        "jung_C2F",
+        "soilgrids",
+        "pft_cgls",
+        "pft",
+        "pft_worldcover",
+        "vf_pft",
+        "vf_hilda",
+        "tf_hansen",
+        "vf_esacci",
+        "vf_cgls",
+        "vf_worldcover",
+        "vf_modis",
+        "vf_fcover",
+        "wf_chm",
+        "vf_s2",
+        "vf_s2sl2p",
+        "ndvi_clms300",
+        "ndvi_clms1km",
+        "lai_clms300",
+        "lai_clms1km",
+        "ndvi_landsat",
+        "agb_esacci",
+        "sd_soilgrids",
+        "sd_insitu",
+        "vf_insitu",
+        "tf_insitu",
+        "fa_gami",
+        "atmCO2",
+        "agb",
+        "swinpot_calc",
+        "pycliff_era5"
+    ]
+}

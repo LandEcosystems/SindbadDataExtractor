@@ -8,7 +8,7 @@ the NetCDF files.
 
 usage:
     python combine_sites_zarr.py <output zarr> <nc dir> [nc dir ...] [--sites s ...]
-                                 [--overwrite]
+                                 [--registry csv] [--overwrite]
 
 Each nc dir is a data/<resolution> folder of a run, holding <site>.<start>.<end>.
 <resolution>.nc files. When a site is in several folders, the file of the first
@@ -25,8 +25,11 @@ so they keep only the Ti dimension.
 Attributes that are equal for all sites stay single values. Attributes that differ,
 such as SITE_ID, PFT and latitude in the global attributes or bounds of a variable,
 become lists in the order of the site dimension, with an empty string for sites
-that lack them. Each variable is written as one chunk, compressed with blosc lz4,
-and the metadata is consolidated at the end.
+that lack them. The latitude, longitude and PFT of the global attributes of each
+site file are also written as coordinates on the site dimension, and --registry adds
+the in_ network flags of the site registry the same way. Each variable is written
+in chunks of one site, compressed with blosc lz4, which keeps every chunk small also
+for hourly data of many sites. The metadata is consolidated at the end.
 """
 import argparse
 import glob
@@ -112,11 +115,16 @@ def main():
     p.add_argument("output")
     p.add_argument("nc_dirs", nargs="+")
     p.add_argument("--sites", nargs="*", default=None)
+    p.add_argument("--registry", default="",
+                   help="site registry whose in_ flags become site coordinates")
     p.add_argument("--overwrite", action="store_true")
     args = p.parse_args()
 
     import numcodecs
     import zarr
+    # zarr 3 writes the same version 2 store, with the compressor given as a tuple.
+    zarr3 = int(zarr.__version__.split(".")[0]) >= 3
+    fmt = {"zarr_format": 2} if zarr3 else {}
     if os.path.exists(args.output) and not args.overwrite:
         sys.exit(f"{args.output} exists, use --overwrite to replace it")
 
@@ -139,11 +147,24 @@ def main():
 
     compressor = numcodecs.Blosc(cname="lz4", clevel=5,
                                  shuffle=numcodecs.Blosc.SHUFFLE)
+    compression = {"compressors": (compressor,)} if zarr3 else \
+        {"compressor": compressor}
     base = xr.Dataset(coords=coords)
     base["Ti"].encoding = {"units": f"days since {str(times[0])[:10]}",
                            "calendar": "standard", "dtype": "float64"}
+    # Coordinates of every site, from the global attributes of its file and from the
+    # network flags of the registry.
+    for key in ("latitude", "longitude", "PFT"):
+        vals = [ds.attrs.get(key, np.nan if key != "PFT" else "") for ds in dss]
+        base = base.assign_coords({key: ("site", np.asarray(vals))})
+    if args.registry:
+        import pandas as pd
+        reg = pd.read_csv(args.registry).set_index("site")
+        for flag in [c for c in reg.columns if c.startswith("in_")]:
+            vals = reg[flag].reindex(sites).fillna(0).astype("int8").values
+            base = base.assign_coords({flag: ("site", vals)})
     attrs = merge_attrs([ds.attrs for ds in dss])
-    base.to_zarr(args.output, mode="w", consolidated=False)
+    base.to_zarr(args.output, mode="w", consolidated=False, **fmt)
 
     for n, name in enumerate(names):
         per_site = []
@@ -170,14 +191,16 @@ def main():
             out.attrs = merge_attrs([da.attrs if da is not None else {}
                                      for da in per_site])
         shape = out.shape
-        out.encoding = {"compressor": compressor, "chunks": shape}
+        # One site per chunk; date variables have only Ti and stay one chunk.
+        chunks = (1,) + shape[1:] if out.dims[0] == "site" else shape
+        out.encoding = {**compression, "chunks": chunks}
         # Keep the fill value of the site files for the integer date variables.
         if name in DATE_VARS and "_FillValue" in template.encoding:
             out.encoding["_FillValue"] = template.encoding["_FillValue"]
         # The coordinates are in the store already, so only the variable is added.
         out = out.to_dataset(name=name)
         out.drop_vars(list(out.coords)).to_zarr(args.output, mode="a",
-                                                consolidated=False)
+                                                consolidated=False, **fmt)
         print(f"{n + 1}/{len(names)} {name} {dict(zip(out[name].dims, shape))}",
               flush=True)
 

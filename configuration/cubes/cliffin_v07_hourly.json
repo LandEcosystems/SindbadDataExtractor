@@ -1,0 +1,22 @@
+{
+    "extends": "../cliff/cliffin_exp_config.json",
+    "temporal_resolution": "hourly",
+    "config_dir_path": "../cliff/",
+    "ancillary_config_dir_path": "../ancillary/",
+    "diagnostic_plots": false,
+    "sel_gapfills": "none",
+    "FLUXNET_version": "FLUXNET2015 AmeriFlux ICOS OzFLUX ICOSDrought2018 WarmWinter2020 CCBY",
+    "registry": {
+        "path": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/insitu/sites_consolidated.csv",
+        "flag": "in_{FLUXNET_version}"
+    },
+    "store": {
+        "path": "/Net/Groups/BGI/work_3/sindbad/site_cubes/input/store",
+        "products": {
+            "bgi_FLUXCOM": "cliffin.{FLUXNET_version}"
+        }
+    },
+    "sel_datasets": [
+        "bgi_FLUXCOM"
+    ]
+}

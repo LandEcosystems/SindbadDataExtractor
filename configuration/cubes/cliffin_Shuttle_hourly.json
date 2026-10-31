@@ -1,0 +1,20 @@
+{
+    "extends": "../cliff/cliffin_exp_config.json",
+    "temporal_resolution": "hourly",
+    "config_dir_path": "../cliff/",
+    "ancillary_config_dir_path": "../ancillary/",
+    "diagnostic_plots": false,
+    "sel_gapfills": "none",
+    "FLUXNET_version": "Shuttle",
+    "registry": {
+        "path": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/insitu/sites_consolidated.csv",
+        "flag": "in_OneFluxShuttle"
+    },
+    "store": {
+        "path": "/Net/Groups/BGI/work_3/sindbad/site_cubes/input/store",
+        "products": {}
+    },
+    "sel_datasets": [
+        "cliffin_shuttle"
+    ]
+}
