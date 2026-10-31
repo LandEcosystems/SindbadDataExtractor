@@ -73,6 +73,11 @@ if __name__ == '__main__':
             run_name =sys.argv[6]
         else:
             run_name = "fluxnetBGI"
+        # comma separated sites that replace sites_toRun of the json, as run_site.py uses
+        if len(sys.argv) > 7:
+            sites_override = [s.strip() for s in sys.argv[7].split(",") if s.strip()]
+        else:
+            sites_override = []
     else:
         sys.exit(f'run_extraction cannot extract data without the path of the main extraction config as the only argument. Provide absolute path to the configuration file.')
     # get basic config to check the sources and loop
@@ -101,6 +106,8 @@ if __name__ == '__main__':
         for fn_version in fn_versions:
             exp_config = set_conf.get_exp_configuration(exp_config_path, fn_version=fn_version, temporal_resolution=tm_scale, output_dir_path=output_dir_path, run_name=run_name)
             exp_config["fluxcom_cube_path"] = fluxcom_cube_path
+            if sites_override:
+                exp_config["sites_toRun"] = sites_override
 
             # #%% Check sites to process
             sites_in_version = get_site_list(exp_config["fluxcom_cube_path"], exp_config["FLUXNET_version"])

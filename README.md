@@ -63,13 +63,23 @@ CLIFF then runs inside Snakemake: the products `pycliff_era5.<source>` and
 eddy covariance source, and the cubes get the gap-filled meteorology as
 `<VAR>_ERA5_gfld` and `<VAR>_CRUJRA_gfld`. No product is finer than its forcing:
 CRUJRA has 6 hour steps, so it fills the daily cubes only, and it has no air
-pressure, so it does not fill PA. `qc_threshold` of a pycliff json sets the QC from which a tower
-value, and a day as its fraction of good hours, counts as tower data: 0.85 by
-default, 0.75 for CRUJRA.
+pressure, so it does not fill PA. `qc_threshold` of a pycliff json sets the QC from
+which a tower value, and a day as its fraction of good hours, counts as tower data:
+0.85 by default, 0.75 for CRUJRA.
 
 ```
 snakemake -n                          # what is missing or stale
 snakemake --profile profiles/slurm    # run through SLURM
+```
+
+`run_site.py` runs the same steps for one site, to check a site before a full run:
+its CLIFF forcing when missing, the cliffin cubes, every store product and every
+cube of the site. It writes no Snakemake markers, so a later full run still runs
+everything and skips the site where nothing changed.
+
+```
+python run_site.py DE-Hai --dry-run                  # the commands, in order
+python run_site.py DE-Hai --collections Shuttle      # only the Shuttle cubes
 ```
 
 # Contact:
