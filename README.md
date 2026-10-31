@@ -68,18 +68,20 @@ which a tower value, and a day as its fraction of good hours, counts as tower da
 0.85 by default, 0.75 for CRUJRA.
 
 ```
-./run_workflow.sh 50 -n               # what is missing or stale
-./run_workflow.sh 50                  # run through SLURM on half of 800 cpus
-TOTAL_CPUS=1200 ./run_workflow.sh 25  # a quarter of 1200 cpus
+./run_workflow.sh -n                  # what is missing or stale
+./run_workflow.sh                     # run through SLURM on 75% of the idle cpus
+./run_workflow.sh 50                  # on 50% of them
+TOTAL_CPUS=800 ./run_workflow.sh 50   # on 50% of a fixed pool of 800 cpus
 ```
 
-`run_workflow.sh` takes the percent of `TOTAL_CPUS`, 800 by default, that the running
-jobs may use together. It loads the proxy module for internet access and runs
-Snakemake with the SLURM profile and `--resources cpus=N`; stage and assemble jobs
-ask for their threads as cpus, and no job asks for more than N. A stage job runs up
-to 20 sites at once, so 50% of 800 cpus runs 20 stage jobs side by side. Snakemake
-runs on the node it is started from until the workflow ends, so start it in screen
-or tmux.
+`run_workflow.sh` takes the percent, 75 by default, of the cpus that sinfo reports
+idle on the partition, `big` or `PARTITION`, when it starts, or of `TOTAL_CPUS` when
+that is set. The share stays fixed for the run. It loads the proxy module for
+internet access and runs Snakemake with the SLURM profile and `--resources cpus=N`;
+stage and assemble jobs ask for their threads as cpus, and no job asks for more than
+N. A stage job runs up to 20 sites at once, so 400 cpus run 20 stage jobs side by
+side. Snakemake runs on the node it is started from until the workflow ends, so
+start it in screen or tmux.
 
 `run_site.py` runs the same steps for some sites, to check them before a full run:
 their CLIFF forcing when missing, the cliffin cubes, every store product and every
