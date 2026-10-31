@@ -36,7 +36,9 @@ twice. forcing_variables of the json lists the pixel files of the forcing, the
 ERA5 variables by default.
 
 PyCLIFF refuses a resolution finer than the step of the forcing, so a forcing on
-6 hour steps such as CRUJRA only has a daily product.
+6 hour steps such as CRUJRA only has a daily product. PyCLIFF fits the variables of
+a site in PYCLIFF_JOBS processes, one by default, as when many sites share the
+cpus of a job; run_site.py sets it when a few sites have more cpus.
 """
 import glob
 import json
@@ -110,7 +112,8 @@ def run_pycliff(info, site, tower, freq):
                "--db-id", info["db"], "--resolution", freq,
                "--seed", str(info.get("seed", 42)), "--units", info.get("units", "si"),
                "--time-mode", info.get("time_mode", "lst"),
-               "--sites-csv", info["sites_csv"], "--jobs", "1",
+               "--sites-csv", info["sites_csv"],
+               "--jobs", os.environ.get("PYCLIFF_JOBS", "1"),
                "--no-figures", "--no-analysis", "--force" if changed else "--skip-done"]
         if info.get("methods"):
             cmd += ["--methods", info["methods"]]

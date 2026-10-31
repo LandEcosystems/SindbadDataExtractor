@@ -20,7 +20,8 @@ site of the registry in a cube of the collections. --list prints the sites that
 have a cube, one per line, and runs nothing; slurm_scripts/ submits a job per site
 from it. By default every cube whose registry flag a site has, at every frequency. The cliffin cubes needed by the
 PyCLIFF products always come along. --workers runs that many sites at once within
-each product and cube. --no-prefetch leaves missing forcing missing, for jobs of
+each product and cube, and the cpus the sites leave free fit the variables of a
+site in parallel in PyCLIFF. --no-prefetch leaves missing forcing missing, for jobs of
 single sites when the forcing was prefetched for all sites at once. Each command is
 printed before it runs, and --dry-run only prints them.
 
@@ -130,11 +131,11 @@ def forcing_dataset(cat, entry, freq):
     return None
 
 
-def run(cmd, dry):
+def run(cmd, dry, env=None):
     print("+ " + " ".join(cmd), flush=True)
     if dry:
         return 0
-    return subprocess.run(cmd, cwd=REPO).returncode
+    return subprocess.run(cmd, cwd=REPO, env=env).returncode
 
 
 def main():
@@ -220,7 +221,9 @@ def main():
             cmd = [py[entry.get("env", "main")], "extract_product.py", name, freq,
                    "--catalog", a.catalog, "--sites", ",".join(todo),
                    "--workers", workers]
-            if run(cmd + (["--force"] if a.force else []), a.dry_run):
+            # the cpus that the sites leave free fit the variables of a site at once
+            env = dict(os.environ, PYCLIFF_JOBS=str(max(1, int(workers) // len(todo))))
+            if run(cmd + (["--force"] if a.force else []), a.dry_run, env):
                 failed.append(f"extract {name} {freq}")
         cmd = [py["main"], "run_extraction.py", pl.recipe_path(cube, freq), coll, freq,
                cat["cubes_dir"], cat["fluxcom_cube"], r, ",".join(job_sites)]
