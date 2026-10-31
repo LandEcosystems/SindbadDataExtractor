@@ -7,7 +7,7 @@ for those sites only, in their order:
     1. the CLIFF forcing of the sites, prefetched where pixel files are missing
     2. the cliffin cubes, the hourly tower input of PyCLIFF, of the collections
        whose PyCLIFF products read a cube
-    3. every store product of every cube of the sites, with extract_product.py --sites
+    3. every store product of every cube of the sites, with extract_product.py
     4. the cubes of the sites, with run_extraction.py for those sites only
 
 usage:
