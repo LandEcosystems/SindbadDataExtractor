@@ -1,28 +1,32 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-The whole workflow for one site, from what the cluster already holds: the site
+The whole workflow for some sites, from what the cluster already holds: the site
 registry, the prefetch caches and the sources. It runs the steps of the Snakefile
-for that site only, in their order:
-    1. the CLIFF forcing of the site, prefetched when its pixel files are missing
+for those sites only, in their order:
+    1. the CLIFF forcing of the sites, prefetched where pixel files are missing
     2. the cliffin cubes, the hourly tower input of PyCLIFF, of the collections
        whose PyCLIFF products read a cube
-    3. every store product of every cube of the site, with stage_product.py --sites
-    4. the cubes of the site, with run_extraction.py for that site only
+    3. every store product of every cube of the sites, with stage_product.py --sites
+    4. the cubes of the sites, with run_extraction.py for those sites only
 
 usage:
-    python run_site.py <site> [--collections Shuttle,LaThuile2007] [--freqs daily]
-                       [--force] [--dry-run] [--catalog json]
+    python run_site.py <site[,site...] | @file> [--collections Shuttle,LaThuile2007]
+                       [--freqs daily] [--workers n] [--force] [--dry-run]
+                       [--catalog json]
 
-By default every cube whose registry flag the site has, at every frequency. The
-cliffin cubes needed by the PyCLIFF products always come along. Each command is
-printed before it runs, and --dry-run only prints them.
+A file given as @file lists sites, one or more per line. By default every cube
+whose registry flag a site has, at every frequency. The cliffin cubes needed by the
+PyCLIFF products always come along. --workers runs that many sites at once within
+each product and cube. Each command is printed before it runs, and --dry-run only
+prints them.
 
 Nothing here writes the markers of the Snakefile, STAGED and assembled.txt. A
 later Snakemake run therefore still stages and assembles every product and cube,
-and skips this site in the store, whose stage hash is unchanged. The registry is
-read, never rebuilt; run Snakemake once, or its registry rule, for a new site.
-The zarr stores are left out, since they combine all sites of a cube.
+and skips these sites in the store, whose stage hash is unchanged. stage_product.py
+merges its manifest under a lock, so jobs of different sites may run at once. The
+registry is read, never rebuilt; run Snakemake once, or its registry rule, for a
+new site. The zarr stores are left out, since they combine all sites of a cube.
 """
 import argparse
 import csv
@@ -39,30 +43,45 @@ from utils.setup_config import fill_version, get_inp_config  # noqa: E402
 REPO = pl.REPO
 
 
+def read_sites(arg):
+    """Sites of a comma separated list, or of a file given as @file."""
+    if arg.startswith("@"):
+        text = open(arg[1:]).read().replace(",", " ")
+        names = [s for line in text.splitlines() for s in line.split("#")[0].split()]
+    else:
+        names = [s.strip() for s in arg.split(",")]
+    return list(dict.fromkeys(s for s in names if s))
+
+
 def cube_flag(cube, collection, freq):
     """Registry flag of the sites of a cube."""
     rec = get_inp_config(pl.recipe_path(cube, freq))
     return fill_version(rec.get("registry", {}), collection).get("flag", "all")
 
 
-def has_flag(site, flag, reg):
-    """Whether the site has the registry flag; a flag the registry lacks is no."""
+def with_flag(sites, flag, reg):
+    """The sites that have the registry flag; a flag the registry lacks has none."""
     try:
-        return site in sites_reg.sites_with(flag, reg)
+        have = set(sites_reg.sites_with(flag, reg))
     except KeyError as e:
         print(f"skipped: {e}", flush=True)
-        return False
+        return []
+    return [s for s in sites if s in have]
 
 
-def cube_jobs(cat, reg, site, collections, freqs):
+def cube_jobs(cat, reg, sites, collections, freqs):
     """
-    Cube jobs of the site, the cliffin cubes first, as (run, collection, freq,
-    cube). A cliffin cube, hourly only, comes along whenever a cube of its
+    Cube jobs of the sites, the cliffin cubes first, as (run, collection, freq,
+    cube, sites). A cliffin cube, hourly only, comes along whenever a cube of its
     collection is run, since the PyCLIFF products of that cube read it.
     """
-    jobs = [(r, c, f, cube) for r, c, f, cube in pl.cube_jobs(cat)
-            if (not collections or c in collections)
-            and has_flag(site, cube_flag(cube, c, f), reg)]
+    jobs = []
+    for r, c, f, cube in pl.cube_jobs(cat):
+        if collections and c not in collections:
+            continue
+        here = with_flag(sites, cube_flag(cube, c, f), reg)
+        if here:
+            jobs.append((r, c, f, cube, here))
     main = [j for j in jobs if j[0] != "cliffin" and (not freqs or j[2] in freqs)]
     with_main = {j[1] for j in main}
     cliff = [j for j in jobs if j[0] == "cliffin"
@@ -70,9 +89,9 @@ def cube_jobs(cat, reg, site, collections, freqs):
     return cliff + main
 
 
-def products_of(cat, reg, site, job):
-    """Store products a cube reads that cover the site, with their entries."""
-    run, coll, freq, cube = job
+def products_of(cat, reg, job):
+    """Store products a cube reads, with their entries and the sites they cover."""
+    run, coll, freq, cube, sites = job
     out = []
     for name in pl.recipe_products(cube, coll, freq):
         if name not in cat["products"]:
@@ -80,8 +99,9 @@ def products_of(cat, reg, site, job):
         entry = pl.product(cat, name)
         if freq not in entry["freqs"]:
             continue
-        if has_flag(site, entry.get("sites", "all"), reg):
-            out.append((name, entry))
+        here = with_flag(sites, entry.get("sites", "all"), reg)
+        if here:
+            out.append((name, entry, here))
     return out
 
 
@@ -117,74 +137,85 @@ def run(cmd, dry):
 def main():
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("site")
+    p.add_argument("sites", help="comma separated sites, or @file with one per line")
     p.add_argument("--collections", default="",
                    help="comma separated collections, such as Shuttle; default all")
     p.add_argument("--freqs", default="", help="daily, hourly or both; default both")
+    p.add_argument("--workers", type=int, default=1,
+                   help="sites at once within each product and cube")
     p.add_argument("--catalog", default=pl.CATALOG)
-    p.add_argument("--force", action="store_true", help="stage the site again")
+    p.add_argument("--force", action="store_true", help="stage the sites again")
     p.add_argument("--dry-run", action="store_true", help="print the commands only")
     a = p.parse_args()
 
     cat = pl.load_catalog(a.catalog)
     reg = sites_reg.load_registry(cat["registry"])
-    if a.site not in reg.index:
-        sys.exit(f"{a.site} is not in the registry {cat['registry']}")
+    sites = read_sites(a.sites)
+    unknown = [s for s in sites if s not in reg.index]
+    if unknown:
+        sys.exit(f"{unknown} are not in the registry {cat['registry']}")
     collections = [c for c in a.collections.split(",") if c]
     freqs = [f for f in a.freqs.split(",") if f]
-    jobs = cube_jobs(cat, reg, a.site, collections, freqs)
+    jobs = cube_jobs(cat, reg, sites, collections, freqs)
     if not jobs:
-        sys.exit(f"{a.site} is in no cube of {collections or 'any collection'}")
-    print(f"{a.site}: cubes " + ", ".join(f"{r}.{c}.{f}" for r, c, f, _ in jobs), flush=True)
+        sys.exit(f"{sites} are in no cube of {collections or 'any collection'}")
+    print(f"{len(sites)} sites; cubes " + ", ".join(
+        f"{r}.{c}.{f} ({len(s)} sites)" for r, c, f, _, s in jobs), flush=True)
     py = cat["envs"]
+    workers = str(max(1, a.workers))
     failed = []
 
-    # 1. CLIFF forcing of the site
-    site_csv = os.path.join(cat["store"], "_runs", "run_site", f"{a.site}.csv")
+    # 1. CLIFF forcing of the sites
     forcings = {}
     for job in jobs:
-        for name, entry in products_of(cat, reg, a.site, job):
+        for name, entry, _ in products_of(cat, reg, job):
             if entry.get("mode") == "pycliff":
                 found = forcing_dataset(cat, entry, job[2])
                 if found:
                     forcings[found[0]] = found
     for key, info, main_json in forcings.values():
         from extractors.cliff_forcing import is_missing, variables
-        if not any(is_missing(info, v, a.site) for v in variables(info)):
-            print(f"{key}: pixel files of {a.site} are there", flush=True)
+        todo = [s for s in sites if any(is_missing(info, v, s) for v in variables(info))]
+        if not todo:
+            print(f"{key}: pixel files of every site are there", flush=True)
             continue
+        site_csv = os.path.join(cat["store"], "_runs", "run_site",
+                                f"{key}_{os.getpid()}.csv")
         if not a.dry_run:
             os.makedirs(os.path.dirname(site_csv), exist_ok=True)
-            row = reg.loc[a.site]
             with open(site_csv, "w", newline="") as f:
                 w = csv.writer(f)
                 w.writerow(["site", "latitude", "longitude"])
-                w.writerow([a.site, row["latitude"], row["longitude"]])
-        if run([py["prefetch"], "prefetch.py", main_json, key, "--sites-csv", site_csv],
-               a.dry_run):
+                for s in todo:
+                    w.writerow([s, reg.loc[s, "latitude"], reg.loc[s, "longitude"]])
+        if run([py["prefetch"], "prefetch.py", main_json, key, "--sites-csv", site_csv,
+                "--workers", workers], a.dry_run):
             failed.append(f"prefetch {key}")
 
     # 2-4. store products and cubes, the cliffin cubes first
-    staged = set()
+    staged = {}
     for job in jobs:
-        r, coll, freq, cube = job
-        for name, entry in products_of(cat, reg, a.site, job):
-            if (name, freq) in staged:
+        r, coll, freq, cube, job_sites = job
+        for name, entry, here in products_of(cat, reg, job):
+            done = staged.setdefault((name, freq), set())
+            todo = [s for s in here if s not in done]
+            if not todo:
                 continue
-            staged.add((name, freq))
+            done.update(todo)
             cmd = [py[entry.get("env", "main")], "stage_product.py", name, freq,
-                   "--catalog", a.catalog, "--sites", a.site, "--workers", "1"]
+                   "--catalog", a.catalog, "--sites", ",".join(todo),
+                   "--workers", workers]
             if run(cmd + (["--force"] if a.force else []), a.dry_run):
                 failed.append(f"stage {name} {freq}")
         cmd = [py["main"], "run_extraction.py", pl.recipe_path(cube, freq), coll, freq,
-               cat["cubes_dir"], cat["fluxcom_cube"], r, a.site]
+               cat["cubes_dir"], cat["fluxcom_cube"], r, ",".join(job_sites)]
         if run(cmd, a.dry_run):
             failed.append(f"cube {r}.{coll}.{freq}")
 
     if failed:
-        sys.exit(f"{a.site}: failed {failed}; see the logs in "
+        sys.exit(f"failed {failed}; see the logs in "
                  f"{os.path.join(cat['store'], '_runs')}")
-    print(f"{a.site}: done", flush=True)
+    print(f"{len(sites)} sites: done", flush=True)
 
 
 if __name__ == '__main__':

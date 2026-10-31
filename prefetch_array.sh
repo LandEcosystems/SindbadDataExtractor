@@ -23,6 +23,10 @@
 #SBATCH --time=24:00:00
 #SBATCH --output=prefetch_%x_%A_%a.out
 
+# the proxy module gives the jobs internet access
+if ! type module >/dev/null 2>&1; then source /etc/profile; fi
+module load proxy
+
 dataset=$1
 shift
 python=${PYTHON:-/Net/Groups/BGI/work_3/sindbad/site_cubes/tools/env/bin/python}

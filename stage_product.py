@@ -29,7 +29,8 @@ stage_hash, staged_utc and stage_git, and source_latitude and source_longitude w
 the source has coordinates of its own. The manifest records the status of every site,
 its time range and source_km, the distance of the source coordinates from those of
 the registry, and flags sites more than SOURCE_WARN_KM apart. A site whose staging
-fails keeps its earlier file, marked stale in the manifest.
+fails keeps its earlier file, marked stale in the manifest. The manifest is merged
+under a lock when it is written, so runs of different sites may run at once.
 """
 import argparse
 import datetime
@@ -283,13 +284,23 @@ def main():
                               "staged_utc")}}
         rows[row["site"]] = row
 
-    # Rows of sites of the product that this run did not touch stay as they were.
-    for site in sites:
-        if site not in rows and site in old.index:
-            rows[site] = old.loc[site].to_dict()
-    manifest = pd.DataFrame([rows[s] for s in sites if s in rows],
-                            columns=MANIFEST_COLUMNS)
-    manifest.to_csv(manifest_path, index=False)
+    # Rows of sites of the product that this run did not touch stay as they are now:
+    # the manifest is read again under a lock, so that runs of other sites, such as
+    # parallel run_site.py jobs, keep the rows they wrote meanwhile.
+    import extractors.footprint_utils as fu
+    with fu.file_lock(manifest_path):
+        now = old
+        if os.path.exists(manifest_path):
+            now = pd.read_csv(manifest_path, dtype={"stage_hash": str}).set_index(
+                "site", drop=False)
+        for site in sites:
+            if site not in rows and site in now.index:
+                rows[site] = now.loc[site].to_dict()
+        manifest = pd.DataFrame([rows[s] for s in sites if s in rows],
+                                columns=MANIFEST_COLUMNS)
+        tmp = manifest_path + ".tmp"
+        manifest.to_csv(tmp, index=False)
+        os.replace(tmp, manifest_path)
     counts = manifest["status"].value_counts().to_dict()
     print(f"written {manifest_path}: {counts}")
     far = manifest[manifest["source_km"] > SOURCE_WARN_KM]

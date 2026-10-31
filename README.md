@@ -68,18 +68,25 @@ which a tower value, and a day as its fraction of good hours, counts as tower da
 0.85 by default, 0.75 for CRUJRA.
 
 ```
+module load proxy                     # internet access, passed on to the SLURM jobs
 snakemake -n                          # what is missing or stale
 snakemake --profile profiles/slurm    # run through SLURM
 ```
 
-`run_site.py` runs the same steps for one site, to check a site before a full run:
-its CLIFF forcing when missing, the cliffin cubes, every store product and every
-cube of the site. It writes no Snakemake markers, so a later full run still runs
-everything and skips the site where nothing changed.
+The profile runs up to 50 jobs at once, and a stage job takes 20 cpus for 20 sites
+at a time, so `--jobs 40` keeps a run within 800 cpus.
+
+`run_site.py` runs the same steps for some sites, to check them before a full run:
+their CLIFF forcing when missing, the cliffin cubes, every store product and every
+cube of the sites. It writes no Snakemake markers, so a later full run still runs
+everything and skips the sites where nothing changed. `run_site.sh` submits it with
+the proxy loaded and one worker per cpu. Jobs of different sites can run at once,
+since the store manifests are merged under a lock.
 
 ```
 python run_site.py DE-Hai --dry-run                  # the commands, in order
-python run_site.py DE-Hai --collections Shuttle      # only the Shuttle cubes
+sbatch run_site.sh DE-Hai --collections Shuttle      # only the Shuttle cubes
+sbatch --cpus-per-task=32 run_site.sh @sites_01.txt  # a list of sites, 32 at once
 ```
 
 # Contact:

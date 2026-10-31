@@ -120,7 +120,8 @@ def extract_with_pycliff(info, var, todo, workers):
     """Run pycliff-extract for one variable and the missing sites."""
     req_dir = os.path.join(info["cache_path"], "_requests")
     os.makedirs(req_dir, exist_ok=True)
-    batch = os.path.join(req_dir, f"{var}.txt")
+    # one request file per process, so jobs of other sites never overwrite it
+    batch = os.path.join(req_dir, f"{var}.{os.getpid()}.txt")
     plev = None if info.get("pycliff_source") else PLEV.get(var)
     with open(batch, "w") as f:
         for site, lat, lon in todo:
@@ -144,6 +145,7 @@ def extract_with_pycliff(info, var, todo, workers):
         raise RuntimeError(f"pycliff-extract {var} failed:\n{run.stderr[-3000:]}")
     for site, _, _ in todo:
         drop_older(info, var, site)
+    os.remove(batch)
     print(f"{var}: {len(todo)} sites extracted in {time.time() - t:.0f} s", flush=True)
 
 
