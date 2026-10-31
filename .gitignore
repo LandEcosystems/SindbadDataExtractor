@@ -19,6 +19,7 @@
 !/configuration/
 !/validation/
 !/profiles/
+!/site_cubes/
 
 /extractors/__pycache__
 /utils/__pycache__
