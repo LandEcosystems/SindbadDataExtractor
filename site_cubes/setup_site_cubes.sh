@@ -2,23 +2,48 @@
 # Folders of the SINDBAD site cubes, described in README.md next to this script.
 #
 #   ./setup_site_cubes.sh dirs     make the folders
+#   ./setup_site_cubes.sh tools    clone SindbadDataExtractor and PyCLIFF into
+#                                  tools, or show their last commit
 #   ./setup_site_cubes.sh legacy   copy the LaThuile2007 site files of the CLIFF
 #                                  input into ancillary_data/legacy, write
 #                                  SOURCE.md and MD5SUMS and make it read only
 #   ./setup_site_cubes.sh check    list what the pipeline reads, with what exists
 #
-# The root is the folder of this script, or ROOT when it is set.
+# The root is the folder of this script, or ROOT when it is set. EXTRACTOR_URL and
+# PYCLIFF_URL override where the repositories are cloned from. PyCLIFF comes by
+# default from the remote of the checkout in toolDev.
 set -euo pipefail
 
 root=${ROOT:-$(cd "$(dirname "$0")" && pwd)}
 anc=$root/ancillary_data
 legacy_src=/Net/Groups/BGI/work_3/cliff/input/fluxnetBGI2021_siteCube-v0.03_iter-5
 legacy_dst=$anc/legacy/fluxnetBGI2021_siteCube-v0.03_iter-5
+github=https://github.com/LandEcosystems
+extractor_url=${EXTRACTOR_URL:-$github/SindbadDataExtractor.git}
+pycliff_url=${PYCLIFF_URL:-}
+pycliff_dev=/Net/Groups/BGI/scratch/skoirala/toolDev/PyCLIFF
 
 make_dirs() {
     mkdir -p "$anc"/insitu/site_lists "$anc"/reference "$anc"/prefetch \
-        "$anc"/legacy "$root"/input/store "$root"/input/pycliff "$root"/output
+        "$anc"/legacy "$root"/input/store "$root"/input/pycliff "$root"/output \
+        "$root"/tools
     echo "folders ready below $root"
+}
+
+clone_tools() {
+    mkdir -p "$root"/tools
+    if [ -z "$pycliff_url" ]; then
+        pycliff_url=$(git -C "$pycliff_dev" remote get-url origin)
+    fi
+    for repo in "SindbadDataExtractor $extractor_url" "PyCLIFF $pycliff_url"; do
+        set -- $repo
+        if [ -d "$root/tools/$1/.git" ]; then
+            echo "$1: $(git -C "$root/tools/$1" log -1 --format='%h %ad %s' \
+                --date=short)"
+        else
+            git clone "$2" "$root/tools/$1"
+        fi
+    done
 }
 
 copy_legacy() {
@@ -57,9 +82,12 @@ EOF
 }
 
 # Kind and path, relative to the root, of what the pipeline reads. copy is copied by
-# hand, made is written by a tool of SindbadDataExtractor or PyCLIFF.
+# hand, clone is a repository of tools and made is written by a tool of
+# SindbadDataExtractor or PyCLIFF.
 expected() {
     cat <<EOF
+clone tools/SindbadDataExtractor
+clone tools/PyCLIFF
 copy ancillary_data/all_sites_multi_with_ru_flux_and_oneflux.csv
 copy ancillary_data/reference/ne_10m_admin_0_map_units.zip
 copy ancillary_data/insitu/PFT_consolidated.csv
@@ -113,16 +141,17 @@ check() {
             state=ok
         else
             state=missing
-            [ "$kind" = copy ] && n_missing=$((n_missing + 1))
+            [ "$kind" != made ] && n_missing=$((n_missing + 1))
         fi
         printf "%-8s %-5s %s\n" "$state" "$kind" "$path"
     done < <(expected)
-    echo "$n_missing files to copy are missing below $root"
+    echo "$n_missing files to copy or clone are missing below $root"
 }
 
 case "${1:-}" in
     dirs) make_dirs ;;
+    tools) clone_tools ;;
     legacy) copy_legacy ;;
     check) check ;;
-    *) sed -n '2,9p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
+    *) sed -n '2,11p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
 esac

@@ -6,7 +6,8 @@ Snakemake workflow. Contact: Sujan Koirala, skoirala@bgc-jena.mpg.de.
 
 ```
 site_cubes/
-├── README.md, setup_site_cubes.sh
+├── README.md, setup_site_cubes.sh, rsync_ancillary_data.sh
+├── tools/                the code: git clones of SindbadDataExtractor and PyCLIFF
 ├── ancillary_data/       the sources: copied by hand or fetched once
 │   ├── all_sites_multi_with_ru_flux_and_oneflux.csv
 │   ├── insitu/           site lists, registry, in-situ csvs, overrides
@@ -20,24 +21,39 @@ site_cubes/
 └── output/               the cubes, as site files and zarr stores
 ```
 
-`ancillary_data` holds everything the workflow reads, and `input` and `output`
-everything it writes. Nothing in `input` or `output` is edited by hand, and both can
-be rebuilt from `ancillary_data` and the global data on /Net.
+`tools` holds the code, `ancillary_data` everything the workflow reads, and `input`
+and `output` everything it writes. Nothing in `input` or `output` is edited by hand,
+and both can be rebuilt from `tools`, `ancillary_data` and the global data on /Net.
 
 ## Setting it up
 
 ```bash
 cd /Net/Groups/BGI/work_3/sindbad/site_cubes
 ./setup_site_cubes.sh dirs      # make the folders
+./setup_site_cubes.sh tools     # clone SindbadDataExtractor and PyCLIFF
 # copy the files of the next section
 ./setup_site_cubes.sh legacy    # copy the LaThuile2007 files on the cluster
 ./setup_site_cubes.sh check     # list what is there and what is missing
 ```
 
-`check` lists each file the workflow reads, marked `copy` when it is copied by hand
-and `made` when a tool writes it.
+`check` lists each file the workflow reads, marked `copy` when it is copied by hand,
+`clone` for the repositories and `made` when a tool writes it.
 
 ## What goes where
+
+### tools/
+
+| Path | Content |
+|---|---|
+| `SindbadDataExtractor/` | This workflow. Snakemake, `prefetch.py` and `prefetch_array.sh` run from here |
+| `PyCLIFF/` | The CLIFF gap filling, run by the workflow as `pycliff_dir` of its configs |
+
+Update a tool with `git -C tools/<repo> pull`, then `snakemake -n` lists what the new
+code changes. PyCLIFF runs with the python of its environment,
+`/Net/Groups/BGI/scratch/skoirala/envs/pycliff`, which only provides the packages it
+needs. The workflow puts `tools/PyCLIFF` first on the python path, so the code of
+this clone is what runs. PyCLIFF writes its runs to `input/pycliff`, never into its
+clone.
 
 ### ancillary_data/ (copied by hand)
 

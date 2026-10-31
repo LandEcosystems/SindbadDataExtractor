@@ -31,7 +31,9 @@ Data go through three layers, driven by Snakemake (`Snakefile`) and described in
    (`extractors/store_reader.py`) and writes one cube per eddy covariance source, which
    `combine_sites_zarr.py` turns into a site x Ti zarr store.
 
-The data live below `/Net/Groups/BGI/work_3/sindbad/site_cubes`:
+The data live below `/Net/Groups/BGI/work_3/sindbad/site_cubes`, described in
+`site_cubes/README.md`:
+- `tools/`: git clones of this repository and of PyCLIFF, which the workflow runs.
 - `ancillary_data/`: the sources, with `insitu/` (site registry, site lists, in-situ
   csvs and overrides), `reference/`, `prefetch/` (the caches of the remote products and
   the CLIFF forcing) and `legacy/` (the LaThuile2007 copy).
