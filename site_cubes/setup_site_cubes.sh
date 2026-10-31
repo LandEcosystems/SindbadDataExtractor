@@ -2,16 +2,16 @@
 # Folders of the SINDBAD site cubes, described in README.md next to this script.
 #
 #   ./setup_site_cubes.sh dirs     make the folders
-#   ./setup_site_cubes.sh tools    clone SindbadDataExtractor and PyCLIFF into
-#                                  tools, or show their last commit
+#   ./setup_site_cubes.sh tools    clone SindbadDataExtractor, PyCLIFF and fluxcom
+#                                  into tools, or show their last commit
 #   ./setup_site_cubes.sh legacy   copy the LaThuile2007 site files of the CLIFF
 #                                  input into ancillary_data/legacy, write
 #                                  SOURCE.md and MD5SUMS and make it read only
 #   ./setup_site_cubes.sh check    list what the pipeline reads, with what exists
 #
-# The root is the folder of this script, or ROOT when it is set. EXTRACTOR_URL and
-# PYCLIFF_URL override where the repositories are cloned from. PyCLIFF comes by
-# default from the remote of the checkout in toolDev.
+# The root is the folder of this script, or ROOT when it is set. EXTRACTOR_URL,
+# PYCLIFF_URL and FLUXCOM_URL override where the repositories are cloned from.
+# PyCLIFF comes by default from the remote of the checkout in toolDev.
 set -euo pipefail
 
 root=${ROOT:-$(cd "$(dirname "$0")" && pwd)}
@@ -21,6 +21,7 @@ legacy_dst=$anc/legacy/fluxnetBGI2021_siteCube-v0.03_iter-5
 github=https://github.com/LandEcosystems
 extractor_url=${EXTRACTOR_URL:-$github/SindbadDataExtractor.git}
 pycliff_url=${PYCLIFF_URL:-}
+fluxcom_url=${FLUXCOM_URL:-https://git.bgc-jena.mpg.de/fluxcom/fluxcom}
 pycliff_dev=/Net/Groups/BGI/scratch/skoirala/toolDev/PyCLIFF
 
 make_dirs() {
@@ -35,7 +36,8 @@ clone_tools() {
     if [ -z "$pycliff_url" ]; then
         pycliff_url=$(git -C "$pycliff_dev" remote get-url origin)
     fi
-    for repo in "SindbadDataExtractor $extractor_url" "PyCLIFF $pycliff_url"; do
+    for repo in "SindbadDataExtractor $extractor_url" "PyCLIFF $pycliff_url" \
+        "fluxcom $fluxcom_url"; do
         set -- $repo
         if [ -d "$root/tools/$1/.git" ]; then
             echo "$1: $(git -C "$root/tools/$1" log -1 --format='%h %ad %s' \
@@ -88,6 +90,8 @@ expected() {
     cat <<EOF
 clone tools/SindbadDataExtractor
 clone tools/PyCLIFF
+clone tools/fluxcom
+made tools/env/bin/python
 copy ancillary_data/all_sites_multi_with_ru_flux_and_oneflux.csv
 copy ancillary_data/reference/ne_10m_admin_0_map_units.zip
 copy ancillary_data/insitu/PFT_consolidated.csv

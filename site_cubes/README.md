@@ -7,7 +7,8 @@ Snakemake workflow. Contact: Sujan Koirala, skoirala@bgc-jena.mpg.de.
 ```
 site_cubes/
 ├── README.md, setup_site_cubes.sh, rsync_ancillary_data.sh
-├── tools/                the code: git clones of SindbadDataExtractor and PyCLIFF
+├── tools/                the code: clones of SindbadDataExtractor, PyCLIFF and
+│                         fluxcom, and the conda environment that runs them
 ├── ancillary_data/       the sources: copied by hand or fetched once
 │   ├── all_sites_multi_with_ru_flux_and_oneflux.csv
 │   ├── insitu/           site lists, registry, in-situ csvs, overrides
@@ -30,7 +31,8 @@ and both can be rebuilt from `tools`, `ancillary_data` and the global data on /N
 ```bash
 cd /Net/Groups/BGI/work_3/sindbad/site_cubes
 ./setup_site_cubes.sh dirs      # make the folders
-./setup_site_cubes.sh tools     # clone SindbadDataExtractor and PyCLIFF
+./setup_site_cubes.sh tools     # clone SindbadDataExtractor, PyCLIFF and fluxcom
+tools/SindbadDataExtractor/sinproc_installer/install_sinproc.sh   # make tools/env
 # copy the files of the next section
 ./setup_site_cubes.sh legacy    # copy the LaThuile2007 files on the cluster
 ./setup_site_cubes.sh check     # list what is there and what is missing
@@ -47,13 +49,17 @@ cd /Net/Groups/BGI/work_3/sindbad/site_cubes
 |---|---|
 | `SindbadDataExtractor/` | This workflow. Snakemake, `prefetch.py` and `prefetch_array.sh` run from here |
 | `PyCLIFF/` | The CLIFF gap filling, run by the workflow as `pycliff_dir` of its configs |
+| `fluxcom/` | The fluxcom package, which reads the v0.07 site cube for the frozen releases |
+| `env/` | The one conda environment of all of them, made by `install_sinproc.sh` |
 
-Update a tool with `git -C tools/<repo> pull`, then `snakemake -n` lists what the new
-code changes. PyCLIFF runs with the python of its environment,
-`/Net/Groups/BGI/scratch/skoirala/envs/pycliff`, which only provides the packages it
-needs. The workflow puts `tools/PyCLIFF` first on the python path, so the code of
-this clone is what runs. PyCLIFF writes its runs to `input/pycliff`, never into its
-clone.
+`SindbadDataExtractor/sinproc_installer/install_sinproc.sh` makes `tools/env` from
+`sinproc.yml` and installs fluxcom and PyCLIFF into it in development mode from their
+clones. Running it again makes the environment anew. Every step of the workflow,
+prefetch and PyCLIFF runs with `tools/env/bin/python`.
+
+Update a tool with `git -C tools/<repo> pull`. The environment then runs the new code
+without reinstalling, and `snakemake -n` lists what it changes. PyCLIFF writes its
+runs to `input/pycliff`, never into its clone.
 
 ### ancillary_data/ (copied by hand)
 
