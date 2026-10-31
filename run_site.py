@@ -18,12 +18,13 @@ usage:
 A file given as @file lists sites, one or more per line, and all stands for every
 site of the registry in a cube of the collections. --list prints the sites that
 have a cube, one per line, and runs nothing; slurm_scripts/ submits a job per site
-from it. By default every cube whose registry flag a site has, at every frequency. The cliffin cubes needed by the
-PyCLIFF products always come along. --workers runs that many sites at once within
-each product and cube, and the cpus the sites leave free fit the variables of a
-site in parallel in PyCLIFF. --no-prefetch leaves missing forcing missing, for jobs of
-single sites when the forcing was prefetched for all sites at once. Each command is
-printed before it runs, and --dry-run only prints them.
+from it. By default every cube whose registry flag a site has, at every frequency.
+The cliffin cubes needed by the PyCLIFF products always come along. --workers runs
+that many sites at once within each product and cube, and the cpus the sites leave
+free fit the variables of a site in parallel in PyCLIFF. --no-prefetch leaves
+missing forcing missing, for jobs of single sites when the forcing was prefetched
+for all sites at once. Each command is printed before it runs, and --dry-run only
+prints them.
 
 Nothing here writes the markers of the Snakefile, EXTRACTED and assembled.txt. A
 later Snakemake run therefore still extracts and assembles every product and cube,
