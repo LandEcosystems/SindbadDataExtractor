@@ -39,17 +39,19 @@ PyCLIFF refuses a resolution finer than the step of the forcing, so a forcing on
 6 hour steps such as CRUJRA only has a daily product. PyCLIFF fits the variables of
 a site in PYCLIFF_JOBS processes, one by default, as when many sites share the
 cpus of a job; run_site.py sets it when a few sites have more cpus.
+
+The log of pycliff-downscale goes line by line into the log of the site, as it
+runs, so a long fit can be followed there.
 """
 import glob
 import json
 import os
-import subprocess
 
 import numpy as np
 
 import extractors.footprint_utils as fu
 import extractors.pycliff_gapfilled as pg
-from extractors.cliff_forcing import VARIABLES, existing, pycliff_env
+from extractors.cliff_forcing import VARIABLES, existing, pycliff_env, run_logged
 
 import logging
 logger = logging.getLogger(__name__)
@@ -121,10 +123,11 @@ def run_pycliff(info, site, tower, freq):
             cmd += ["--qc-threshold", str(info["qc_threshold"])]
         env = dict(pycliff_env(info), OMP_NUM_THREADS="1", OPENBLAS_NUM_THREADS="1",
                    MKL_NUM_THREADS="1")
-        run = subprocess.run(cmd, env=env, capture_output=True, text=True)
-        if run.returncode:
-            raise RuntimeError(f"pycliff-downscale {site} {fn} failed:\n"
-                               f"{run.stderr[-3000:]}")
+        logger.info("pycliff-downscale: " + " ".join(cmd))
+        code, last = run_logged(cmd, env,
+                                lambda line: logger.info(f"pycliff {fn}: {line}"))
+        if code:
+            raise RuntimeError(f"pycliff-downscale {site} {fn} failed:\n{last}")
         with open(marker, "w") as f:
             f.write(stamp)
 

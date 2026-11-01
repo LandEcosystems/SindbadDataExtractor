@@ -28,7 +28,11 @@ source of the json says where the values come from:
 A file is missing when the site has none for the variable, or when its last year is
 before end_year of the json, in which case the earlier file is replaced. Variables
 are independent, so prefetch.py --part i/n splits them over jobs of a cluster array.
+
+The log of pycliff-extract is printed line by line as it runs, each line after the
+variable, so it lands in the log of the prefetch job.
 """
+import collections
 import glob
 import importlib
 import os
@@ -116,6 +120,22 @@ def pycliff_env(info):
     return env
 
 
+def run_logged(cmd, env, emit, tail=60):
+    """
+    Run a command and pass each line of its output, stderr included, to emit as
+    it comes. Returns the exit code and the last lines, for an error message.
+    """
+    last = collections.deque(maxlen=tail)
+    env = dict(env, PYTHONUNBUFFERED="1")
+    with subprocess.Popen(cmd, env=env, stdout=subprocess.PIPE,
+                          stderr=subprocess.STDOUT, text=True, bufsize=1) as proc:
+        for line in proc.stdout:
+            line = line.rstrip()
+            last.append(line)
+            emit(line)
+    return proc.returncode, "\n".join(last)
+
+
 def extract_with_pycliff(info, var, todo, workers):
     """Run pycliff-extract for one variable and the missing sites."""
     req_dir = os.path.join(info["cache_path"], "_requests")
@@ -138,11 +158,12 @@ def extract_with_pycliff(info, var, todo, workers):
         # Sites with an earlier extraction only read the months after it.
         if any(existing(info, var, s) for s, _, _ in todo):
             cmd += ["--append-from", info["cache_path"]]
-    env = pycliff_env(info)
+    print("+ " + " ".join(cmd), flush=True)
     t = time.time()
-    run = subprocess.run(cmd, env=env, capture_output=True, text=True)
-    if run.returncode:
-        raise RuntimeError(f"pycliff-extract {var} failed:\n{run.stderr[-3000:]}")
+    code, last = run_logged(cmd, pycliff_env(info),
+                            lambda line: print(f"    {var}: {line}", flush=True))
+    if code:
+        raise RuntimeError(f"pycliff-extract {var} failed:\n{last}")
     for site, _, _ in todo:
         drop_older(info, var, site)
     os.remove(batch)
