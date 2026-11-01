@@ -8,7 +8,10 @@ Each layer is the mean of the 100 m grid cells whose centres lie within 1 km of 
 site, read remotely from the Zenodo GeoTIFFs. Zenodo allows about 133 requests a
 minute, so prefetch opens each layer file once and reads the windows of all missing
 sites from it, with few workers. The cache holds one row per site, year and layer,
-the same format as cgls_lc100_v3_1km_sites.csv of add_vegfrac_cgls.py.
+the same format as cgls_lc100_v3_1km_sites.csv of add_vegfrac_cgls.py. The rows of a
+layer file are added as soon as it is read, so a layer that fails is read again by
+the next run, which reads only the layers that sites lack. A site is complete once
+it has every layer of every year, and a year with a layer missing gives no values.
 
 Grass is Grass + MossLichen. Vegetation is Tree + Shrub + Grass + Crops + MossLichen.
 """
@@ -73,31 +76,63 @@ def fetch_site(site, lat, lon, info):
             for r in layer_means(y, la, [site], [lat], [lon])]
 
 
+def cached_layers(cache, info):
+    """{site: {(year, layer)}} of the rows of the cache, sites in lower case."""
+    out = {}
+    if len(cache) == 0:
+        return out
+    for s, y, la in zip(cache["site"].astype(str).str.lower(), cache["year"],
+                        cache["layer"]):
+        out.setdefault(s, set()).add((int(y), la))
+    return out
+
+
+def complete_sites(cache, info):
+    """Sites with a row of every layer of every year, for prefetch.py --check."""
+    need = {(y, la) for y in years_of(info) for la in LAYERS}
+    return {s for s, have in cached_layers(cache, info).items() if need <= have}
+
+
 def prefetch(sites, lats, lons, info, workers=None, **kwargs):
     from concurrent.futures import ThreadPoolExecutor
-    sites, lats, lons = fu.missing_sites(info, sites, lats, lons)
-    if not sites:
+    have = cached_layers(fu.read_cache(info["cache_path"]), info)
+    jobs = []
+    for y in years_of(info):
+        for la in LAYERS:
+            todo = [i for i, s in enumerate(sites)
+                    if (y, la) not in have.get(s.lower(), set())]
+            if todo:
+                jobs.append((y, la, todo))
+    if not jobs:
         print(f"all sites are in {info['cache_path']}")
         return
-    jobs = [(y, la) for y in years_of(info) for la in LAYERS]
-    print(f"{len(sites)} sites, {len(jobs)} layer files", flush=True)
+    print(f"{len(jobs)} layer files to read for the sites that lack them", flush=True)
 
     def one(job):
-        return layer_means(job[0], job[1], sites, lats, lons)
+        y, la, todo = job
+        try:
+            recs = layer_means(y, la, [sites[i] for i in todo],
+                               [lats[i] for i in todo], [lons[i] for i in todo])
+        except Exception as e:
+            print(f"failed {y} {la}: {type(e).__name__}: {e}", flush=True)
+            return
+        fu.append_cache(info["cache_path"], recs)
+        print(f"done {y} {la}, {len(recs)} sites", flush=True)
 
-    # Rows are written once all layers are read, so a site is cached complete or not
-    # at all.
-    rows = []
     with ThreadPoolExecutor(workers or info.get("n_workers", 2)) as ex:
-        for recs in ex.map(one, jobs):
-            rows.extend(recs)
-            print(f"done {recs[0]['year']} {recs[0]['layer']}", flush=True)
-    fu.append_cache(info["cache_path"], rows)
+        list(ex.map(one, jobs))
+    done = complete_sites(fu.read_cache(info["cache_path"]), info)
+    print(f"{sum(s.lower() in done for s in sites)} of {len(sites)} sites have every "
+          f"layer in {info['cache_path']}", flush=True)
 
 
 def components(rows, info):
     rows = rows[rows["year"].isin(years_of(info)) & rows["layer"].isin(LAYERS)]
-    wide = rows.drop_duplicates(["year", "layer"], keep="last").pivot(
+    rows = rows.drop_duplicates(["year", "layer"], keep="last")
+    # A year counts only with every layer, since vegetation sums the valid layers.
+    n_layers = rows.groupby("year")["layer"].nunique()
+    rows = rows[rows["year"].isin(n_layers[n_layers == len(LAYERS)].index)]
+    wide = rows.pivot(
         index="year", columns="layer", values="mean").reindex(columns=LAYERS)
     out = {}
     for g, cols in GROUPS.items():
