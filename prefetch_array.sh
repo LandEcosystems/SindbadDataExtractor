@@ -1,16 +1,16 @@
 #!/bin/bash
 # Prefetch one dataset as a SLURM array. Task i of n fetches part i/n of the work
 # into the one cache of the dataset: the years of the Copernicus NDVI and LAI
-# products, the sites of Landsat or the variables of the CLIFF forcing, so the tasks
-# never write the same file. Work already in the cache is skipped, so a task that
-# stopped can simply be submitted again.
+# products, the sites of Landsat, the years of the ERA5 forcing or the variables of
+# the CRUJRA forcing, so the tasks never write the same file. Work already in the
+# cache is skipped, so a task that stopped can simply be submitted again.
 #
 #   sbatch --array=1-13 prefetch_array.sh ndvi_clms300     # 2014 to 2026
 #   sbatch --array=1-22 prefetch_array.sh ndvi_clms1km     # 1999 to 2020
 #   sbatch --array=1-13 prefetch_array.sh lai_clms300
 #   sbatch --array=1-15 prefetch_array.sh lai_clms1km      # 1999 to 2013
 #   sbatch --array=1-40 prefetch_array.sh ndvi_landsat     # about 33 sites a task
-#   sbatch --array=1-9 prefetch_array.sh cliff_forcing_era5  # a variable each
+#   sbatch --array=1-76%10 prefetch_array.sh cliff_forcing_era5  # a year each
 #   sbatch --array=1-10 prefetch_array.sh cliff_forcing_crujra  # a variable each
 #   sbatch prefetch_array.sh fa_gami                         # no array: all of it
 #

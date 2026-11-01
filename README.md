@@ -52,10 +52,12 @@ Done once by hand, before Snakemake:
 - LaThuile2007 is a read-only copy of the fluxnetBGI2021 site cube iter-5 files, read by
   `extractors/sitefile_nc.py`. Write a `SOURCE.md` next to the copy.
 - The forcings of the CLIFF gap filling, `cliff_forcing_era5` and
-  `cliff_forcing_crujra`, are prefetched as well: `prefetch_array.sh` runs
-  `pycliff-extract` once per variable for all registry sites. ERA5 comes from the
-  hourly files of the cluster, CRUJRA v4.10 from the 6 hourly `trendy_met.zarr` of
-  SINDBAD-TRENDY. Another forcing only needs another `cliff_forcing` json and a
+  `cliff_forcing_crujra`, are prefetched as well. ERA5 comes from the hourly files
+  of the cluster, read per variable and year into year files with the pixel
+  selection of PyCLIFF, so a broken month costs one year and new sites or years
+  read only what they add. `prefetch_array.sh` runs one task per year. CRUJRA v4.10
+  comes from the 6 hourly `trendy_met.zarr` of SINDBAD-TRENDY through
+  `pycliff-extract`, once per variable. Another forcing only needs another `cliff_forcing` json and a
   source json in PyCLIFF.
 
 CLIFF then runs inside Snakemake: the products `pycliff_era5.<source>` and

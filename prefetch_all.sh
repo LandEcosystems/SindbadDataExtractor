@@ -20,7 +20,7 @@ logs=/Net/Groups/BGI/work_3/sindbad/site_cubes/output/slurm_logs
 
 # dataset, then the sbatch options of its job
 jobs=(
-    "cliff_forcing_era5    --array=1-9 --cpus-per-task=8 --mem=32G"
+    "cliff_forcing_era5    --array=1-76%10 --cpus-per-task=8 --mem=32G"
     "cliff_forcing_crujra  --array=1-10 --cpus-per-task=1 --mem=8G"
     "fa_gami               --cpus-per-task=8 --mem=16G"
     "agb_esacci            --cpus-per-task=8 --mem=16G"

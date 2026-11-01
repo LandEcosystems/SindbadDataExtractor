@@ -105,7 +105,7 @@ again, so this copy is its only source.
 | `insitu/sites_consolidated.csv` | the workflow, through `consolidate_sites.py`: the site registry, one row per site |
 | `prefetch/clms_ndvi_300m/`, `clms_ndvi_1km/`, `clms_lai_300m/`, `clms_lai_1km/` | `prefetch_array.sh`: Copernicus NDVI and LAI, one csv per year |
 | `prefetch/landsat_ndvi/` | `prefetch_array.sh`: Landsat NDVI, one csv per site |
-| `prefetch/cliff_forcing/ERA5.e1/` | `prefetch_array.sh`: ERA5 at the nearest grid cells of each site, the forcing of PyCLIFF |
+| `prefetch/cliff_forcing/ERA5.e1/` | `prefetch_array.sh`: ERA5 at the nearest grid cells of each site, the forcing of PyCLIFF, with the year files it is made of in `<var>/_years/` |
 | `prefetch/cliff_forcing/CRUJRA.v4.10/` | `prefetch_array.sh`: CRUJRA at the nearest grid cells of each site, on 6 hour steps, the forcing of the daily PyCLIFF products |
 | `prefetch/gami_v2.1_1km_sites.csv` | the first extraction of the forest age map |
 
