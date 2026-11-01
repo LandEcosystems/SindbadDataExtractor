@@ -7,14 +7,15 @@
 #   sbatch run_site.sh DE-Hai --collections Shuttle --freqs daily
 #   sbatch --cpus-per-task=32 run_site.sh @sites_01.txt
 #
-# Run it from the repository. The proxy module gives the jobs internet access.
+# The log goes to output/slurm_logs of the site cubes, a folder that must exist,
+# as run_site_<job>.log. Run it from the repository. The proxy module gives the jobs internet access.
 # PYTHON overrides the python of the environment.
 #SBATCH --job-name=run_site
 #SBATCH --partition=big
 #SBATCH --cpus-per-task=8
 #SBATCH --mem-per-cpu=4G
 #SBATCH --time=24:00:00
-#SBATCH --output=run_site_%j.out
+#SBATCH --output=/Net/Groups/BGI/work_3/sindbad/site_cubes/output/slurm_logs/run_site_%j.log
 
 if ! type module >/dev/null 2>&1; then source /etc/profile; fi
 module load proxy

@@ -17,7 +17,9 @@
 # Submitted without --array, the job fetches all the work of the dataset, which suits
 # the datasets that cannot split it. prefetch_all.sh submits every dataset.
 #
-# Run it from the repository. The Copernicus products read the Copernicus Data Space
+# The logs go to output/slurm_logs of the site cubes as <job name>_<job>_<task>.log.
+# SLURM does not make that folder, and prefetch_all.sh does. Run it from the
+# repository. The Copernicus products read the Copernicus Data Space
 # with the cdse profile of ~/.aws/credentials, and the first task to start lists the
 # products while the others wait for it. PYTHON and REGISTRY override the defaults.
 #SBATCH --job-name=prefetch
@@ -25,7 +27,7 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=8G
 #SBATCH --time=24:00:00
-#SBATCH --output=%x_%A_%a.out
+#SBATCH --output=/Net/Groups/BGI/work_3/sindbad/site_cubes/output/slurm_logs/%x_%A_%a.log
 
 # the proxy module gives the jobs internet access
 if ! type module >/dev/null 2>&1; then source /etc/profile; fi

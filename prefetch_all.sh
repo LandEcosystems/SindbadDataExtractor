@@ -10,8 +10,11 @@
 # after a failure. jung_C2F waits for shuttle_obs, whose zips it reads. Left out:
 # era5_API, paused for its request limits; vf_modis, whose AppEEARS request runs in
 # the steps of prefetch.py --step; shuttle_clim, which shares the cache of
-# shuttle_obs. The logs are prefetch_<dataset>_<job>[_<task>].out in the repository.
+# shuttle_obs. The logs are prefetch_<dataset>_<job>[_<task>].log in output/slurm_logs
+# of the site cubes.
 cd "$(dirname "$0")"
+logs=/Net/Groups/BGI/work_3/sindbad/site_cubes/output/slurm_logs
+[ -n "${DRY:-}" ] || mkdir -p "$logs"
 
 # dataset, then the sbatch options of its job
 jobs=(
@@ -46,7 +49,7 @@ for line in "${jobs[@]}"; do
     after=()
     # %a of a job outside an array is no number, so such a job is named by its id
     if [[ "$opts" != *--array* ]]; then
-        after=(--output="%x_%j.out")
+        after=(--output="$logs/%x_%j.log")
     fi
     if [ "$name" = jung_C2F ] && [ -n "$shuttle_id" ]; then
         after+=(--dependency="afterany:$shuttle_id")
