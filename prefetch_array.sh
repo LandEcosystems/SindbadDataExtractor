@@ -22,6 +22,8 @@
 # repository. The Copernicus products read the Copernicus Data Space
 # with the cdse profile of ~/.aws/credentials, and the first task to start lists the
 # products while the others wait for it. PYTHON and REGISTRY override the defaults.
+# WORKERS sets the threads or processes of prefetch.py, by default the cpus of the
+# job. Datasets that mostly wait on the network run more threads than cpus.
 #SBATCH --job-name=prefetch
 #SBATCH --partition=big
 #SBATCH --cpus-per-task=8
@@ -45,5 +47,5 @@ fi
 
 cd "${SLURM_SUBMIT_DIR:-.}"
 "$python" prefetch.py configuration/sindbad/sindbad_extraction_main.json "$dataset" \
-    --sites-csv "$registry" --all-sites --workers "${SLURM_CPUS_PER_TASK:-8}" \
+    --sites-csv "$registry" --all-sites --workers "${WORKERS:-${SLURM_CPUS_PER_TASK:-8}}" \
     "${part[@]}" "$@"

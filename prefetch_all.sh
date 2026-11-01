@@ -10,8 +10,10 @@
 # after a failure. jung_C2F waits for shuttle_obs, whose zips it reads. Left out:
 # era5_API, paused for its request limits; vf_modis, whose AppEEARS request runs in
 # the steps of prefetch.py --step; shuttle_clim, which shares the cache of
-# shuttle_obs. The logs are prefetch_<dataset>_<job>[_<task>].log in output/slurm_logs
-# of the site cubes.
+# shuttle_obs. The logs are prefetch_<dataset>_<job>[_<task>].log in
+# output/slurm_logs of the site cubes. The CLMS and Landsat tasks run 8 threads on 2
+# cpus, since their threads wait on the network, which leaves room under the cpu
+# limit per user.
 cd "$(dirname "$0")"
 logs=/Net/Groups/BGI/work_3/sindbad/site_cubes/output/slurm_logs
 [ -n "${DRY:-}" ] || mkdir -p "$logs"
@@ -31,11 +33,11 @@ jobs=(
     "wf_chm                --cpus-per-task=8 --mem=16G"
     "vf_s2                 --cpus-per-task=8 --mem=16G"
     "vf_s2sl2p             --cpus-per-task=8 --mem=16G"
-    "ndvi_clms300          --array=1-13"
-    "ndvi_clms1km          --array=1-22"
-    "lai_clms300           --array=1-13"
-    "lai_clms1km           --array=1-15"
-    "ndvi_landsat          --array=1-40"
+    "ndvi_clms300          --array=1-13 --cpus-per-task=2 --export=ALL,WORKERS=8"
+    "ndvi_clms1km          --array=1-22 --cpus-per-task=2 --export=ALL,WORKERS=8"
+    "lai_clms300           --array=1-13 --cpus-per-task=2 --export=ALL,WORKERS=8"
+    "lai_clms1km           --array=1-15 --cpus-per-task=2 --export=ALL,WORKERS=8"
+    "ndvi_landsat          --array=1-40 --cpus-per-task=2 --export=ALL,WORKERS=8"
     "shuttle_obs           --cpus-per-task=4 --mem=16G"
     "jung_C2F              --cpus-per-task=8 --mem=32G"
 )
