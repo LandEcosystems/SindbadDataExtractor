@@ -12,6 +12,10 @@
 #   sbatch --array=1-40 prefetch_array.sh ndvi_landsat     # about 33 sites a task
 #   sbatch --array=1-9 prefetch_array.sh cliff_forcing_era5  # a variable each
 #   sbatch --array=1-10 prefetch_array.sh cliff_forcing_crujra  # a variable each
+#   sbatch prefetch_array.sh fa_gami                         # no array: all of it
+#
+# Submitted without --array, the job fetches all the work of the dataset, which suits
+# the datasets that cannot split it. prefetch_all.sh submits every dataset.
 #
 # Run it from the repository. The Copernicus products read the Copernicus Data Space
 # with the cdse profile of ~/.aws/credentials, and the first task to start lists the
@@ -21,7 +25,7 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=8G
 #SBATCH --time=24:00:00
-#SBATCH --output=prefetch_%x_%A_%a.out
+#SBATCH --output=%x_%A_%a.out
 
 # the proxy module gives the jobs internet access
 if ! type module >/dev/null 2>&1; then source /etc/profile; fi
@@ -31,9 +35,13 @@ dataset=$1
 shift
 python=${PYTHON:-/Net/Groups/BGI/work_3/sindbad/site_cubes/tools/env/bin/python}
 registry=${REGISTRY:-/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/insitu/sites_consolidated.csv}
-n_tasks=${SLURM_ARRAY_TASK_COUNT:-$SLURM_ARRAY_TASK_MAX}
+part=()
+if [ -n "${SLURM_ARRAY_TASK_ID:-}" ]; then
+    n_tasks=${SLURM_ARRAY_TASK_COUNT:-$SLURM_ARRAY_TASK_MAX}
+    part=(--part "${SLURM_ARRAY_TASK_ID}/${n_tasks}")
+fi
 
 cd "${SLURM_SUBMIT_DIR:-.}"
 "$python" prefetch.py configuration/sindbad/sindbad_extraction_main.json "$dataset" \
     --sites-csv "$registry" --all-sites --workers "${SLURM_CPUS_PER_TASK:-8}" \
-    --part "${SLURM_ARRAY_TASK_ID}/${n_tasks}" "$@"
+    "${part[@]}" "$@"
