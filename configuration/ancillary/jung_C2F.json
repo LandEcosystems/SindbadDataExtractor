@@ -11,6 +11,16 @@
     "n_jobs_rf": 1,
     "n_workers": 8,
     "nee_variant": "USTAR50",
+    "cube_sources": [
+        {
+            "cubepath": "/Net/Groups/BGI/data/FLUXCOM/v0.0/site_cube",
+            "collection": "FLUXNET2015"
+        },
+        {
+            "cubepath": "/Net/Groups/BGI/data/FLUXCOM/v0.0/site_cube",
+            "collection": "LaThuile"
+        }
+    ],
     "base_info": {
         "partitioning": "",
         "variableUnit": "adimensional",
@@ -40,7 +50,7 @@
         "skipUnitcheck": false,
         "publication": "Jung et al. 2024, DOI:10.5194/bg-21-1827-2024; code c2f_fluxnet v1.0, DOI:10.5281/zenodo.10593332",
         "data_path": "",
-        "description": "C2F consistency flags of daily data computed from the FLUXNET Shuttle data of the site: 1 consistent, 0 inconsistent."
+        "description": "C2F consistency flags of daily data computed from the FLUXNET Shuttle data of the site, or for a site without Shuttle data from the FLUXNET2015 or LaThuile collection of the FLUXCOM v0.0 site cube: 1 consistent, 0 inconsistent."
     },
     "sel_variables": "all",
     "variables": {

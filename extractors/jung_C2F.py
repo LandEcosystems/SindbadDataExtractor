@@ -17,7 +17,20 @@ fluxcom_load of c2f_fluxnet builds from the FLUXCOM site cube: QC as the fractio
 half hours with QC 0 or 1, precipitation as a daily sum, night means where
 SW_IN_POT is zero, the spread of the NEE ustar percentiles 16 to 84, and the
 downscaled ERA5 air temperature and VPD of the ONEFlux file in place of the ERA5
-cube. Each site is flagged on its own with the strictness of the json, loose by
+cube.
+
+Sites without a Shuttle zip are flagged from the cube_sources of the json, each a
+cubepath and a collection of a site cube in the FLUXCOM v0.0 layout, with one zarr
+array <group>__<collection>__<variable> per variable, such as the FLUXNET2015 and
+LaThuile collections of /Net/Groups/BGI/data/FLUXCOM/v0.0/site_cube. A site takes
+the first source with NEE at it. Its hours are turned into the same half hours with
+ONEFlux columns as a zip gives, each hour into two half hours with its values and
+half its precipitation, the hourly QC code into the QC of each half hour by the
+encoding_key of the cube, the ustar quantile of nee_variant in place of USTAR50 and
+the downscaled ERA5 of the era5_downscaling group in place of TA_ERA and VPD_ERA.
+The daily input is then built the same way.
+
+Each site is flagged on its own with the strictness of the json, loose by
 default, after seeding the random number generator of numpy with seed, so that the
 random forests give the same flags on every run. The across site step, which sets
 the site and break flags, is not run.
@@ -25,7 +38,8 @@ the site and break flags, is not run.
 The flags are written to the folder of cache_path as
 <site>_jung_C2F_<strictness>.nc, with one <VAR>_C2F_Flag per variable that is 1 on
 inconsistent days. cache_path is an index csv with one row per site and product
-file, so a new shuttle release of a site is flagged again.
+file, so a new shuttle release of a site is flagged again. The product file of a
+cube site is <cubepath>:<collection>.
 
 extract writes the flags as their own QC variables and never masks the fluxes, so
 that they are applied when the data are used. It returns 1 minus the flag, so that 1
@@ -68,6 +82,24 @@ QC_COLUMNS = {
 }
 NIGHT_VARS = ["GPP_NT", "GPP_DT", "RECO_NT", "RECO_DT", "NEE"]
 USTAR_PERCENTILES = ["16", "25", "50", "75", "84"]
+# ONEFlux columns of a cube site and the eddy_covariance variables of the cube they
+# come from. P_F is halved, as it is a sum over the half hour.
+CUBE_COLUMNS = {
+    "TA_F_MDS": "TA", "H_F_MDS": "H", "VPD_F_MDS": "VPD", "LE_F_MDS": "LE",
+    "GPP_NT_VUT_{nee}": "GPP_NT", "GPP_DT_VUT_{nee}": "GPP_DT",
+    "RECO_NT_VUT_{nee}": "RECO_NT", "RECO_DT_VUT_{nee}": "RECO_DT",
+    "NEE_VUT_{nee}": "NEE", "SW_IN_F_MDS": "SW_IN", "LW_OUT": "LW_OUT",
+    "SW_IN_POT": "SW_IN_POT", "NETRAD": "NETRAD", "SWC_F_MDS_1": "SWC_1",
+    "SWC_F_MDS_2": "SWC_2", "USTAR": "USTAR", "WS_F": "WS", "PPFD_IN": "PPFD_IN",
+    "P_F": "P",
+}
+CUBE_QC = {
+    "TA_F_MDS_QC": "TA_QC", "H_F_MDS_QC": "H_QC", "VPD_F_MDS_QC": "VPD_QC",
+    "LE_F_MDS_QC": "LE_QC", "NEE_VUT_{nee}_QC": "NEE_QC",
+    "SW_IN_F_MDS_QC": "SW_IN_QC", "SWC_F_MDS_1_QC": "SWC_1_QC",
+    "SWC_F_MDS_2_QC": "SWC_2_QC",
+}
+CUBE_ERA = {"TA_ERA": "TA", "VPD_ERA": "VPD"}
 
 
 def column(df, name, nee):
@@ -86,7 +118,109 @@ def daily_mean(x, days):
 
 def c2f_input(zip_path, nee="USTAR50"):
     """Daily input of the C2F QualityChecker from the zip of a shuttle site."""
-    df = fs.read_subdaily(zip_path)
+    return daily_input(fs.read_subdaily(zip_path), nee)
+
+
+def qc_codes(ds, collection):
+    """
+    {hourly QC code: (QC of the first half hour, QC of the second)} from the first
+    encoding_key among the QC variables of a collection of the cube.
+    """
+    for name in CUBE_QC.values():
+        var = f"eddy_covariance__{collection}__{name}"
+        key = ds[var].attrs.get("encoding_key", "") if var in ds else ""
+        if key:
+            out = {}
+            for line in key.splitlines():
+                pair, code = line.split("=>")
+                out[int(code)] = tuple(int(q) for q in pair.split(","))
+            return out
+    raise ValueError(f"no QC variable of {collection} has an encoding_key")
+
+
+def open_cube(cubepath):
+    """
+    The cube without dask, read as plain zarr arrays, since the worker processes are
+    forked from the process that opened it and a forked dask can hang.
+    """
+    return xr.open_zarr(cubepath, consolidated=False, chunks=None)
+
+
+def cube_sites(cubepath, collection, nee="USTAR50", block=16):
+    """Sites in lower case with NEE in a collection of the cube, read block sites at
+    a time."""
+    ds = open_cube(cubepath)
+    key = f"eddy_covariance__{collection}__NEE"
+    if key not in ds:
+        return set()
+    x = ds[key].sel(qntl=int(nee.replace("USTAR", "")))
+    names = ds["site"].values.astype(str)
+    out = set()
+    for i in range(0, len(names), block):
+        has = np.isfinite(x.isel(site=slice(i, i + block)).values).any(axis=(1, 2))
+        out |= {s.lower() for s in names[i:i + block][has]}
+    return out
+
+
+def cube_half_hours(cubepath, collection, site, nee="USTAR50"):
+    """
+    Half hours with ONEFlux columns of a site in a collection of the cube, between
+    the first and the last day with NEE, None when the site has no NEE there.
+    """
+    ds = open_cube(cubepath)
+    hit = np.nonzero(np.char.lower(ds["site"].values.astype(str)) == site.lower())[0]
+    if len(hit) == 0:
+        return None
+    q = int(nee.replace("USTAR", ""))
+
+    def hourly(group, name, qntl=q):
+        key = f"{group}__{collection}__{name}"
+        if key not in ds:
+            return None
+        x = ds[key].isel(site=hit[0])
+        if "qntl" in x.dims:
+            x = x.sel(qntl=qntl)
+        return x.values
+
+    nee_h = hourly("eddy_covariance", "NEE")
+    if nee_h is None or not np.isfinite(nee_h).any():
+        return None
+    days = np.nonzero(np.isfinite(nee_h).any(axis=1))[0]
+    keep = slice(days[0], days[-1] + 1)
+    start = ds["time"].values[keep].astype("datetime64[m]")
+    index = (start[:, None] + np.arange(48) * np.timedelta64(30, "m")).ravel()
+    cols = {}
+
+    def halves(x):
+        return np.repeat(x[keep].ravel(), 2)
+
+    for col, name in CUBE_COLUMNS.items():
+        x = hourly("eddy_covariance", name)
+        if x is not None:
+            cols[col.format(nee=nee)] = halves(x) / (2 if col == "P_F" else 1)
+    for qn in USTAR_PERCENTILES:
+        cols[f"NEE_VUT_{qn}"] = halves(hourly("eddy_covariance", "NEE", int(qn)))
+    for col, name in CUBE_ERA.items():
+        x = hourly("era5_downscaling", name)
+        if x is not None:
+            cols[col] = halves(x)
+    codes = qc_codes(ds, collection)
+    for col, name in CUBE_QC.items():
+        x = hourly("eddy_covariance", name)
+        if x is None:
+            continue
+        x = x[keep].ravel()
+        qc = np.full(2 * x.size, np.nan)
+        for code, (first, second) in codes.items():
+            hit_code = np.nonzero(x == code)[0]
+            qc[2 * hit_code] = first
+            qc[2 * hit_code + 1] = second
+        cols[col.format(nee=nee)] = qc
+    return pd.DataFrame(cols, index=pd.DatetimeIndex(index, name="time"))
+
+
+def daily_input(df, nee="USTAR50"):
+    """Daily input of the C2F QualityChecker from half hours with ONEFlux columns."""
     days = df.index.floor("D")
     ds = pd.DataFrame(index=pd.DatetimeIndex(sorted(set(days)), name="time"))
     for name, col in MEAN_COLUMNS.items():
@@ -123,11 +257,18 @@ def flag_file(info, site):
                         f"{site}_jung_C2F_{info.get('strictness', 'loose')}.nc")
 
 
-def flag_site(site, zip_path, info, qc_module):
+def source_input(site, source, nee="USTAR50"):
+    """Daily input of a site from ("zip", path) or ("cube", cubepath, collection)."""
+    if source[0] == "zip":
+        return c2f_input(source[1], nee)
+    return daily_input(cube_half_hours(source[1], source[2], site, nee), nee)
+
+
+def flag_site(site, source, info, qc_module):
     """C2F daily flags of one site, with one <VAR>_C2F_Flag per variable."""
     strict = info.get("strictness", "loose")
     params = getattr(qc_module.StrictnessParameters, strict)()
-    ds = c2f_input(zip_path, info.get("nee_variant", "USTAR50")).assign_coords(
+    ds = source_input(site, source, info.get("nee_variant", "USTAR50")).assign_coords(
         site=site)
     np.random.seed(info.get("seed", 42))
     qc = qc_module.QualityChecker(strictness_parameters=params,
@@ -179,18 +320,19 @@ def load_c2f(code_dir):
 _QC_MODULE = None
 
 
-def _flag_in_worker(site, zip_path, info):
+def _flag_in_worker(site, source, info):
     """flag_site in a worker process, which loads the C2F code once."""
     global _QC_MODULE
     if _QC_MODULE is None:
         _QC_MODULE = load_c2f(info["code_dir"])
-    return flag_site(site, zip_path, info, _QC_MODULE)
+    return flag_site(site, source, info, _QC_MODULE)
 
 
 def prefetch(sites, lats, lons, info, workers=None, **kwargs):
     """
-    Flag the sites of the shuttle index that have no flags yet for their product
-    file. Sites run in parallel in workers processes, n_workers of the json by
+    Flag the sites of the shuttle index, and the sites without a zip that a cube
+    source has, that have no flags yet for their product file. Sites run in
+    parallel in workers processes, n_workers of the json by
     default, each fitting its random forests with n_jobs_rf jobs. A site has only a
     few thousand days, so one job per forest and many sites at once is fastest. The
     seed is set per site and scikit-learn draws the seed of every tree before
@@ -199,20 +341,36 @@ def prefetch(sites, lats, lons, info, workers=None, **kwargs):
     """
     from concurrent.futures import ProcessPoolExecutor, as_completed
     shuttle = {"cache_path": info["shuttle_cache_path"]}
+    folder = os.path.dirname(info["shuttle_cache_path"])
+    nee = info.get("nee_variant", "USTAR50")
     done = fu.read_cache(info["cache_path"])
-    done_files = set(done["file"].astype(str)) if len(done) else set()
+    done_keys = set(zip(done["site"].astype(str).str.lower(),
+                        done["file"].astype(str))) if len(done) else set()
+    cubes = info.get("cube_sources", [])
+    in_cube = []
     todo = []
     for site, lat, lon in zip(sites, lats, lons):
         rec = fs.site_record(shuttle, site)
-        if rec is not None and str(rec["file"]) not in done_files:
-            todo.append((site, lat, lon, rec))
+        if rec is not None:
+            source = ("zip", os.path.join(folder, str(rec["file"])))
+        else:
+            if cubes and not in_cube:
+                in_cube = [cube_sites(c["cubepath"], c["collection"], nee)
+                           for c in cubes]
+            hit = [c for c, have in zip(cubes, in_cube) if site.lower() in have]
+            if not hit:
+                continue
+            c = hit[0]
+            rec = {"file": f"{c['cubepath']}:{c['collection']}",
+                   "product_id": f"FLUXCOM site cube {c['collection']}"}
+            source = ("cube", c["cubepath"], c["collection"])
+        if (site.lower(), str(rec["file"])) not in done_keys:
+            todo.append((site, lat, lon, rec, source))
     n = max(1, workers or info.get("n_workers", 1))
     print(f"{len(todo)} of {len(sites)} sites to flag with {n} workers", flush=True)
-    folder = os.path.dirname(info["shuttle_cache_path"])
     with ProcessPoolExecutor(max_workers=n) as pool:
-        jobs = {pool.submit(_flag_in_worker, site,
-                            os.path.join(folder, str(rec["file"])), info):
-                (site, lat, lon, rec) for site, lat, lon, rec in todo}
+        jobs = {pool.submit(_flag_in_worker, site, source, info):
+                (site, lat, lon, rec) for site, lat, lon, rec, source in todo}
         for job in as_completed(jobs):
             site, lat, lon, rec = jobs[job]
             try:
