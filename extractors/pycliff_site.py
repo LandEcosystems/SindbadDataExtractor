@@ -35,6 +35,12 @@ changed. A lock per marker keeps parallel extract jobs from running the same fit
 twice. forcing_variables of the json lists the pixel files of the forcing, the
 ERA5 variables by default.
 
+skip_forcing_variables of the json lists forcing variables that PyCLIFF leaves out,
+with --skip-grid-vars, while their pixel files are not ready, such as ws10 of ERA5.
+Their products are not written and read as NaN. They are also left out of the
+marker, so taking a variable off the list changes the marker and fits every site
+again with it, while the other variables come out the same, each with its own seed.
+
 PyCLIFF refuses a resolution finer than the step of the forcing, so a forcing on
 6 hour steps such as CRUJRA only has a daily product. PyCLIFF fits the variables of
 a site in PYCLIFF_JOBS processes, one by default, as when many sites share the
@@ -85,7 +91,9 @@ def run_name(info, freq):
 
 def inputs(info, site, tower):
     """Tower file and pixel files of a site, with their size and time."""
+    skip = set(info.get("skip_forcing_variables", []))
     paths = [tower] + [f for v in info.get("forcing_variables", VARIABLES)
+                       if v not in skip
                        for f in existing({"cache_path": info["pix_dir"]}, v, site)]
     return [(p, os.path.getsize(p), os.path.getmtime(p)) for p in paths]
 
@@ -119,6 +127,8 @@ def run_pycliff(info, site, tower, freq):
                "--no-figures", "--no-analysis", "--force" if changed else "--skip-done"]
         if info.get("methods"):
             cmd += ["--methods", info["methods"]]
+        if info.get("skip_forcing_variables"):
+            cmd += ["--skip-grid-vars", ",".join(info["skip_forcing_variables"])]
         if info.get("qc_threshold") is not None:
             cmd += ["--qc-threshold", str(info["qc_threshold"])]
         env = dict(pycliff_env(info), OMP_NUM_THREADS="1", OPENBLAS_NUM_THREADS="1",
