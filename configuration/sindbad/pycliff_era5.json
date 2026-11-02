@@ -14,7 +14,6 @@
     "time_mode": "lst",
     "methods": "",
     "min_tower_days": 365,
-    "skip_forcing_variables": ["ws10"],
     "base_info": {
         "partitioning": "",
         "variableUnit": "",
