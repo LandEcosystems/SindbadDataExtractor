@@ -46,6 +46,12 @@ chunked in small tiles, such as the ws10 files of 2020 and 2021 on the cluster, 
 take tens of thousands of scattered reads each, so the ERA5 json sets slab, which
 reads whole fields 24 hours at a time in the order they lie in the file.
 
+A monthly file whose time does not decode to hours of its year, such as the ws10
+files of 2024 and 2025 on the cluster, whose time is in seconds since 1970 but
+labelled hours since 1900, is read with its raw time values and the first unit of
+TIME_UNITS that puts them all on whole hours of that year. The log names the file,
+its label and the unit taken. A file that no unit fits still fails the year.
+
 Once every cell and year of a site is in year files or older pixel files, its pixel
 file is written from them. Every prefetch run does this for every variable at its
 end, under a lock, so the task of a cluster array that writes the last year file of
@@ -78,6 +84,12 @@ VARIABLES = ["t2m", "q", "tp", "ssrd", "ssr", "strd", "ws10", "rH", "sp"]
 FILE = "{var}/{site}/{var}_Z_BIG_{start}_{end}_pix_ALL_of_{n}.nc"
 SPAN = re.compile(r"_Z_BIG_(\d+)_(\d+)_pix_ALL_of_")
 YEARS = "_years"
+# Units tried for the raw time of a monthly file whose own unit does not decode it
+# to hours of its year.
+TIME_UNITS = ["seconds since 1970-01-01", "hours since 1900-01-01",
+              "hours since 1970-01-01", "minutes since 1970-01-01",
+              "days since 1970-01-01"]
+STEP_SECONDS = {"seconds": 1, "minutes": 60, "hours": 3600, "days": 86400}
 
 
 def variables(info):
@@ -337,6 +349,55 @@ def write_year(path, fvar, year, flat, lons, lats, values, pbase):
     os.replace(tmp, path)
 
 
+def decode_time(raw, unit):
+    """datetime64[s] of raw time values in a unit such as hours since 1900-01-01."""
+    step, _, start = unit.partition(" since ")
+    epoch = np.datetime64(start.strip().replace(" ", "T"), "s")
+    return epoch + np.round(raw * STEP_SECONDS[step.strip()]).astype(
+        "int64").astype("timedelta64[s]")
+
+
+def on_hours_of(t, year):
+    """All times lie on whole hours of year."""
+    t = np.asarray(t, dtype="datetime64[s]")
+    return bool(len(t)) and bool(
+        (t.astype("datetime64[Y]").astype(int) + 1970 == year).all()
+        and (t.astype("int64") % 3600 == 0).all())
+
+
+def read_month(job, year):
+    """
+    Values and times of the cells of a monthly file, read by PyCLIFF, whose time
+    reader is wrapped here so that a file whose time does not decode to hours of
+    year takes the first unit of TIME_UNITS that fits its raw values.
+    """
+    px = sys.modules["pycliff.extract.extract"]
+    decode = getattr(px, "_decode_times", px.read_times)
+    px._decode_times = decode
+
+    def read_times(ds, time_names=None):
+        tv = ds.variables[px._first_present(ds, time_names or px.TIME_NAMES)]
+        try:
+            t = decode(ds, time_names)
+            if on_hours_of(t, year):
+                return t
+            why = f"decodes to {t[0]}"
+        except (ValueError, OverflowError) as e:
+            why = f"does not decode: {e}"
+        raw = np.asarray(np.ma.filled(tv[:], np.nan), dtype=float)
+        for unit in TIME_UNITS:
+            t = decode_time(raw, unit)
+            if on_hours_of(t, year):
+                print(f"{job.path}: time labelled {getattr(tv, 'units', '')} {why}; "
+                      f"read as {unit}", flush=True)
+                return t
+        raise ValueError(f"{job.path}: time labelled {getattr(tv, 'units', '')} {why}, "
+                         f"and none of {TIME_UNITS} puts it on hours of {year}")
+
+    px.read_times = read_times
+    return px._read_pixels(job)
+
+
 def extract_years(info, sites, lats, lons, part, n_workers):
     """
     Read the year files of the variable and year pairs of this part that the sites
@@ -386,7 +447,7 @@ def extract_years(info, sites, lats, lons, part, n_workers):
                 print(f"failed {vv.var} {year}: {e}", flush=True)
                 futures.append(None)
                 continue
-            futures.append([ex.submit(px._read_pixels, job(vv, f, cells))
+            futures.append([ex.submit(read_month, job(vv, f, cells), year)
                             for f in files])
         for (vv, year, cells), months in zip(units, futures):
             if months is None:
