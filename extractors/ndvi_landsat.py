@@ -41,6 +41,9 @@ import logging
 logger = logging.getLogger(__name__)
 
 STAC = "https://planetarycomputer.microsoft.com/api/stac/v1/search"
+# Scenes per page of the search. A page of 1000 scenes is about 20 MB, which the
+# proxy of the cluster often cuts short.
+PAGE = 100
 SAS = "https://planetarycomputer.microsoft.com/api/sas/v1/token/landsat-c2-l2"
 GDAL_ENV = {"GDAL_DISABLE_READDIR_ON_OPEN": "EMPTY_DIR",
             "GDAL_HTTP_MAX_RETRY": "6", "GDAL_HTTP_RETRY_DELAY": "5"}
@@ -62,7 +65,7 @@ def sign(href):
 
 def scenes(lat, lon, info):
     """Scenes of the tiers in the json at the site, with their cloud cover filter."""
-    body = {"collections": ["landsat-c2-l2"], "limit": 1000,
+    body = {"collections": ["landsat-c2-l2"], "limit": PAGE,
             "intersects": {"type": "Point", "coordinates": [lon, lat]},
             "datetime": f"{info.get('first', '1982-01-01')}/"
                         f"{info.get('last', '2030-12-31')}",

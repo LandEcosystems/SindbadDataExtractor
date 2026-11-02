@@ -38,6 +38,7 @@ take the components of the first footprint dataset in rs_fill of the json that h
 one, and carry its key as filled_from.
 """
 import fcntl
+import http.client
 import os
 import time
 import urllib.request
@@ -130,13 +131,16 @@ def nc_footprint(path, name, lat, lon, radius=RADIUS_M):
 
 
 def fetch_url(url, data=None, headers=None, retries=6, wait=3, timeout=180):
-    """Bytes of url, retrying with a growing wait on network errors."""
+    """
+    Bytes of url, retrying with a growing wait on network errors and on responses
+    cut short, which a proxy can do to large ones.
+    """
     for attempt in range(retries):
         try:
             req = urllib.request.Request(url, data, headers or {})
             with urllib.request.urlopen(req, timeout=timeout) as r:
                 return r.read()
-        except OSError:
+        except (OSError, http.client.HTTPException):
             time.sleep(wait * (attempt + 1))
     raise RuntimeError(f"failed {url}")
 
