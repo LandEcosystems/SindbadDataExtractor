@@ -4,9 +4,11 @@
 #   ./setup_site_cubes.sh dirs     make the folders
 #   ./setup_site_cubes.sh tools    clone SindbadDataExtractor, PyCLIFF and fluxcom
 #                                  into tools, or show their last commit
-#   ./setup_site_cubes.sh legacy   copy the LaThuile2007 site files of the CLIFF
-#                                  input into ancillary_data/legacy, write
-#                                  SOURCE.md and MD5SUMS and make it read only
+#   ./setup_site_cubes.sh legacy   merge the LaThuile2007 site files of the CLIFF
+#                                  input and of the fluxnetBGI v0.07 extraction
+#                                  into ancillary_data/legacy/LaThuile2007 with
+#                                  merge_lathuile.py, with SOURCE.md and MD5SUMS,
+#                                  read only
 #   ./setup_site_cubes.sh check    list what the pipeline reads, with what exists
 #
 # The root is the folder of this script, or ROOT when it is set. EXTRACTOR_URL,
@@ -16,8 +18,8 @@ set -euo pipefail
 
 root=${ROOT:-$(cd "$(dirname "$0")" && pwd)}
 anc=$root/ancillary_data
-legacy_src=/Net/Groups/BGI/work_3/cliff/input/fluxnetBGI2021_siteCube-v0.03_iter-5
-legacy_dst=$anc/legacy/fluxnetBGI2021_siteCube-v0.03_iter-5
+legacy_ltl07=/Net/Groups/BGI/work_3/cliff/input/fluxnetBGI2021_siteCube-v0.03_iter-5
+legacy_v007=/Net/Groups/BGI/scratch/skoirala/fluxnetBGI_v0.07
 github=https://github.com/LandEcosystems
 extractor_url=${EXTRACTOR_URL:-$github/SindbadDataExtractor.git}
 pycliff_url=${PYCLIFF_URL:-}
@@ -48,39 +50,16 @@ clone_tools() {
     done
 }
 
-copy_legacy() {
-    if [ -e "$legacy_dst/SOURCE.md" ]; then
-        echo "$legacy_dst already holds a copy, see its SOURCE.md" >&2
-        exit 1
+# The LaThuile2007 site files of the CLIFF input, with the meteorology, and of the
+# fluxnetBGI v0.07 extraction, with the fluxes, merged into one read-only copy.
+merge_legacy() {
+    if [ -e "$anc/legacy/LaThuile2007/SOURCE.md" ]; then
+        echo "$anc/legacy/LaThuile2007 already holds a merged copy, see its SOURCE.md"
+        return
     fi
-    for res in DD HR; do
-        for sub in data config_info; do
-            src=$legacy_src/fluxnetBGI2021.LTL07.$res/$sub
-            if [ -d "$src" ]; then
-                mkdir -p "$legacy_dst/fluxnetBGI2021.LTL07.$res"
-                rsync -a "$src" "$legacy_dst/fluxnetBGI2021.LTL07.$res/"
-            else
-                echo "not found: $src"
-            fi
-        done
-    done
-    (cd "$legacy_dst" && find . -type f -name '*.nc' | sort | xargs md5sum) \
-        > "$legacy_dst/MD5SUMS"
-    n_dd=$(find "$legacy_dst"/fluxnetBGI2021.LTL07.DD -name '*.nc' | wc -l)
-    n_hr=$(find "$legacy_dst"/fluxnetBGI2021.LTL07.HR -name '*.nc' | wc -l)
-    cat > "$legacy_dst/SOURCE.md" <<EOF
-# LaThuile2007 site files
-
-Read-only copy of the LTL07 site files of the CLIFF input cube, used as the
-LaThuile2007 source of the site cubes. Never edit these files.
-
-- Origin: $legacy_src/fluxnetBGI2021.LTL07.{DD,HR}
-- Copied: $(date -u +%Y-%m-%dT%H:%M:%SZ) by $(whoami)
-- Files: $n_dd daily, $n_hr hourly
-- Checksums: MD5SUMS
-EOF
-    chmod -R a-w "$legacy_dst"
-    echo "copied $n_dd daily and $n_hr hourly files to $legacy_dst"
+    "${PYTHON:-$root/tools/env/bin/python}" "$(dirname "$0")/merge_lathuile.py" \
+        "$anc/legacy" --ltl07 "$legacy_ltl07" --v007 "$legacy_v007" \
+        --workers "${WORKERS:-4}"
 }
 
 # Kind and path, relative to the root, of what the pipeline reads. copy is copied by
@@ -122,7 +101,7 @@ copy ancillary_data/prefetch/s2_peak_ndvi_2019
 copy ancillary_data/prefetch/s2_sl2p_fcover_2019_1km_sites.csv
 copy ancillary_data/prefetch/s2_sl2p_fcover_2019_peak
 copy ancillary_data/prefetch/worldcover_2021_v200_1km_sites.csv
-copy ancillary_data/legacy/fluxnetBGI2021_siteCube-v0.03_iter-5/SOURCE.md
+made ancillary_data/legacy/LaThuile2007/SOURCE.md
 made ancillary_data/prefetch/gami_v2.1_1km_sites.csv
 made ancillary_data/prefetch/clms_ndvi_300m
 made ancillary_data/prefetch/clms_ndvi_1km
@@ -156,7 +135,7 @@ check() {
 case "${1:-}" in
     dirs) make_dirs ;;
     tools) clone_tools ;;
-    legacy) copy_legacy ;;
+    legacy) merge_legacy ;;
     check) check ;;
     *) sed -n '2,11p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
 esac

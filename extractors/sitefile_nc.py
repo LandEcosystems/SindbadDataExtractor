@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Reads per-site NetCDF files that this tool wrote in an earlier version, such as the
-LaThuile 2007 extractions of the fluxnetBGI2021 site cube, which are kept as a
+merged LaThuile2007 site files of site_cubes/merge_lathuile.py, which are kept as a
 read-only copy instead of extracting them again from the old fluxcom package.
 
 source_dir of the dataset json is the folder of the files of one temporal

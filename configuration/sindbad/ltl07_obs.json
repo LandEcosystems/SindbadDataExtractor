@@ -1,7 +1,7 @@
 {
     "extractor": "sitefile_nc",
     "var_suffix": "",
-    "source_dir": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/legacy/fluxnetBGI2021_siteCube-v0.03_iter-5/fluxnetBGI2021.LTL07.DD/data/daily",
+    "source_dir": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/legacy/LaThuile2007/LaThuile2007.DD/data/daily",
     "rename": {},
     "base_info": {
         "partitioning": "",
@@ -29,7 +29,7 @@
         "skipUnitcheck": false,
         "publication": "https://fluxnet.fluxdata.org; DOI:10.1071/BT07151, DOI:10.1175/1520-0477(2001)082<2415:FANTTS>2.3.CO;2",
         "data_path": "",
-        "description": "Eddy covariance measurements of water, energy, and carbon fluxes. LaThuile 2007 release, read from the fluxnetBGI2021 site cube v0.03 iter-5 extractions"
+        "description": "Eddy covariance measurements of water, energy, and carbon fluxes. LaThuile 2007 release, read from the merged LaThuile2007 site files, the fluxnetBGI v0.07 extractions of the FLUXCOM v0.04 site cube with the fluxes, completed with the meteorology of the fluxnetBGI2021 site cube v0.03 iter-5 extractions"
     },
     "sel_variables": "all",
     "variables": {

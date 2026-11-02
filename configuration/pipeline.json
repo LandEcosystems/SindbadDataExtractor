@@ -14,8 +14,8 @@
     "cubes_dir": "/Net/Groups/BGI/work_3/sindbad/site_cubes/output",
     "legacy": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/legacy",
     "ltl07": {
-        "daily": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/legacy/fluxnetBGI2021_siteCube-v0.03_iter-5/fluxnetBGI2021.LTL07.DD/data/daily",
-        "hourly": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/legacy/fluxnetBGI2021_siteCube-v0.03_iter-5/fluxnetBGI2021.LTL07.HR/data/hourly"
+        "daily": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/legacy/LaThuile2007/LaThuile2007.DD/data/daily",
+        "hourly": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/legacy/LaThuile2007/LaThuile2007.HR/data/hourly"
     },
     "fluxcom_cube": "/Net/Groups/BGI/work_4/scratch/fluxcom/sitecube_proc/v0.07/site_cube/",
     "pycliff": {
@@ -31,7 +31,7 @@
         "sources": {
             "LaThuile2007": {
                 "flag": "in_LaThuile2007",
-                "site_input": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/legacy/fluxnetBGI2021_siteCube-v0.03_iter-5/fluxnetBGI2021.LTL07.HR/data/hourly/{site}.*.hourly.nc"
+                "site_input": "/Net/Groups/BGI/work_3/sindbad/site_cubes/ancillary_data/legacy/LaThuile2007/LaThuile2007.HR/data/hourly/{site}.*.hourly.nc"
             },
             "Shuttle": {
                 "flag": "in_OneFluxShuttle",

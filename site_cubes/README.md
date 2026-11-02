@@ -15,7 +15,7 @@ site_cubes/
 │   │   └── site_lists/
 │   ├── reference/        maps used to check site coordinates
 │   ├── prefetch/         caches of the remote products
-│   └── legacy/           read-only copy of the LaThuile2007 site files
+│   └── legacy/           read-only merged LaThuile2007 site files
 ├── input/                what the cubes are made of, written by the workflow
 │   ├── store/            one file per product and site
 │   └── pycliff/          the PyCLIFF runs of each site
@@ -34,7 +34,7 @@ cd /Net/Groups/BGI/work_3/sindbad/site_cubes
 ./setup_site_cubes.sh tools     # clone SindbadDataExtractor, PyCLIFF and fluxcom
 tools/SindbadDataExtractor/sinproc_installer/install_sinproc.sh   # make tools/env
 # copy the files of the next section
-./setup_site_cubes.sh legacy    # copy the LaThuile2007 files on the cluster
+./setup_site_cubes.sh legacy    # merge the LaThuile2007 files on the cluster
 ./setup_site_cubes.sh check     # list what is there and what is missing
 ```
 
@@ -89,13 +89,23 @@ That is about 58 GB, most of it the Shuttle zips.
 The ERA5 caches of the Climate Data Store API are left out. No cube uses them, since
 the ERA5 of the cubes comes through PyCLIFF from the ERA5 files of the cluster.
 
-### ancillary_data/legacy/ (copied on the cluster)
+### ancillary_data/legacy/ (merged on the cluster)
 
-`./setup_site_cubes.sh legacy` copies the LaThuile2007 site files, daily and hourly,
-from `/Net/Groups/BGI/work_3/cliff/input/fluxnetBGI2021_siteCube-v0.03_iter-5` to
-`legacy/fluxnetBGI2021_siteCube-v0.03_iter-5/`. It writes `SOURCE.md` with the origin
-and date and `MD5SUMS`, then makes the copy read only. LaThuile2007 is not extracted
-again, so this copy is its only source.
+`./setup_site_cubes.sh legacy` merges the LaThuile2007 site files, daily and hourly,
+of two sources into `legacy/LaThuile2007/` with `merge_lathuile.py`, so that the
+meteorology and the fluxes of a site are in one file:
+
+- `/Net/Groups/BGI/work_3/cliff/input/fluxnetBGI2021_siteCube-v0.03_iter-5`, the LTL07
+  files of the CLIFF input: the meteorology, but no NEE, GPP or RECO.
+- `/Net/Groups/BGI/scratch/skoirala/fluxnetBGI_v0.07`, the fluxnetBGI v0.07
+  extraction of the FLUXCOM v0.04 site cube: the fluxes with NEE, GPP and RECO, but no
+  meteorology in the daily files.
+
+Each merged file is the v0.07 file of the site with the variables only the LTL07
+file has. `SOURCE.md` records both sources and the date, `merge_report.csv` compares
+the variables of both, and `MD5SUMS` the files, which are read only. LaThuile2007 is
+not extracted again, so this copy is its only lasting source. `ltl07_obs`,
+`ltl07_clim` and the CLIFF input of LaThuile2007 read it.
 
 ### ancillary_data/ (written by tools)
 
