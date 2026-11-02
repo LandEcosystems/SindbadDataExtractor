@@ -11,6 +11,12 @@ is true in the json, a site missing from the cache is fetched inside extract und
 lock, so parallel workers never fetch the same site twice. An empty cache_path means
 the source is local and is read on every call.
 
+A site of the cache is its id with the latitude and longitude it was fetched at, so
+a site whose coordinates moved by more than COORD_TOL_DEG is a new site, fetched
+next to the rows at its old location, and each run reads the rows of the
+coordinates in its own site list. Rows cached without coordinates match any
+location.
+
 A provider module defines fetch_site(site, lat, lon, info) returning a list of cache
 rows, components(rows, info) returning {component: {year: value}}, and optionally
 prefetch(sites, lats, lons, info, **kwargs) for a faster batch download. A provider
@@ -59,8 +65,9 @@ IGBP_NAMES = {1: "evergreen needleleaf forests", 2: "evergreen broadleaf forests
               14: "cropland and natural vegetation mosaics", 15: "permanent snow and ice",
               16: "barren", 17: "water bodies"}
 EARTH_RADIUS_M = 6371008.8
-# Cached rows whose coordinates differ more than this from the site are reported.
-COORD_TOL_DEG = 1e-3
+# Cached rows of a site belong to it when neither their latitude nor their longitude
+# differs more than this from the coordinates of the site.
+COORD_TOL_DEG = 1e-2
 
 
 def haversine(lat0, lon0, lat, lon):
@@ -183,31 +190,63 @@ def append_cache(path, rows):
         os.replace(tmp, path)
 
 
-def cached_sites(path):
-    return set(read_cache(path)["site"].astype(str))
+def is_near(lat0, lon0, lat, lon):
+    """lat0 and lon0 lie within COORD_TOL_DEG of lat and lon, or are not known."""
+    return not (abs(lat0 - lat) > COORD_TOL_DEG or abs(lon0 - lon) > COORD_TOL_DEG)
 
 
-def site_rows(cache, site):
-    """Cached rows of one site, matched without case, keeping the last fetch."""
+def located(rows, lat, lon):
+    """
+    The rows of one site from its fetch nearest to lat and lon, none when no fetch
+    lies within COORD_TOL_DEG. Rows without coordinates match any location, and lat
+    None keeps all the rows.
+    """
+    if lat is None or len(rows) == 0 or \
+            not {"latitude", "longitude"} <= set(rows.columns):
+        return rows
+    d = np.maximum(np.abs(rows["latitude"].astype(float) - lat),
+                   np.abs(rows["longitude"].astype(float) - lon)).fillna(0.0)
+    if d.min() > COORD_TOL_DEG:
+        return rows.iloc[0:0]
+    return rows[d == d.min()]
+
+
+def site_rows(cache, site, lat=None, lon=None):
+    """Cached rows of one site matched without case, at lat and lon when given."""
     if len(cache) == 0:
         return cache
-    return cache[cache["site"].astype(str).str.lower() == site.lower()]
+    return located(cache[cache["site"].astype(str).str.lower() == site.lower()],
+                   lat, lon)
+
+
+def site_lookup(cache):
+    """
+    A function of site, lat and lon that gives the rows of site_rows, for looking up
+    many sites in one cache.
+    """
+    groups = {}
+    if len(cache):
+        groups = dict(tuple(cache.groupby(cache["site"].astype(str).str.lower())))
+    empty = cache.iloc[0:0]
+    return lambda site, lat=None, lon=None: located(groups.get(site.lower(), empty),
+                                                    lat, lon)
 
 
 def rows_for_site(provider, info, site, lat, lon):
     """
-    Cache rows for a site. A missing site is fetched only when fetch_missing is true,
-    and the cache is checked again under the lock in case another worker fetched it.
+    Cache rows for a site at its coordinates. A missing site is fetched only when
+    fetch_missing is true, and the cache is checked again under the lock in case
+    another worker fetched it.
     """
     path = info.get("cache_path", "")
     if not path:
         return pd.DataFrame(stamp(provider.fetch_site(site, lat, lon, info)))
-    rows = site_rows(read_cache(path), site)
+    rows = site_rows(read_cache(path), site, lat, lon)
     if len(rows) == 0 and info.get("fetch_missing", False):
         with file_lock(f"{path}.{site}"):
-            rows = site_rows(read_cache(path), site)
+            rows = site_rows(read_cache(path), site, lat, lon)
             if len(rows) == 0:
-                logger.info(f"fetching {site} for {path}")
+                logger.info(f"fetching {site} at {lat}, {lon} for {path}")
                 try:
                     fetched = provider.fetch_site(site, lat, lon, info)
                 except Exception as e:
@@ -217,20 +256,14 @@ def rows_for_site(provider, info, site, lat, lon):
                     r.setdefault("latitude", lat)
                     r.setdefault("longitude", lon)
                 append_cache(path, fetched)
-                rows = site_rows(read_cache(path), site)
-    if len(rows) and {"latitude", "longitude"} <= set(rows.columns):
-        dlat = np.nanmax(np.abs(rows["latitude"].astype(float) - lat))
-        dlon = np.nanmax(np.abs(rows["longitude"].astype(float) - lon))
-        if max(dlat, dlon) > COORD_TOL_DEG:
-            logger.warning(f"cached rows of {site} in {path} were fetched at a "
-                           f"location {max(dlat, dlon):.4f} deg away from the site")
+                rows = site_rows(read_cache(path), site, lat, lon)
     return rows
 
 
 def missing_sites(info, sites, lats, lons):
-    """Sites, latitudes and longitudes not yet in the cache of info."""
-    done = {s.lower() for s in cached_sites(info["cache_path"])}
-    keep = [i for i, s in enumerate(sites) if s.lower() not in done]
+    """Sites, latitudes and longitudes without rows in the cache of info."""
+    lookup = site_lookup(read_cache(info["cache_path"]))
+    keep = [i for i, s in enumerate(zip(sites, lats, lons)) if len(lookup(*s)) == 0]
     return [sites[i] for i in keep], [lats[i] for i in keep], [lons[i] for i in keep]
 
 

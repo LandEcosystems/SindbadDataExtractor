@@ -76,31 +76,38 @@ def fetch_site(site, lat, lon, info):
             for r in layer_means(y, la, [site], [lat], [lon])]
 
 
-def cached_layers(cache, info):
-    """{site: {(year, layer)}} of the rows of the cache, sites in lower case."""
-    out = {}
-    if len(cache) == 0:
-        return out
-    for s, y, la in zip(cache["site"].astype(str).str.lower(), cache["year"],
-                        cache["layer"]):
-        out.setdefault(s, set()).add((int(y), la))
+def cached_layers(cache, sites, lats, lons):
+    """The (year, layer) pairs of the rows of each site at its coordinates."""
+    lookup = fu.site_lookup(cache)
+    out = []
+    for s in zip(sites, lats, lons):
+        rows = lookup(*s)
+        out.append(set(zip(rows["year"].astype(int), rows["layer"])) if len(rows)
+                   else set())
     return out
 
 
 def complete_sites(cache, info):
-    """Sites with a row of every layer of every year, for prefetch.py --check."""
+    """
+    Sites in lower case with a row of every layer of every year, for prefetch.py
+    --check, which passes only the rows at the coordinates of each site.
+    """
     need = {(y, la) for y in years_of(info) for la in LAYERS}
-    return {s for s, have in cached_layers(cache, info).items() if need <= have}
+    have = {}
+    if len(cache):
+        for s, y, la in zip(cache["site"].astype(str).str.lower(), cache["year"],
+                            cache["layer"]):
+            have.setdefault(s, set()).add((int(y), la))
+    return {s for s, got in have.items() if need <= got}
 
 
 def prefetch(sites, lats, lons, info, workers=None, **kwargs):
     from concurrent.futures import ThreadPoolExecutor
-    have = cached_layers(fu.read_cache(info["cache_path"]), info)
+    have = cached_layers(fu.read_cache(info["cache_path"]), sites, lats, lons)
     jobs = []
     for y in years_of(info):
         for la in LAYERS:
-            todo = [i for i, s in enumerate(sites)
-                    if (y, la) not in have.get(s.lower(), set())]
+            todo = [i for i in range(len(sites)) if (y, la) not in have[i]]
             if todo:
                 jobs.append((y, la, todo))
     if not jobs:
@@ -121,9 +128,10 @@ def prefetch(sites, lats, lons, info, workers=None, **kwargs):
 
     with ThreadPoolExecutor(workers or info.get("n_workers", 2)) as ex:
         list(ex.map(one, jobs))
-    done = complete_sites(fu.read_cache(info["cache_path"]), info)
-    print(f"{sum(s.lower() in done for s in sites)} of {len(sites)} sites have every "
-          f"layer in {info['cache_path']}", flush=True)
+    need = {(y, la) for y in years_of(info) for la in LAYERS}
+    have = cached_layers(fu.read_cache(info["cache_path"]), sites, lats, lons)
+    print(f"{sum(need <= h for h in have)} of {len(sites)} sites have every layer in "
+          f"{info['cache_path']}", flush=True)
 
 
 def components(rows, info):

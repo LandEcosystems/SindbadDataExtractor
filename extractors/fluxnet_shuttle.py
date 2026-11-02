@@ -41,6 +41,10 @@ import extractors.footprint_utils as fu
 import logging
 logger = logging.getLogger(__name__)
 
+# The data of a tower do not depend on the coordinates of the site list, so the
+# cache is looked up by site id alone, see prefetch.py.
+CACHE_BY_SITE_ID = True
+
 # Source variable, with the partitioning for GPP and RECO, to the ONEFlux column.
 # {nee} is replaced by nee_variant of the json.
 COLUMNS = {

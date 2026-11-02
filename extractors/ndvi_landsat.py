@@ -120,7 +120,7 @@ def is_done(info, site, lat, lon):
     if not os.path.exists(meta):
         return False
     m = json.load(open(meta))
-    return max(abs(m["latitude"] - lat), abs(m["longitude"] - lon)) <= fu.COORD_TOL_DEG
+    return fu.is_near(m["latitude"], m["longitude"], lat, lon)
 
 
 def fetch_site(site, lat, lon, info, workers=8):
@@ -184,11 +184,7 @@ def report(sites, lats, lons, info):
 def site_rows(info, site, lat, lon):
     csv, _ = paths(info, site)
     rows = fu.read_cache(csv)
-    if len(rows) == 0:
-        return rows
-    near = (np.abs(rows["latitude"] - lat) <= fu.COORD_TOL_DEG) & \
-           (np.abs(rows["longitude"] - lon) <= fu.COORD_TOL_DEG)
-    return rows[near]
+    return fu.located(rows, lat, lon)
 
 
 def daily_series(rows, days, min_clear):

@@ -47,6 +47,10 @@ import extractors.fluxnet_shuttle as fs
 import logging
 logger = logging.getLogger(__name__)
 
+# The flags come from the tower data, so the cache is looked up by site id alone,
+# see prefetch.py.
+CACHE_BY_SITE_ID = True
+
 # Daily means of these ONEFlux columns, under the names of fluxcom_load.
 MEAN_COLUMNS = {
     "TA": "TA_F_MDS", "H": "H_F_MDS", "VPD": "VPD_F_MDS", "LE": "LE_F_MDS",

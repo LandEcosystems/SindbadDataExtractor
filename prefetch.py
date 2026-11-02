@@ -6,7 +6,10 @@ Fill the site caches of the footprint extractors once, before run_extraction.py.
 Remote products are fetched for all sites missing from the cache_path of each
 selected dataset, in batches that suit each source. Sites already in the cache are
 skipped, so an interrupted run resumes where it stopped and later runs only fetch new
-sites.
+sites. A site is its id with its coordinates, so a site whose coordinates moved by
+more than footprint_utils.COORD_TOL_DEG is fetched again at the new ones, next to
+its rows at the old ones. Providers that set CACHE_BY_SITE_ID, such as the FLUXNET
+Shuttle, whose tower data do not depend on the coordinates, look up the id alone.
 
 usage:
     python prefetch.py <main json> [dataset ...] [--sites-csv csv] [--version v]
@@ -26,13 +29,15 @@ ndvi_landsat, so that the jobs of a cluster array share one cache without
 overlapping. prefetch_array.sh submits such an array.
 
 --check fetches nothing. It lists for each dataset the sites missing from its cache
-and the cached sites whose coordinates differ from those of the site list by more
-than footprint_utils.COORD_TOL_DEG, which the extraction would use with a warning.
-Rows cached before the coordinates were stored with them cannot be compared and are
-counted as without stored coordinates.
+and, among the sites with rows under their id, those whose rows all lie farther
+than footprint_utils.COORD_TOL_DEG from the coordinates of the site list. Such a
+site counts as missing, except for a provider with CACHE_BY_SITE_ID. Rows cached
+before the coordinates were stored with them match any location and are counted as
+without stored coordinates.
 
 Providers whose cache needs several sources per site, such as era5_API, define
-complete_sites(cache, info), which --check uses to count the cached sites.
+complete_sites(cache, info), which --check calls with the rows at the coordinates
+of each site to count the cached sites.
 
 --cache-dir moves the folder that holds the caches of the datasets to another folder,
 for example to prefetch on a local computer and copy the caches to the cluster
@@ -93,41 +98,45 @@ def move_cache_dir(infos, cache_dir):
 
 def check(name, info, sites, lats, lons, provider=None):
     """
-    Print the sites of the list that the cache of a dataset lacks or misplaces. A
-    provider with complete_sites(cache, info) decides which sites count as cached,
-    and one with report(sites, lats, lons, info) prints the state of its own cache.
+    Print the sites of the list that the cache of a dataset lacks, and those whose
+    rows lie only at other coordinates. A provider with complete_sites(cache, info)
+    decides which sites count as cached, and one with report(sites, lats, lons, info)
+    prints the state of its own cache.
     """
     path = info["cache_path"]
     if hasattr(provider, "report"):
         provider.report(sites, lats, lons, info)
         return
-    cache = fu.read_cache(path)
     if not os.path.exists(path):
         print(f"{name}: no cache at {path}, all {len(sites)} sites missing")
         return
+    lookup = fu.site_lookup(fu.read_cache(path))
+    by_id = getattr(provider, "CACHE_BY_SITE_ID", False)
+    found = [lookup(s) if by_id else lookup(s, la, lo)
+             for s, la, lo in zip(sites, lats, lons)]
     if hasattr(provider, "complete_sites"):
-        have = provider.complete_sites(cache, info)
+        have = provider.complete_sites(pd.concat(found), info)
     else:
-        have = {s.lower() for s in cache["site"].astype(str)}
+        have = {s.lower() for s, rows in zip(sites, found) if len(rows)}
     missing = [s for s in sites if s.lower() not in have]
     moved, unknown = [], 0
     for site, lat, lon in zip(sites, lats, lons):
-        rows = fu.site_rows(cache, site)
+        rows = lookup(site)
         if len(rows) == 0:
             continue
         if not {"latitude", "longitude"} <= set(rows.columns) or \
                 rows[["latitude", "longitude"]].isna().all().any():
             unknown += 1
             continue
-        d = max(np.nanmax(np.abs(rows["latitude"].astype(float) - lat)),
-                np.nanmax(np.abs(rows["longitude"].astype(float) - lon)))
+        d = np.nanmin(np.maximum(np.abs(rows["latitude"].astype(float) - lat),
+                                 np.abs(rows["longitude"].astype(float) - lon)))
         if d > fu.COORD_TOL_DEG:
             moved.append((d, site))
     print(f"{name}: {len(sites) - len(missing)} of {len(sites)} sites cached, "
-          f"{len(missing)} missing, {len(moved)} at other coordinates, {unknown} "
+          f"{len(missing)} missing, {len(moved)} only at other coordinates, {unknown} "
           f"without stored coordinates, in {path}")
     fu.print_sites(name, "missing", missing, sites)
-    fu.print_sites(name, "other coordinates, farthest first",
+    fu.print_sites(name, "only at other coordinates, farthest first",
                    [f"{s} ({d:.4f} deg)" for d, s in sorted(moved, reverse=True)])
 
 

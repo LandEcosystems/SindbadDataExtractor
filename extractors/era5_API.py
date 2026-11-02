@@ -47,6 +47,10 @@ import extractors.footprint_utils as fu
 import logging
 logger = logging.getLogger(__name__)
 
+# The files of a site are named by its id only, so the cache is looked up by site
+# id alone, see prefetch.py.
+CACHE_BY_SITE_ID = True
+
 # Encoding of the cached variables.
 ENCODING = {"dtype": "float32", "zlib": True, "complevel": 4}
 EDH_OPTIONS = {"client_kwargs": {"trust_env": True}}

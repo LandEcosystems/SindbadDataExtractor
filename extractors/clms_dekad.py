@@ -156,14 +156,26 @@ def year_path(info, year):
 
 
 def todo_of_year(info, dekads, sites, lats, lons):
-    """Dekads of one year with the sites, latitudes and longitudes still missing."""
+    """
+    Dekads of one year with the sites, latitudes and longitudes still missing, a site
+    being missing when the dekad has no row of it within fu.COORD_TOL_DEG.
+    """
     cache = fu.read_cache(year_path(info, dekads[0][0][:4]))
-    done = set()
+    done = {}
     if len(cache):
-        done = set(zip(cache["dekad"].astype(str), cache["site"].astype(str).str.lower()))
+        for d, s, la, lo in zip(cache["dekad"].astype(str),
+                                cache["site"].astype(str).str.lower(),
+                                cache["latitude"], cache["longitude"]):
+            done.setdefault((d, s), []).append((la, lo))
+
+    def cached(dekad, site, lat, lon):
+        return any(fu.is_near(la, lo, lat, lon)
+                   for la, lo in done.get((dekad, site.lower()), []))
+
     out = []
     for dekad, product, path in dekads:
-        keep = [i for i, s in enumerate(sites) if (dekad, s.lower()) not in done]
+        keep = [i for i, s in enumerate(zip(sites, lats, lons))
+                if not cached(dekad, *s)]
         if keep:
             out.append((dekad, product, path, [sites[i] for i in keep],
                         [lats[i] for i in keep], [lons[i] for i in keep]))
@@ -233,11 +245,9 @@ def site_rows(info, site, lat, lon):
     """Cached rows of a site in all years, at its coordinates."""
     parts = []
     for path in sorted(glob.glob(os.path.join(info["cache_path"], "[0-9]" * 4 + ".csv"))):
-        rows = fu.site_rows(fu.read_cache(path), site)
+        rows = fu.site_rows(fu.read_cache(path), site, lat, lon)
         if len(rows):
-            near = (np.abs(rows["latitude"] - lat) <= fu.COORD_TOL_DEG) & \
-                   (np.abs(rows["longitude"] - lon) <= fu.COORD_TOL_DEG)
-            parts.append(rows[near])
+            parts.append(rows)
     if not parts:
         return pd.DataFrame(columns=["dekad", "value", "n_valid", "n_total"])
     return pd.concat(parts).drop_duplicates("dekad", keep="last")

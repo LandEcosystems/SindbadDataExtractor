@@ -192,8 +192,9 @@ def process(info):
     _, points_path = paths(info)
     pts = pd.read_csv(points_path).set_index("id")
     site = site_means(res, pts)
-    done = {s.lower() for s in fu.cached_sites(info["cache_path"])}
-    site = site[~site["site"].str.lower().isin(done)]
+    todo, _, _ = fu.missing_sites(info, site["site"].tolist(), site["latitude"].tolist(),
+                                  site["longitude"].tolist())
+    site = site[site["site"].isin(todo)]
     fu.append_cache(info["cache_path"], site.to_dict("records"))
     print(f"{len(site)} sites added to {info['cache_path']}")
 
