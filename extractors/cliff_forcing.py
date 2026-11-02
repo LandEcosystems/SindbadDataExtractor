@@ -40,6 +40,12 @@ pixel file are read, and a year reads only the cells that no year file of that y
 and no pixel file covering that year holds yet. New sites therefore read only their
 own cells, and a later end_year only the new years.
 
+read_strategy of the json is the way PyCLIFF reads the cells from a monthly file,
+auto by default, which reads chunked files tile by tile through all hours. Files
+chunked in small tiles, such as the ws10 files of 2020 and 2021 on the cluster, then
+take tens of thousands of scattered reads each, so the ERA5 json sets slab, which
+reads whole fields 24 hours at a time in the order they lie in the file.
+
 Once every cell and year of a site is in year files or older pixel files, its pixel
 file is written from them. Every prefetch run does this for every variable at its
 end, under a lock, so the task of a cluster array that writes the last year file of
@@ -367,8 +373,8 @@ def extract_years(info, sites, lats, lons, part, n_workers):
 
     def job(vv, path, cells):
         nlon = len(vv.lons)
-        return px._Job(path, vv.fvar, cells // nlon, cells % nlon, "auto", 24,
-                       px._names())
+        return px._Job(path, vv.fvar, cells // nlon, cells % nlon,
+                       info.get("read_strategy", "auto"), 24, px._names())
 
     t0 = time.time()
     with ProcessPoolExecutor(max_workers=max(1, n_workers)) as ex:
