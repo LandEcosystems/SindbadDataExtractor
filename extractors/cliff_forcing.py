@@ -528,8 +528,7 @@ def report(sites, lats, lons, info):
     missing = {s for s in sites for v in variables(info) if is_missing(info, v, s)}
     print(f"{info.get('db', '')}: {len(sites) - len(missing)} of {len(sites)} sites "
           f"have every variable up to {info['end_year']} in {info['cache_path']}")
-    if missing:
-        print("    missing: " + " ".join(sorted(missing)))
+    fu.print_sites(info.get("db", ""), "missing", sorted(missing), sites)
     for var in variables(info):
         files = glob.glob(os.path.join(info["cache_path"], var, YEARS, f"{var}_*.nc"))
         if files:

@@ -122,14 +122,13 @@ def check(name, info, sites, lats, lons, provider=None):
         d = max(np.nanmax(np.abs(rows["latitude"].astype(float) - lat)),
                 np.nanmax(np.abs(rows["longitude"].astype(float) - lon)))
         if d > fu.COORD_TOL_DEG:
-            moved.append(f"{site} ({d:.4f} deg)")
+            moved.append((d, site))
     print(f"{name}: {len(sites) - len(missing)} of {len(sites)} sites cached, "
           f"{len(missing)} missing, {len(moved)} at other coordinates, {unknown} "
           f"without stored coordinates, in {path}")
-    if missing:
-        print("    missing: " + " ".join(missing))
-    if moved:
-        print("    other coordinates: " + ", ".join(moved))
+    fu.print_sites(name, "missing", missing, sites)
+    fu.print_sites(name, "other coordinates, farthest first",
+                   [f"{s} ({d:.4f} deg)" for d, s in sorted(moved, reverse=True)])
 
 
 def main():

@@ -234,6 +234,32 @@ def missing_sites(info, sites, lats, lons):
     return [sites[i] for i in keep], [lats[i] for i in keep], [lons[i] for i in keep]
 
 
+# Site lists printed by print_sites, with the dataset that printed each one first.
+_PRINTED = {}
+
+
+def print_sites(name, label, names, of=None):
+    """
+    Print a list of sites of dataset name for prefetch.py --check. A list printed
+    before for another dataset is replaced by the name of that dataset, and a list
+    with more than half of the sites in of is printed as the sites it lacks.
+    """
+    if not names:
+        return
+    key = (label, frozenset(names))
+    if key in _PRINTED:
+        print(f"    {label}: the same {len(names)} sites as {_PRINTED[key]}")
+        return
+    _PRINTED[key] = name
+    if of is not None and len(names) >= len(of):
+        print(f"    {label}: all {len(names)} sites")
+    elif of is not None and 2 * len(names) > len(of):
+        rest = sorted(set(of) - set(names))
+        print(f"    {label}: all but {len(rest)} sites, " + ", ".join(rest))
+    else:
+        print(f"    {label}: " + ", ".join(names))
+
+
 def _fetch_one(args):
     """Rows of one site for prefetch_sites, or None when the fetch fails."""
     import importlib
