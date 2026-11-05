@@ -28,6 +28,7 @@
 # since Snakemake removes the outputs of a job before running it again and the
 # manifest holds the stage hashes that let a job skip unchanged sites.
 
+import glob
 import json
 import os
 import sys
@@ -45,6 +46,16 @@ TAG = {"daily": "DD", "hourly": "HR"}
 REGISTRY_DONE = os.path.join(STORE, "_markers", "registry.done")
 LTL07_SOURCE = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(
     CAT["ltl07"]["daily"]))), "SOURCE.md")
+# Site lists of the registry: those the rules below write, and any other csv put in
+# the folder by hand, which adds the eddy covariance source in_<name of the csv>.
+MADE_LISTS = CAT["releases"] + ["LaThuile2007"]
+SITE_LISTS = MADE_LISTS + sorted(
+    os.path.basename(p)[:-4] for p in glob.glob(os.path.join(LISTS, "*.csv"))
+    if os.path.basename(p)[:-4] not in MADE_LISTS)
+# Files edited by hand that change the registry. The PFT csv is written by it.
+REGISTRY_EDITS = [CAT["consolidate"][k] for k in
+                  ("fallback_pft", "pft_overrides", "coord_overrides")
+                  if os.path.exists(CAT["consolidate"].get(k, ""))]
 # Cube jobs by name, which is also the folder run_extraction.py writes.
 JOBS = {f"{run}.{coll}.{TAG[freq]}": (run, coll, freq, cube)
         for run, coll, freq, cube in pl.cube_jobs(CAT)}
@@ -161,8 +172,8 @@ rule ltl07_sites:
 rule registry:
     input:
         site_input=CAT["site_input"],
-        lists=[os.path.join(LISTS, f"{n}.csv")
-               for n in CAT["releases"] + ["LaThuile2007"]],
+        lists=[os.path.join(LISTS, f"{n}.csv") for n in SITE_LISTS],
+        edits=REGISTRY_EDITS,
     output:
         REGISTRY_DONE,
     log:
