@@ -177,6 +177,18 @@ def site_record(info, site):
     return rows.sort_values(["last_year", "fetched_utc"]).iloc[-1]
 
 
+def source_files(info, site, freq):
+    """
+    The zip that extract reads for a site, so that extract_product.py extracts the
+    site again when a new release of the site replaces it.
+    """
+    rec = site_record(info, site)
+    if rec is None:
+        return []
+    path = os.path.join(cache_folder(info), str(rec["file"]))
+    return [path] if os.path.exists(path) else []
+
+
 def zip_member(zf, kind):
     """Name of the member of kind, such as FLUXMET_HH, ERA5_HH or BIF, in a zip."""
     pat = re.compile(rf"_FLUXNET_{kind}_\d{{4}}-\d{{4}}_")

@@ -257,6 +257,15 @@ def flag_file(info, site):
                         f"{site}_jung_C2F_{info.get('strictness', 'loose')}.nc")
 
 
+def source_files(info, site, freq):
+    """
+    The flag file that extract reads for a site, so that extract_product.py extracts
+    the site again when prefetch flags it anew.
+    """
+    path = flag_file(info, site)
+    return [path] if os.path.exists(path) else []
+
+
 def source_input(site, source, nee="USTAR50"):
     """Daily input of a site from ("zip", path) or ("cube", cubepath, collection)."""
     if source[0] == "zip":

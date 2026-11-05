@@ -128,6 +128,14 @@ def paths(info, site):
     return f"{base}.csv", f"{base}.json"
 
 
+def source_files(info, site, freq):
+    """
+    The csv and json of a site, so that extract_product.py extracts the site again
+    when prefetch adds scenes or completes its search.
+    """
+    return [p for p in paths(info, site) if os.path.exists(p)]
+
+
 def is_done(info, site, lat, lon):
     """The search of the site was completed at these coordinates."""
     _, meta = paths(info, site)

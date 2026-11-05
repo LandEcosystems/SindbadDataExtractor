@@ -82,9 +82,10 @@ def build_config(cat, name, entry, freq):
 def stage_hash(entry, config, info, freq):
     """
     Hash of everything that changes the extracted file of a site. An extractor with
-    source_files(info, site, freq), such as the reader of the PyCLIFF products, adds
-    the size and time of the files it reads, so that a new run of the source extracts
-    the site again.
+    source_files(info, site, freq) adds the size and time of the files it reads for
+    the site, so that a new run of the source extracts the site again. The readers of
+    the PyCLIFF products, of the Shuttle zips, of the C2F flags and of Landsat NDVI
+    have one.
     """
     parts = {"entry": entry, "freq": freq, "site": info,
              "dates": [config["start_date"], config["end_date"]]}
