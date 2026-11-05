@@ -212,6 +212,12 @@ def changed_sites(cat, name, entry, freq, sites, manifest, reg):
     return out
 
 
+def last_line(message):
+    """The last line of a message, such as the error of a traceback."""
+    lines = [x.strip() for x in str(message).splitlines() if x.strip()]
+    return lines[-1] if lines else ""
+
+
 def check_store(cat, products=None, hashes=False, n_errors=5):
     header("step 4a to 4c, product store")
     reg = load_registry(cat)
@@ -219,17 +225,19 @@ def check_store(cat, products=None, hashes=False, n_errors=5):
         print("no registry yet, run step 1 first")
         return
     no_marker, rerun, failed = [], [], []
-    print(f"{'product':34s} {'freq':6s} {'sites':>5} {'ok':>5} {'none':>5} "
+    names = sorted(products or cat["products"])
+    w = max(len(n) for n in names) + 1
+    print(f"{'product':{w}s} {'freq':6s} {'sites':>5} {'ok':>5} {'none':>5} "
           f"{'error':>5} {'stale':>5} {'todo':>5}"
           + (f" {'changed':>7}" if hashes else "") + "  EXTRACTED")
-    for name in sorted(products or cat["products"]):
+    for name in names:
         entry = pl.product(cat, name)
         for freq in entry["freqs"]:
             d = pl.product_dir(cat, name, freq)
             marker = os.path.join(d, "EXTRACTED")
             sites = flag_sites(entry.get("sites", "all"), reg)
             if sites is None:
-                print(f"{name:34s} {freq:6s} registry has no flag {entry['sites']}")
+                print(f"{name:{w}s} {freq:6s} registry has no flag {entry['sites']}")
                 continue
             man_path = os.path.join(d, "MANIFEST.csv")
             man = pd.read_csv(man_path, dtype={"stage_hash": str}) \
@@ -238,7 +246,7 @@ def check_store(cat, products=None, hashes=False, n_errors=5):
             man = man[man["site"].isin(sites)]
             counts = man["status"].value_counts()
             todo = len(set(sites) - set(man["site"]))
-            row = (f"{name:34s} {freq:6s} {len(sites):>5} "
+            row = (f"{name:{w}s} {freq:6s} {len(sites):>5} "
                    + " ".join(f"{int(counts.get(s, 0)):>5}"
                               for s in ("ok", "none", "error", "stale"))
                    + f" {todo:>5}")
@@ -265,7 +273,7 @@ def check_store(cat, products=None, hashes=False, n_errors=5):
         print(f"failed sites of {name} {freq}, log "
               f"{os.path.join(cat['store'], '_logs', f'extract_{name}_{freq}.log')}:")
         for r in bad.head(n_errors).itertuples():
-            print(f"    {r.site}: {r.status}, {r.message}")
+            print(f"    {r.site}: {r.status}, {last_line(r.message)}")
         if len(bad) > n_errors:
             print(f"    and {len(bad) - n_errors} more in MANIFEST.csv")
     if no_marker:
