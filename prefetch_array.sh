@@ -31,9 +31,9 @@
 #SBATCH --time=24:00:00
 #SBATCH --output=/Net/Groups/BGI/work_3/sindbad/site_cubes/output/slurm_logs/%x_%A_%a.log
 
-# the proxy module gives the jobs internet access
-if ! type module >/dev/null 2>&1; then source /etc/profile; fi
-module load proxy
+# the proxy module gives the jobs internet access, where the module exists
+if ! type module >/dev/null 2>&1 && [ -f /etc/profile ]; then source /etc/profile; fi
+if type module >/dev/null 2>&1; then module load proxy; fi
 
 dataset=$1
 shift

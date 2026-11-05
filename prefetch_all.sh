@@ -4,6 +4,9 @@
 #   ./prefetch_all.sh                     every dataset below
 #   ./prefetch_all.sh fa_gami vf_s2       only these
 #   DRY=1 ./prefetch_all.sh               print the sbatch commands only
+#   LOCAL=1 ./prefetch_all.sh fa_gami     no SLURM: run here, one dataset after the
+#                                         other, each in one process with WORKERS
+#                                         threads, 8 by default
 #
 # Each dataset gets one job of prefetch_array.sh, or an array whose tasks split its
 # work. Sites already in a cache are skipped, so the script can simply be run again
@@ -15,7 +18,7 @@
 # cpus, since their threads wait on the network, which leaves room under the cpu
 # limit per user.
 cd "$(dirname "$0")"
-logs=/Net/Groups/BGI/work_3/sindbad/site_cubes/output/slurm_logs
+logs=${LOGS:-/Net/Groups/BGI/work_3/sindbad/site_cubes/output/slurm_logs}
 [ -n "${DRY:-}" ] || mkdir -p "$logs"
 
 # dataset, then the sbatch options of its job
@@ -46,6 +49,19 @@ shuttle_id=""
 for line in "${jobs[@]}"; do
     read -r name opts <<< "$line"
     if [ $# -gt 0 ] && [[ ! " $* " =~ " $name " ]]; then
+        continue
+    fi
+    if [ -n "${LOCAL:-}" ]; then
+        # the whole dataset in one process; jung_C2F comes after shuttle_obs in the
+        # list, so it finds the new zips
+        log="$logs/prefetch_${name}_local.log"
+        echo "$name: running here, log $log"
+        cmd=(env WORKERS="${WORKERS:-8}" bash prefetch_array.sh "$name")
+        if [ -n "${DRY:-}" ]; then
+            echo "${cmd[*]} > $log 2>&1"
+        else
+            "${cmd[@]}" > "$log" 2>&1 || echo "$name: failed, see $log"
+        fi
         continue
     fi
     after=()
