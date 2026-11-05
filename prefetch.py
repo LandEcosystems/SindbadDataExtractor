@@ -31,9 +31,10 @@ overlapping. prefetch_array.sh submits such an array.
 --check fetches nothing. It lists for each dataset the sites missing from its cache
 and, among the sites with rows under their id, those whose rows all lie farther
 than footprint_utils.COORD_TOL_DEG from the coordinates of the site list. Such a
-site counts as missing, except for a provider with CACHE_BY_SITE_ID. Rows cached
-before the coordinates were stored with them match any location and are counted as
-without stored coordinates.
+site counts as missing. Rows cached before the coordinates were stored with them
+match any location and are counted as without stored coordinates. For a provider
+with CACHE_BY_SITE_ID, whose data do not depend on the coordinates, only the
+missing ids are listed.
 
 Providers whose cache needs several sources per site, such as era5_API, define
 complete_sites(cache, info), which --check calls with the rows at the coordinates
@@ -119,6 +120,13 @@ def check(name, info, sites, lats, lons, provider=None):
     else:
         have = {s.lower() for s, rows in zip(sites, found) if len(rows)}
     missing = [s for s in sites if s.lower() not in have]
+    if by_id:
+        # the data of such a cache do not depend on the coordinates, so the ones
+        # stored with its rows are not compared with those of the site list
+        print(f"{name}: {len(sites) - len(missing)} of {len(sites)} sites cached, "
+              f"{len(missing)} missing, looked up by site id, in {path}")
+        fu.print_sites(name, "missing", missing, sites)
+        return
     moved, unknown = [], 0
     for site, lat, lon in zip(sites, lats, lons):
         rows = lookup(site)
