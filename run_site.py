@@ -188,7 +188,9 @@ def main():
                     forcings[found[0]] = found
     for key, info, main_json in forcings.values():
         from extractors.cliff_forcing import is_missing, variables
-        todo = [s for s in sites if any(is_missing(info, v, s) for v in variables(info))]
+        todo = [s for s in sites if any(
+            is_missing(info, v, s, reg.loc[s, "latitude"], reg.loc[s, "longitude"])
+            for v in variables(info))]
         if not todo:
             print(f"{key}: pixel files of every site are there", flush=True)
             continue

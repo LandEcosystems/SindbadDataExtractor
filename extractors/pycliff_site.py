@@ -57,7 +57,9 @@ import numpy as np
 
 import extractors.footprint_utils as fu
 import extractors.pycliff_gapfilled as pg
-from extractors.cliff_forcing import VARIABLES, existing, pycliff_env, run_logged
+import extractors.footprint_utils as fu
+from extractors.cliff_forcing import VARIABLES, existing, moved_by, pycliff_env, \
+    run_logged
 
 import logging
 logger = logging.getLogger(__name__)
@@ -157,6 +159,16 @@ def extract(dataset, site_info, config):
                        f"{tower}, fewer than {info.get('min_tower_days', 365)}. No "
                        f"product is made.")
         return None
+    # forcing of another place is never used: the registry moved the site after
+    # its pixel files were made, and prefetch makes them again
+    skip = set(info.get("skip_forcing_variables", []))
+    pix = {"cache_path": info["pix_dir"]}
+    far = [v for v in info.get("forcing_variables", VARIABLES) if v not in skip
+           and moved_by(pix, v, site, site_info["latitude"], site_info["longitude"])
+           > fu.COORD_TOL_DEG]
+    if far:
+        raise RuntimeError(f"the {info['db']} pixel files of {far} of {site} lie at "
+                           "other coordinates than the registry; prefetch them again")
     run_pycliff(info, site, tower, freq)
     reader = dict(info, source_dir=os.path.join(info["pycliff_out"], "output",
                                                 "gapfilled"))

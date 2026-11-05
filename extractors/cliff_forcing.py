@@ -26,7 +26,12 @@ source of the json says where the values come from:
         datetime64, the values as an array of grid cells by times, and the latitude
         and longitude of each grid cell, or None when it has no data for the site.
 A file is missing when the site has none for the variable, or when its last year is
-before end_year of the json, in which case the earlier file is replaced.
+before end_year of the json, in which case the earlier file is replaced. A site is
+its id with its coordinates, as in the other caches: a file also counts as missing
+when the coordinates of the site list lie more than footprint_utils.COORD_TOL_DEG
+outside its nearest cell, the first cell of the file, whose size is the smallest
+step between its cells. The registry moved such a site, and its file is made again
+at the new place.
 
 The monthly files are read per variable and year into year files:
     <cache_path>/<var>/_years/<var>_<year>_<tag>.nc
@@ -111,13 +116,66 @@ def existing(info, var, site):
                                          f"{var}_Z_BIG_*_pix_ALL_of_*.nc")))
 
 
-def is_missing(info, var, site):
-    """No file of the variable at the site, or one that ends before end_year."""
+_cells = {}
+
+
+def file_cells(path):
+    """Latitudes and longitudes of the cells of a pixel file, nearest first."""
+    import netCDF4
+    key = (path, os.path.getmtime(path))
+    if key not in _cells:
+        with netCDF4.Dataset(path) as ds:
+            _cells[key] = (np.asarray(ds["lat"][:], dtype=float),
+                           np.asarray(ds["lon"][:], dtype=float))
+    return _cells[key]
+
+
+def cell_offset(path, lat, lon):
+    """
+    Degrees by which lat and lon lie outside the nearest cell of a pixel file, 0 when
+    they lie in it. The nearest cell is the first of the file. Its size is the
+    smallest step between the cells of the file, so a file of a single cell is not
+    checked and gives 0.
+    """
+    lats, lons = file_cells(path)
+    steps = [d for d in np.concatenate([np.abs(np.diff(np.unique(np.round(lats, 6)))),
+                                        np.abs(np.diff(np.unique(np.round(lons, 6))))])
+             if d > 1e-6]
+    if not steps:
+        return 0.0
+    half = min(steps) / 2
+    dlon = abs((float(lon) - lons[0] + 180.0) % 360.0 - 180.0)
+    return max(abs(float(lat) - lats[0]) - half, dlon - half, 0.0)
+
+
+def moved_by(info, var, site, lat, lon):
+    """
+    Degrees by which the coordinates lie outside the nearest cell of the newest pixel
+    file of the site, or 0 when there is no file or they lie in its cell.
+    """
+    files = existing(info, var, site)
+    if not files or lat is None:
+        return 0.0
+    try:
+        return cell_offset(files[-1], lat, lon)
+    except (OSError, KeyError) as e:
+        print(f"{var}: cannot read the cells of {files[-1]}: {e}", flush=True)
+        return np.inf
+
+
+def is_missing(info, var, site, lat=None, lon=None):
+    """
+    No file of the variable at the site, one that ends before end_year, or, with lat
+    and lon, one whose nearest cell is not the cell of these coordinates, so that a
+    site moved by the registry gets the forcing of its new place.
+    """
     files = existing(info, var, site)
     if not files:
         return True
     m = SPAN.search(os.path.basename(files[-1]))
-    return not m or int(m.group(2)) < int(info["end_year"])
+    if not m or int(m.group(2)) < int(info["end_year"]):
+        return True
+    return moved_by(info, var, site, lat, lon) > fu.COORD_TOL_DEG
 
 
 def drop_older(info, var, site):
@@ -410,7 +468,8 @@ def extract_years(info, sites, lats, lons, part, n_workers):
     pairs = select_part([(v, y) for v in variables(info) for y in years_of(info)], part)
     units = []
     for var in dict.fromkeys(v for v, _ in pairs):
-        todo = [i for i, s in enumerate(sites) if is_missing(info, var, s)]
+        todo = [i for i, s in enumerate(sites)
+                if is_missing(info, var, s, lats[i], lons[i])]
         print(f"{var}: {len(todo)} of {len(sites)} sites miss a pixel file", flush=True)
         if not todo:
             continue
@@ -477,7 +536,8 @@ def combine(info, var, sites, lats, lons):
     px = pycliff_extract(info)
     root = os.path.join(info["cache_path"], var, YEARS)
     with fu.file_lock(os.path.join(root, "combine")):
-        todo = [i for i, s in enumerate(sites) if is_missing(info, var, s)]
+        todo = [i for i, s in enumerate(sites)
+                if is_missing(info, var, s, lats[i], lons[i])]
         if not todo:
             return
         vv = Variable(px, info, var)
@@ -579,11 +639,18 @@ def prefetch(sites, lats, lons, info, workers=None, part="", **kwargs):
                       f"{type(e).__name__}: {e}", flush=True)
         return
     for var in select_part(variables(info), part):
-        todo = [s for s in zip(sites, lats, lons) if is_missing(info, var, s[0])]
+        todo = [s for s in zip(sites, lats, lons) if is_missing(info, var, *s)]
         print(f"{var}: {len(todo)} of {len(sites)} sites to extract into "
               f"{info['cache_path']}", flush=True)
         if not todo:
             continue
+        # the files of moved sites go first, so pycliff-extract never keeps them
+        for site, lat, lon in todo:
+            if moved_by(info, var, site, lat, lon) > fu.COORD_TOL_DEG:
+                for f in existing(info, var, site):
+                    os.remove(f)
+                print(f"{var}: {site} moved, its pixel files are made again",
+                      flush=True)
         if source == "pycliff_extract":
             extract_with_pycliff(info, var, todo)
         else:
@@ -591,11 +658,29 @@ def prefetch(sites, lats, lons, info, workers=None, part="", **kwargs):
 
 
 def report(sites, lats, lons, info):
-    """Print the sites that miss a pixel file of any variable, and the year files."""
-    missing = {s for s in sites for v in variables(info) if is_missing(info, v, s)}
-    print(f"{info.get('db', '')}: {len(sites) - len(missing)} of {len(sites)} sites "
-          f"have every variable up to {info['end_year']} in {info['cache_path']}")
-    fu.print_sites(info.get("db", ""), "missing", sorted(missing), sites)
+    """
+    Print the sites that miss a pixel file of any variable, those whose pixel files
+    lie at other coordinates, and the year files.
+    """
+    db = info.get("db", "")
+    missing, moved = set(), {}
+    for site, lat, lon in zip(sites, lats, lons):
+        for v in variables(info):
+            if is_missing(info, v, site):
+                missing.add(site)
+                continue
+            d = moved_by(info, v, site, lat, lon)
+            if d > fu.COORD_TOL_DEG:
+                moved[site] = max(moved.get(site, 0.0), d)
+    n_ok = len(sites) - len(missing | set(moved))
+    print(f"{db}: {n_ok} of {len(sites)} sites have every variable up to "
+          f"{info['end_year']} at their coordinates, {len(missing)} missing, "
+          f"{len(moved)} only at other coordinates, in {info['cache_path']}")
+    fu.print_sites(db, "missing", sorted(missing), sites)
+    fu.print_sites(db, "only at other coordinates, degrees outside the nearest cell, "
+                   "farthest first",
+                   [f"{s} ({d:.4f} deg)" for s, d in
+                    sorted(moved.items(), key=lambda x: -x[1])])
     for var in variables(info):
         files = glob.glob(os.path.join(info["cache_path"], var, YEARS, f"{var}_*.nc"))
         if files:
