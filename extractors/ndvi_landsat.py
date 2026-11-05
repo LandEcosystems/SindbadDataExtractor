@@ -18,6 +18,12 @@ not harmonised.
 The cache is a folder with one csv per site, with a row per scene holding the mean
 NDVI of the clear grid cells, their number and the number of grid cells within the
 radius, and a json per site that records the search, which marks the site as done.
+A scene that cannot be read is read again up to scene_retries times, 2 by default,
+after a pause and with a new token. A scene that then still fails with an error of
+BROKEN is broken at the source, as LC08_L2SP_090090_20221105_02_T1, whose bands are
+web pages stored as .TIF, so it is listed as unreadable in the json and the site is
+done. A site with scenes left unread for other reasons gets no json, and the next
+run reads only the scenes that its csv lacks.
 Sites are independent, so prefetch.py --part i/n splits them over jobs of a cluster
 array, and the scenes of a site are read in parallel threads.
 
@@ -41,6 +47,11 @@ import logging
 logger = logging.getLogger(__name__)
 
 STAC = "https://planetarycomputer.microsoft.com/api/stac/v1/search"
+# Errors of a scene file that is broken at the source: a web page stored as .TIF, a
+# corrupt file, a file the store lacks and a file without a CRS. Each came back for
+# the same scenes on every site and every try.
+BROKEN = ("not recognized as being in a supported file format", "Read failed",
+          "HTTP response code: 404", "CRS is invalid")
 # Scenes per page of the search. A page of 1000 scenes is about 20 MB, which the
 # proxy of the cluster often cuts short.
 PAGE = 100
@@ -127,36 +138,57 @@ def is_done(info, site, lat, lon):
 
 
 def fetch_site(site, lat, lon, info, workers=8):
-    """Read every scene of a site and write its csv and json."""
+    """
+    Read the scenes of a site that its csv lacks at these coordinates, retrying the
+    ones that fail, and write its csv, and its json when no scene is left unread.
+    """
     items = scenes(lat, lon, info)
-    failed = []
+    old = site_rows(info, site, lat, lon)
+    have = set(old["scene"].astype(str)) if len(old) else set()
+    todo = [it for it in items if it["id"] not in have]
+    rows, failed = [], {}
 
     def one(item):
         try:
             return scene_row(item, lat, lon)
         except Exception as e:
-            failed.append(item["id"])
+            failed[item["id"]] = str(e)
             logger.warning(f"{site}: could not read {item['id']}: {e}")
             return None
 
-    with ThreadPoolExecutor(workers) as ex:
-        rows = [r for r in ex.map(one, items) if r is not None]
+    for attempt in range(1 + info.get("scene_retries", 2)):
+        if attempt:
+            # a pause and a new token, as most failures are short errors of the store
+            time.sleep(30)
+            with _token_lock:
+                _token["time"] = 0.0
+        failed.clear()
+        with ThreadPoolExecutor(workers) as ex:
+            rows += [r for r in ex.map(one, todo) if r is not None]
+        todo = [it for it in todo if it["id"] in failed]
+        if not todo:
+            break
+    unreadable = sorted(it["id"] for it in todo
+                        if any(b in failed[it["id"]] for b in BROKEN))
+    todo = [it for it in todo if it["id"] not in unreadable]
     csv, meta = paths(info, site)
     df = pd.DataFrame(rows, columns=["date", "scene", "platform", "cloud_cover", "ndvi",
                                      "n_clear", "n_total"])
     df.insert(0, "site", site)
     df["latitude"], df["longitude"] = lat, lon
     df["fetched_utc"] = fu.now_utc()
+    if len(old):
+        df = pd.concat([old, df], ignore_index=True).sort_values("date")
     df.round(5).to_csv(f"{csv}.tmp", index=False)
     os.replace(f"{csv}.tmp", csv)
-    # A site with failed scenes is not marked as done, so a later run reads it again.
-    if not failed:
+    # A site with unread scenes is not marked as done, so a later run reads them.
+    if not todo:
         with open(meta, "w") as f:
             json.dump({"site": site, "latitude": lat, "longitude": lon,
                        "n_scenes": len(items), "first": info.get("first", ""),
                        "last": info.get("last", ""), "max_cloud": info.get("max_cloud", 80),
-                       "fetched_utc": fu.now_utc()}, f)
-    return len(items), len(failed)
+                       "unreadable_scenes": unreadable, "fetched_utc": fu.now_utc()}, f)
+    return len(items), len(todo), len(unreadable)
 
 
 def prefetch(sites, lats, lons, info, workers=None, part="", **kwargs):
@@ -171,12 +203,13 @@ def prefetch(sites, lats, lons, info, workers=None, part="", **kwargs):
     for site, lat, lon in todo:
         t = time.time()
         try:
-            n, bad = fetch_site(site, lat, lon, info, n_workers)
+            n, bad, broken = fetch_site(site, lat, lon, info, n_workers)
         except Exception as e:
             print(f"failed {site}: {e}", flush=True)
             continue
-        print(f"done {site}: {n} scenes, {bad} failed, {time.time() - t:.0f} s",
-              flush=True)
+        state = f"incomplete, {bad} scenes left to read" if bad else "done"
+        print(f"{state} {site}: {n} scenes, {broken} unreadable, "
+              f"{time.time() - t:.0f} s", flush=True)
 
 
 def report(sites, lats, lons, info):
