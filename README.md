@@ -242,7 +242,8 @@ TOTAL_CPUS=800 ./run_workflow.sh 50   # on 50% of a fixed pool of 800 cpus
 
 [run_workflow.sh](run_workflow.sh) works out the number of cpus to use:
 - by default, the given percent of the cpus that `sinfo` reports idle on the
-  partition, `big` or `PARTITION`, when the run starts;
+  partition, `SDX_PARTITION` of [slurm_scripts/env.sh](slurm_scripts/env.sh), when
+  the run starts;
 - with `TOTAL_CPUS` set, the percent of that pool instead.
 
 It then loads the proxy module and runs Snakemake with the SLURM profile in

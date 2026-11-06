@@ -11,10 +11,12 @@
 #   LOCAL=1 ./run_workflow.sh 50      no SLURM: the jobs run here on 50% of the cpus
 #                                     of this machine
 #
-# The share is a percent of the cpus that sinfo reports idle on PARTITION, big by
-# default, when the run starts, or of TOTAL_CPUS when that is set. With LOCAL=1 it is
-# a percent of the cpus of this machine, or of TOTAL_CPUS. It is fixed for the run,
-# since Snakemake does not change it later. The running jobs use at most that many
+# The partition is SDX_PARTITION of slurm_scripts/env.sh, which every way to run
+# reads, and the jobs go to it through profiles/slurm. The share is a percent of the
+# cpus that sinfo reports idle on that partition when the run starts, or of
+# TOTAL_CPUS when that is set. With LOCAL=1 it is a percent of the cpus of this
+# machine, or of TOTAL_CPUS. It is fixed for the run, since Snakemake does not change
+# it later. The running jobs use at most that many
 # cpus together, and no single job asks for more. A first argument that is a number
 # is the percent; the other arguments go to snakemake. Snakemake itself runs here
 # until the workflow ends, so start it in screen or tmux. The proxy module gives the
@@ -26,7 +28,14 @@ if [[ "${1:-}" =~ ^[0-9]+$ ]]; then
     percent=$1
     shift
 fi
-partition=${PARTITION:-big}
+# only the partition of env.sh, in a subshell, so its other settings stay out
+partition=$(source "$(dirname "$0")/slurm_scripts/env.sh" && echo "$SDX_PARTITION")
+if [ -z "$partition" ]; then
+    echo "no SDX_PARTITION in slurm_scripts/env.sh" >&2
+    exit 1
+fi
+# the submit command of profiles/slurm reads it
+export SDX_PARTITION=$partition
 
 if [ -n "${TOTAL_CPUS:-}" ]; then
     pool=$TOTAL_CPUS

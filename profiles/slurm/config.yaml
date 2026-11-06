@@ -1,10 +1,12 @@
 # Snakemake profile for the BGI SLURM cluster, with the cluster-generic executor
 # plugin of sinproc.yml. Each job asks for the threads of its rule as cpus, and its
-# SLURM log is output/slurm_logs/smk-<rule>-<job>.log of the site cubes.
+# SLURM log is output/slurm_logs/smk-<rule>-<job>.log of the site cubes. The submit
+# command runs in a shell, and the partition is SDX_PARTITION, which run_workflow.sh
+# exports from slurm_scripts/env.sh.
 executor: cluster-generic
 cluster-generic-submit-cmd: >-
   mkdir -p /Net/Groups/BGI/work_3/sindbad/site_cubes/output/slurm_logs &&
-  sbatch --parsable --partition=big --cpus-per-task={threads}
+  sbatch --parsable --partition="$SDX_PARTITION" --cpus-per-task={threads}
   --mem={resources.mem_mb}M --time={resources.runtime}
   --job-name=smk-{rule} --output=/Net/Groups/BGI/work_3/sindbad/site_cubes/output/slurm_logs/smk-{rule}-%j.log
 # run_workflow.sh limits the cpus of the running jobs with --resources cpus=N;
