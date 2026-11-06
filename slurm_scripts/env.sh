@@ -17,7 +17,7 @@ export SDX_FREQS=""                         # daily or hourly; empty for both
 export SDX_OVERWRITE=0                      # 1 runs sites that are done again, extracted anew
 
 # one job, one site
-export SDX_PARTITION="big"
+export SDX_PARTITION="gpu"
 export SDX_THREADS=2                        # cpus, the sites run_site.py runs at once
 export SDX_MEM="8G"
 export SDX_TIME="1-00:00:00"
